@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isDueToday, isOverdue, isUpcoming, overdueDays } from './day'
+import { attentionReason, isDueToday, isOverdue, isUpcoming, overdueDays } from './day'
 
 const now = new Date(2026, 7, 15, 15, 30, 0)
 
@@ -27,5 +27,21 @@ describe('local day classification', () => {
   it('does not treat a missing due date as overdue', () => {
     expect(isOverdue(null, now)).toBe(false)
     expect(isDueToday(undefined, now)).toBe(false)
+  })
+})
+
+describe('attentionReason', () => {
+  it('uses overdue, today, urgent, then high priority', () => {
+    expect(attentionReason({ dueAt: new Date(2026, 7, 14, 10, 0, 0).toISOString(), priority: 'normal' }, now)).toBe(
+      'Overdue'
+    )
+    expect(attentionReason({ dueAt: new Date(2026, 7, 15, 18, 0, 0).toISOString(), priority: 'high' }, now)).toBe(
+      'Today'
+    )
+    expect(attentionReason({ dueAt: new Date(2026, 7, 16, 9, 0, 0).toISOString(), priority: 'urgent' }, now)).toBe(
+      'Urgent'
+    )
+    expect(attentionReason({ dueAt: null, priority: 'high' }, now)).toBe('High priority')
+    expect(attentionReason({ dueAt: new Date(2026, 7, 16, 9, 0, 0).toISOString(), priority: 'normal' }, now)).toBeNull()
   })
 })

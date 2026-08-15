@@ -8,6 +8,7 @@ export function WorkItemCard({
   item,
   onPrimary,
   onSetNext,
+  onClearNext,
   onEdit,
   onCancel,
   onReopen
@@ -15,6 +16,7 @@ export function WorkItemCard({
   item: WorkItem
   onPrimary: () => void
   onSetNext: () => void
+  onClearNext: () => void
   onEdit: () => void
   onCancel: () => void
   onReopen?: () => void
@@ -58,13 +60,51 @@ export function WorkItemCard({
       </div>
       {menuOpen && !closed ? (
         <div className="combobox-menu work-menu" role="menu">
-          <button type="button" className="combobox-item" role="menuitem" onClick={onSetNext}>
-            Set as Next Action
-          </button>
-          <button type="button" className="combobox-item" role="menuitem" onClick={onEdit}>
+          {item.isNextAction ? (
+            <button
+              type="button"
+              className="combobox-item"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false)
+                onClearNext()
+              }}
+            >
+              Clear Next Action
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="combobox-item"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false)
+                onSetNext()
+              }}
+            >
+              Set as Next Action
+            </button>
+          )}
+          <button
+            type="button"
+            className="combobox-item"
+            role="menuitem"
+            onClick={() => {
+              setMenuOpen(false)
+              onEdit()
+            }}
+          >
             Edit
           </button>
-          <button type="button" className="combobox-item" role="menuitem" onClick={onCancel}>
+          <button
+            type="button"
+            className="combobox-item"
+            role="menuitem"
+            onClick={() => {
+              setMenuOpen(false)
+              onCancel()
+            }}
+          >
             Cancel
           </button>
         </div>

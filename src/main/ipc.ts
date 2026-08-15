@@ -143,7 +143,7 @@ export function registerIpc(store: DatabaseStore): void {
     wrap(() => store.mutate((db) => tasks.updateTask(db, id, input)))
   )
   ipcMain.handle(IPC_CHANNELS.tasksComplete, (_event, id: string) =>
-    wrap(() => store.mutate((db) => tasks.completeTask(db, id)))
+    wrap(() => store.mutate((db) => tasks.completeAction(db, id)))
   )
   ipcMain.handle(IPC_CHANNELS.tasksResolve, (_event, id: string) =>
     wrap(() => store.mutate((db) => tasks.resolveWaiting(db, id)))

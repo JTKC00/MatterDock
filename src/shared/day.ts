@@ -37,3 +37,16 @@ export function isUpcoming(dueAt: string | null | undefined, now = new Date()): 
 export function overdueDays(dueAt: string, now = new Date()): number {
   return Math.max(1, Math.round(-compareLocalDay(dueAt, now) / 86_400_000))
 }
+
+export type AttentionReason = 'Overdue' | 'Today' | 'Urgent' | 'High priority'
+
+export function attentionReason(
+  item: { dueAt?: string | null; priority?: 'low' | 'normal' | 'high' | 'urgent' },
+  now = new Date()
+): AttentionReason | null {
+  if (isOverdue(item.dueAt, now)) return 'Overdue'
+  if (isDueToday(item.dueAt, now)) return 'Today'
+  if (item.priority === 'urgent') return 'Urgent'
+  if (item.priority === 'high') return 'High priority'
+  return null
+}

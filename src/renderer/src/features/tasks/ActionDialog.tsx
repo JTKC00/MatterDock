@@ -44,20 +44,19 @@ function ActionForm({
   const [dueAt, setDueAt] = useState(item?.dueAt ? toDatetimeLocal(item.dueAt) : '')
   const [priority, setPriority] = useState<MatterPriority>(item?.priority ?? 'normal')
   const [notes, setNotes] = useState(item?.notes ?? '')
-  const [setAsNext, setSetAsNext] = useState(item ? item.isNextAction : defaultNext)
+  const [setAsNext, setSetAsNext] = useState(defaultNext)
   const [error, setError] = useState<string | null>(null)
+  const showNextCheckbox = !item && defaultNext
 
   const save = useMutation({
     mutationFn: async () => {
       if (item) {
-        const updated = await api.tasks.update(item.id, {
+        return api.tasks.update(item.id, {
           title,
           notes,
           dueAt: dueAt ? fromDatetimeLocal(dueAt) : null,
           priority
         })
-        if (setAsNext && !item.isNextAction) await api.tasks.setNext(item.id)
-        return updated
       }
       return api.tasks.createAction({
         matterId,
@@ -65,7 +64,7 @@ function ActionForm({
         notes,
         dueAt: dueAt ? fromDatetimeLocal(dueAt) : null,
         priority,
-        setAsNextAction: setAsNext
+        setAsNextAction: showNextCheckbox && setAsNext
       })
     },
     onSuccess: async () => {
@@ -115,10 +114,14 @@ function ActionForm({
       <Field label="Notes" htmlFor="action-notes">
         <Textarea id="action-notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
       </Field>
-      <label className="radio-row">
-        <input type="checkbox" checked={setAsNext} onChange={(event) => setSetAsNext(event.target.checked)} />
-        Set as Next Action
-      </label>
+      {showNextCheckbox ? (
+        <label className="radio-row">
+          <input type="checkbox" checked={setAsNext} onChange={(event) => setSetAsNext(event.target.checked)} />
+          Set as Next Action
+        </label>
+      ) : !item ? (
+        <p className="muted">This matter already has a Next Action. You can change it after creating this item.</p>
+      ) : null}
     </Dialog>
   )
 }

@@ -36,7 +36,8 @@ describe('next action', () => {
     })
     const next = tasks.setNextAction(db, waiting.id)
     expect(next.isNextAction).toBe(true)
-    const done = tasks.completeTask(db, waiting.id)
+    expect(() => tasks.completeAction(db, waiting.id)).toThrow(USER_ERRORS.notAnAction)
+    const done = tasks.resolveWaiting(db, waiting.id)
     expect(done.isNextAction).toBe(false)
     expect(() => tasks.setNextAction(db, waiting.id)).toThrow(USER_ERRORS.nextActionClosed)
   })
@@ -46,7 +47,7 @@ describe('next action', () => {
     const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
     const first = tasks.createAction(db, { matterId: matter.id, title: 'Send pack', setAsNextAction: true })
     tasks.createAction(db, { matterId: matter.id, title: 'Other' })
-    expect(tasks.completeTask(db, first.id).isNextAction).toBe(false)
+    expect(tasks.completeAction(db, first.id).isNextAction).toBe(false)
     expect(tasks.getNextActionForMatter(db, matter.id)).toBeNull()
 
     const second = tasks.createAction(db, { matterId: matter.id, title: 'Call', setAsNextAction: true })
@@ -125,6 +126,47 @@ describe('today classification', () => {
   })
 })
 
+describe('next action clear and waiting integrity', () => {
+  it('clears the next action without promoting another item and touches the matter', async () => {
+    const db = await memoryDb()
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const first = tasks.createAction(db, { matterId: matter.id, title: 'Send pack', setAsNextAction: true })
+    tasks.createAction(db, { matterId: matter.id, title: 'Other' })
+    db.run(`UPDATE matters SET updated_at = ? WHERE id = ?`, ['2020-01-01T00:00:00.000Z', matter.id])
+    tasks.clearNextAction(db, matter.id)
+    expect(tasks.getTask(db, first.id).isNextAction).toBe(false)
+    expect(tasks.getNextActionForMatter(db, matter.id)).toBeNull()
+    expect(matters.getMatter(db, matter.id).updatedAt).not.toBe('2020-01-01T00:00:00.000Z')
+  })
+
+  it('rejects a waiting update that would drop the waiting target', async () => {
+    const db = await memoryDb()
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const waiting = tasks.createWaiting(db, {
+      matterId: matter.id,
+      title: 'Confirmation',
+      waitingForText: 'Ms Chan'
+    })
+    expect(() =>
+      tasks.updateTask(db, waiting.id, { waitingForContactId: null, waitingForText: '' })
+    ).toThrow(/waiting for/i)
+    expect(tasks.getTask(db, waiting.id).waitingForText).toBe('Ms Chan')
+  })
+
+  it('rejects completeAction on waiting and resolveWaiting on action', async () => {
+    const db = await memoryDb()
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const action = tasks.createAction(db, { matterId: matter.id, title: 'Send pack' })
+    const waiting = tasks.createWaiting(db, {
+      matterId: matter.id,
+      title: 'Reply',
+      waitingForText: 'Ms Chan'
+    })
+    expect(() => tasks.completeAction(db, waiting.id)).toThrow(USER_ERRORS.notAnAction)
+    expect(() => tasks.resolveWaiting(db, action.id)).toThrow(USER_ERRORS.notWaiting)
+  })
+})
+
 describe('matter touch', () => {
   it('updates the matter when work items change', async () => {
     const db = await memoryDb()
@@ -133,7 +175,7 @@ describe('matter touch', () => {
     const action = tasks.createAction(db, { matterId: matter.id, title: 'Send pack' })
     expect(matters.getMatter(db, matter.id).updatedAt >= before).toBe(true)
     tasks.updateTask(db, action.id, { title: 'Send pack today' })
-    tasks.completeTask(db, action.id)
+    tasks.completeAction(db, action.id)
     tasks.reopenTask(db, action.id)
     tasks.cancelTask(db, action.id)
   })

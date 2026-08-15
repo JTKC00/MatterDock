@@ -70,7 +70,7 @@ export function createAction(db: Database, input: CreateActionInput): WorkItem {
     const now = nowIso()
     const id = createId()
     const makeNext = Boolean(parsed.setAsNextAction)
-    if (makeNext) clearNextAction(db, parsed.matterId)
+    if (makeNext) unsetNextFlags(db, parsed.matterId, now)
     db.run(
       `INSERT INTO tasks (
          id, matter_id, type, title, notes, status, due_at, waiting_for_contact_id,
@@ -104,7 +104,7 @@ export function createWaiting(db: Database, input: CreateWaitingInput): WorkItem
     const now = nowIso()
     const id = createId()
     const makeNext = Boolean(parsed.setAsNextAction)
-    if (makeNext) clearNextAction(db, parsed.matterId)
+    if (makeNext) unsetNextFlags(db, parsed.matterId, now)
     db.run(
       `INSERT INTO tasks (
          id, matter_id, type, title, notes, status, due_at, waiting_for_contact_id,
@@ -138,14 +138,19 @@ export function updateTask(db: Database, id: string, input: UpdateWorkItemInput)
   try {
     const parsed = updateWorkItemSchema.parse(input)
     const now = nowIso()
+    const nextContactId =
+      parsed.waitingForContactId === undefined ? existing.waitingForContactId : parsed.waitingForContactId
     const nextText =
       parsed.waitingForText === undefined && parsed.waitingForContactId === undefined
         ? existing.waitingForText
         : waitingSnapshot(
             db,
-            parsed.waitingForContactId === undefined ? existing.waitingForContactId : parsed.waitingForContactId,
+            nextContactId,
             parsed.waitingForText === undefined ? existing.waitingForText : parsed.waitingForText
           )
+    if (existing.type === 'waiting' && !nextContactId && !nextText) {
+      throw new AppError('Say who or what you are waiting for.', 'VALIDATION')
+    }
     db.run(
       `UPDATE tasks
        SET title = ?, notes = ?, due_at = ?, priority = ?, waiting_for_contact_id = ?,
@@ -156,7 +161,7 @@ export function updateTask(db: Database, id: string, input: UpdateWorkItemInput)
         parsed.notes === undefined ? existing.notes : parsed.notes,
         parsed.dueAt === undefined ? existing.dueAt : parsed.dueAt,
         parsed.priority ?? existing.priority,
-        parsed.waitingForContactId === undefined ? existing.waitingForContactId : parsed.waitingForContactId,
+        nextContactId,
         nextText,
         parsed.waitingSince === undefined ? existing.waitingSince : parsed.waitingSince,
         now,
@@ -171,22 +176,26 @@ export function updateTask(db: Database, id: string, input: UpdateWorkItemInput)
   }
 }
 
-export function completeTask(db: Database, id: string): WorkItem {
-  return closeTask(db, id, 'done')
+export function completeAction(db: Database, id: string): WorkItem {
+  const existing = getTask(db, id)
+  if (existing.type !== 'action') throw new AppError(USER_ERRORS.notAnAction, 'NOT_AN_ACTION')
+  return closeTask(db, existing, 'done')
 }
 
 export function resolveWaiting(db: Database, id: string): WorkItem {
   const existing = getTask(db, id)
-  if (existing.type !== 'waiting') throw new AppError(USER_ERRORS.taskNotSaved, 'NOT_WAITING')
-  return closeTask(db, id, 'done')
+  if (existing.type !== 'waiting') throw new AppError(USER_ERRORS.notWaiting, 'NOT_WAITING')
+  return closeTask(db, existing, 'done')
 }
 
 export function cancelTask(db: Database, id: string): WorkItem {
-  return closeTask(db, id, 'cancelled')
+  const existing = getTask(db, id)
+  return closeTask(db, existing, 'cancelled')
 }
 
 export function reopenTask(db: Database, id: string): WorkItem {
   const existing = getTask(db, id)
+  if (existing.status === 'open') throw new AppError(USER_ERRORS.alreadyOpen, 'ALREADY_OPEN')
   const now = nowIso()
   db.run(
     `UPDATE tasks SET status = 'open', completed_at = NULL, is_next_action = 0, updated_at = ? WHERE id = ?`,
@@ -200,16 +209,22 @@ export function setNextAction(db: Database, id: string): WorkItem {
   const existing = getTask(db, id)
   if (existing.status !== 'open') throw new AppError(USER_ERRORS.nextActionClosed, 'NEXT_ACTION_CLOSED')
   const now = nowIso()
-  clearNextAction(db, existing.matterId)
+  unsetNextFlags(db, existing.matterId, now)
   db.run(`UPDATE tasks SET is_next_action = 1, updated_at = ? WHERE id = ?`, [now, id])
   touchMatter(db, existing.matterId, now)
   return getTask(db, id)
 }
 
 export function clearNextAction(db: Database, matterId: string): void {
+  const now = nowIso()
+  unsetNextFlags(db, matterId, now)
+  touchMatter(db, matterId, now)
+}
+
+function unsetNextFlags(db: Database, matterId: string, at: string): void {
   db.run(
     `UPDATE tasks SET is_next_action = 0, updated_at = ? WHERE matter_id = ? AND is_next_action = 1`,
-    [nowIso(), matterId]
+    [at, matterId]
   )
 }
 
@@ -243,15 +258,19 @@ export function getTodayDashboard(db: Database, now = new Date()): TodayDashboar
   }
 }
 
-function closeTask(db: Database, id: string, status: Extract<TaskStatus, 'done' | 'cancelled'>): WorkItem {
-  const existing = getTask(db, id)
+function closeTask(
+  db: Database,
+  existing: WorkItem,
+  status: Extract<TaskStatus, 'done' | 'cancelled'>
+): WorkItem {
+  if (existing.status !== 'open') throw new AppError(USER_ERRORS.alreadyClosed, 'ALREADY_CLOSED')
   const now = nowIso()
   db.run(
     `UPDATE tasks SET status = ?, completed_at = ?, is_next_action = 0, updated_at = ? WHERE id = ?`,
-    [status, now, now, id]
+    [status, now, now, existing.id]
   )
   touchMatter(db, existing.matterId, now)
-  return getTask(db, id)
+  return getTask(db, existing.id)
 }
 
 function loadItems(db: Database, where: string, params: Array<string>): WorkItem[] {

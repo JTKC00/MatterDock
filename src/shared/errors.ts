@@ -36,5 +36,9 @@ export const USER_ERRORS = {
   taskNotFound: 'This item could not be found.',
   taskNotSaved: 'That item could not be saved. Your changes have not been lost. Please try again.',
   nextActionClosed: 'Only an open item can be the next action.',
+  notAnAction: 'Only an action can be completed.',
+  notWaiting: 'Only a waiting item can be resolved.',
+  alreadyClosed: 'This item is already closed.',
+  alreadyOpen: 'This item is already open.',
   unexpected: 'Something went wrong. Please try again.'
 } as const

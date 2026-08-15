@@ -70,6 +70,14 @@ export function MatterWork({
     },
     onError: (error) => toast.push(message(error), 'error')
   })
+  const clearNext = useMutation({
+    mutationFn: () => api.tasks.clearNext(matterId),
+    onSuccess: async () => {
+      await invalidate()
+      toast.push('Next action cleared.')
+    },
+    onError: (error) => toast.push(message(error), 'error')
+  })
 
   function requestNext(item: WorkItem) {
     if (next && next.id !== item.id) setReplaceTarget(item)
@@ -86,6 +94,9 @@ export function MatterWork({
               <>
                 <div className="entity-title">Waiting for {next.waitingForDisplay ?? 'someone'}</div>
                 <p className="quiet">{next.title}</p>
+                <p className={dueLabel(next.dueAt, new Date(), true)?.startsWith('Overdue') ? 'overdue' : 'quiet'}>
+                  {dueLabel(next.dueAt, new Date(), true) ?? 'No follow-up date'}
+                </p>
               </>
             ) : (
               <>
@@ -129,6 +140,7 @@ export function MatterWork({
             item={item}
             onPrimary={() => complete.mutate(item)}
             onSetNext={() => requestNext(item)}
+            onClearNext={() => clearNext.mutate()}
             onEdit={() => setEditing(item)}
             onCancel={() => cancel.mutate(item.id)}
           />
@@ -141,6 +153,7 @@ export function MatterWork({
             item={item}
             onPrimary={() => complete.mutate(item)}
             onSetNext={() => requestNext(item)}
+            onClearNext={() => clearNext.mutate()}
             onEdit={() => setEditing(item)}
             onCancel={() => cancel.mutate(item.id)}
           />
@@ -157,6 +170,7 @@ export function MatterWork({
                     item={item}
                     onPrimary={() => undefined}
                     onSetNext={() => undefined}
+                    onClearNext={() => undefined}
                     onEdit={() => setEditing(item)}
                     onCancel={() => undefined}
                     onReopen={() => reopen.mutate(item.id)}
@@ -208,7 +222,11 @@ export function MatterWork({
           if (!open) setReplaceTarget(null)
         }}
         title="Replace current Next Action?"
-        description={next ? `“${next.title}” will no longer be the next action.` : undefined}
+        description={
+          next && replaceTarget
+            ? `“${next.title}” is currently the Next Action. Replace it with “${replaceTarget.type === 'waiting' ? `Waiting for ${replaceTarget.waitingForDisplay ?? 'someone'} — ${replaceTarget.title}` : replaceTarget.title}”?`
+            : undefined
+        }
         actions={
           <>
             <DialogCloseButton />

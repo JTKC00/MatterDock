@@ -5,6 +5,24 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.3.1] — 2026-08-15
+
+Work Item Integrity & UX Patch.
+
+### Fixed
+
+- Next Action can be explicitly cleared from the work-item menu, and that clear survives relaunch
+- Next Action replacement no longer happens from Edit or Create Save
+- Waiting items cannot lose their waiting target during edit
+- Today uses the correct attention reason (Overdue / Today / Urgent / High priority)
+- Waiting Next Action shows follow-up status
+
+### Changed
+
+- Next Action lifecycle lives in the work-item **•••** menu (`Set` / `Clear`)
+- Create dialogs only offer “Set as Next Action” when the matter has none
+- `completeAction` only accepts actions; `resolveWaiting` only accepts waiting items
+
 ## [0.3.0] — 2026-08-15
 
 Added — Tasks, Waiting & Next Action.

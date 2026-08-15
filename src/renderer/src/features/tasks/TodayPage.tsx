@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { isOverdue } from '@shared/day'
+import { attentionReason } from '@shared/day'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { api } from '@/lib/api'
 import { formatRelativeDate } from '@/lib/dates'
@@ -28,7 +28,7 @@ export function TodayPage() {
         {(data?.needsAttention.length ?? 0) === 0 ? <p className="muted">Nothing is due right now.</p> : null}
         {data?.needsAttention.map((item) => (
           <Link key={item.id} to={`/matters/${item.matterId}`} className="entity-row">
-            <div className="kicker-line">{isOverdue(item.dueAt) ? 'Overdue' : 'Today'}</div>
+            <div className="kicker-line">{attentionReason(item) ?? 'Needs attention'}</div>
             <div className="entity-title">{item.matterTitle}</div>
             <div className="entity-meta">
               {item.type === 'waiting' ? `Waiting for ${item.waitingForDisplay ?? 'someone'} · ${item.title}` : item.title}

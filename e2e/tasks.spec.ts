@@ -95,3 +95,55 @@ test('actions, waiting and next action persist across relaunch', async () => {
     rmSync(userData, { recursive: true, force: true })
   }
 })
+
+test('clear next action and replacement confirmation persist', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'matterdock-next-'))
+  let app = await launch(userData)
+  try {
+    let page = await firstWindow(app)
+    await page.getByRole('link', { name: 'Matters', exact: true }).click()
+    await page.locator('header').getByRole('button', { name: 'New Matter' }).click()
+    await page.getByRole('dialog', { name: 'New matter' }).getByLabel('Title').fill('Integrity Matter')
+    await page.getByRole('dialog', { name: 'New matter' }).getByRole('button', { name: 'Create matter' }).click()
+
+    await page.getByRole('button', { name: '+ Action' }).click()
+    await page.getByRole('dialog', { name: 'New action' }).getByLabel('Title').fill('Send supporting documents')
+    await page.getByRole('dialog', { name: 'New action' }).getByRole('button', { name: 'Save' }).click()
+    await expect(page.locator('.next-action')).toContainText('Send supporting documents')
+
+    await page.getByRole('button', { name: 'Item actions' }).first().click()
+    await page.getByRole('menuitem', { name: 'Clear Next Action' }).click()
+    await expect(page.getByText('No next action set')).toBeVisible()
+
+    await app.close()
+    app = await launch(userData)
+    page = await firstWindow(app)
+    await page.getByRole('link', { name: 'Matters', exact: true }).click()
+    await page.getByText('Integrity Matter').click()
+    await expect(page.getByText('No next action set')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Item actions' }).first().click()
+    await page.getByRole('menuitem', { name: 'Set as Next Action' }).click()
+    await expect(page.locator('.next-action')).toContainText('Send supporting documents')
+
+    await page.getByRole('button', { name: '+ Action' }).click()
+    const second = page.getByRole('dialog', { name: 'New action' })
+    await expect(second.getByText('This matter already has a Next Action.')).toBeVisible()
+    await second.getByLabel('Title').fill('Call Lands Department')
+    await second.getByRole('button', { name: 'Save' }).click()
+
+    await page.getByRole('button', { name: 'Item actions' }).nth(1).click()
+    await page.getByRole('menuitem', { name: 'Set as Next Action' }).click()
+    const replace = page.getByRole('dialog', { name: 'Replace current Next Action?' })
+    await replace.getByRole('button', { name: 'Cancel' }).click()
+    await expect(page.locator('.next-action')).toContainText('Send supporting documents')
+
+    await page.getByRole('button', { name: 'Item actions' }).nth(1).click()
+    await page.getByRole('menuitem', { name: 'Set as Next Action' }).click()
+    await page.getByRole('dialog', { name: 'Replace current Next Action?' }).getByRole('button', { name: 'Replace' }).click()
+    await expect(page.locator('.next-action')).toContainText('Call Lands Department')
+  } finally {
+    await app.close().catch(() => undefined)
+    rmSync(userData, { recursive: true, force: true })
+  }
+})
