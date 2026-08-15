@@ -61,11 +61,13 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 
 - Desktop shell with sidebar navigation
 - **Matters** — list, create, detail, inline edit, archive / restore
+- **Timeline** — notes, phone calls, emails, WhatsApp, meetings and letters on the Matter
 - **Organisations** — list, create, edit, detail, alias management
 - **Contacts** — list, create, edit, detail, link to organisation and matter
 - **Tags** — create on the fly, attach to a matter
 - Local SQLite persistence (survives quit and relaunch)
 - `Ctrl+N` — New Matter
+- `Ctrl+Shift+A` — Add Activity on Matter Detail
 
 Coming later, with a product empty state today:
 

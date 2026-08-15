@@ -100,5 +100,38 @@ export const migrations: Migration[] = [
       WHERE status = 'archived'
         AND status_before_archive IS NULL;
     `
+  },
+  {
+    version: 3,
+    name: 'matter_timeline',
+    sql: `
+      CREATE TABLE events (
+        id TEXT PRIMARY KEY,
+        matter_id TEXT NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
+        type TEXT NOT NULL CHECK (
+          type IN ('note', 'phone', 'email', 'whatsapp', 'meeting', 'letter')
+        ),
+        title TEXT,
+        body TEXT,
+        contact_id TEXT REFERENCES contacts(id) ON DELETE SET NULL,
+        direction TEXT CHECK (
+          direction IS NULL OR direction IN ('incoming', 'outgoing', 'internal')
+        ),
+        occurred_at TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE TABLE event_email_details (
+        event_id TEXT PRIMARY KEY REFERENCES events(id) ON DELETE CASCADE,
+        from_address TEXT,
+        to_addresses TEXT,
+        cc_addresses TEXT,
+        subject TEXT
+      );
+
+      CREATE INDEX idx_events_matter_occurred ON events(matter_id, occurred_at DESC);
+      CREATE INDEX idx_events_contact ON events(contact_id);
+    `
   }
 ]

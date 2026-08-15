@@ -7,6 +7,7 @@ import { seedIfEmpty } from './seed'
 import * as contacts from './contacts'
 import * as matters from './matters'
 import * as organisations from './organisations'
+import * as events from './events'
 import { listTags } from './tags'
 import { withTransaction } from './sql'
 
@@ -94,4 +95,4 @@ export function databasePath(userData: string): string {
   return join(userData, 'matterdock.sqlite')
 }
 
-export { contacts, matters, organisations, listTags }
+export { contacts, matters, organisations, events, listTags }

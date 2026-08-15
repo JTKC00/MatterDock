@@ -19,3 +19,33 @@ export function formatDateTime(iso: string): string {
   if (Number.isNaN(date.getTime())) return ''
   return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
 }
+
+export function formatDayHeading(iso: string, now = new Date()): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const deltaDays = Math.round((startOfDay(date) - startOfDay(now)) / 86_400_000)
+  if (deltaDays === 0) return 'Today'
+  if (deltaDays === -1) return 'Yesterday'
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
+}
+
+export function formatTime(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
+export function toDatetimeLocal(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+export function fromDatetimeLocal(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return new Date().toISOString()
+  return date.toISOString()
+}

@@ -18,6 +18,7 @@ import { PriorityBadge, StatusBadge } from '@/components/ui/StatusBadge'
 import { api, UserFacingError } from '@/lib/api'
 import { formatDateTime } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
+import { MatterTimeline } from '@/features/timeline/MatterTimeline'
 
 export function MatterDetailPage() {
   const { matterId = '' } = useParams()
@@ -98,13 +99,7 @@ export function MatterDetailPage() {
             <p className="quiet">No next action set</p>
           </section>
 
-          <section className="timeline-panel">
-            <h2 className="section-label">Timeline</h2>
-            <p className="quiet">No activity yet.</p>
-            <p className="muted" style={{ marginTop: 6 }}>
-              Timeline events will appear here as this matter progresses.
-            </p>
-          </section>
+          <MatterTimeline matterId={item.id} matterContacts={item.contacts} />
         </section>
 
         <aside className="details-panel">

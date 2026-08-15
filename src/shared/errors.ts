@@ -31,5 +31,7 @@ export const USER_ERRORS = {
   linkExists: 'This contact is already linked to the matter.',
   database: 'MatterDock could not read or write local data. Please try again.',
   persistFailed: 'Changes could not be saved to disk. Please try again.',
+  eventNotFound: 'This activity could not be found.',
+  eventNotSaved: 'Activity could not be saved. Your changes have not been lost. Please try again.',
   unexpected: 'Something went wrong. Please try again.'
 } as const

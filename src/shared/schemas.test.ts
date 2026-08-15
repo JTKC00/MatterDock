@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   aliasSchema,
   createContactSchema,
+  createEventSchema,
   createMatterSchema,
   createOrganisationSchema,
   formatZodError
@@ -58,5 +59,25 @@ describe('createContactSchema', () => {
   it('allows an empty email', () => {
     const result = createContactSchema.parse({ name: 'Alex Chan', email: '' })
     expect(result.email).toBeNull()
+  })
+})
+
+describe('createEventSchema', () => {
+  const matterId = '11111111-1111-1111-1111-111111111111'
+
+  it('requires a note body', () => {
+    expect(createEventSchema.safeParse({ matterId, type: 'note' }).success).toBe(false)
+  })
+
+  it('requires an email subject or body', () => {
+    const empty = createEventSchema.safeParse({ matterId, type: 'email', direction: 'incoming' })
+    expect(empty.success).toBe(false)
+    const withSubject = createEventSchema.parse({
+      matterId,
+      type: 'email',
+      direction: 'incoming',
+      email: { subject: 'Request', fromAddress: '', toAddresses: '', ccAddresses: '' }
+    })
+    expect(withSubject.email?.subject).toBe('Request')
   })
 })

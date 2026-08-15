@@ -35,6 +35,13 @@ const api: MatterDockApi = {
   },
   tags: {
     list: () => ipcRenderer.invoke(IPC_CHANNELS.tagsList)
+  },
+  events: {
+    list: (matterId) => ipcRenderer.invoke(IPC_CHANNELS.eventsList, matterId),
+    get: (id) => ipcRenderer.invoke(IPC_CHANNELS.eventsGet, id),
+    create: (input) => ipcRenderer.invoke(IPC_CHANNELS.eventsCreate, input),
+    update: (id, input) => ipcRenderer.invoke(IPC_CHANNELS.eventsUpdate, id, input),
+    remove: (id) => ipcRenderer.invoke(IPC_CHANNELS.eventsRemove, id)
   }
 }
 

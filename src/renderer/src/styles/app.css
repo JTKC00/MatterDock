@@ -489,6 +489,161 @@ a {
   border: 1px solid var(--border);
 }
 
+.timeline-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.timeline-heading .section-label {
+  margin: 0;
+}
+
+.add-activity {
+  position: relative;
+}
+
+.add-activity-menu {
+  right: 0;
+  left: auto;
+  min-width: 180px;
+}
+
+.timeline-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0 4px;
+}
+
+.timeline-day {
+  margin-top: 14px;
+}
+
+.timeline-day-label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text-muted);
+}
+
+.timeline-event {
+  border-top: 1px solid var(--border);
+}
+
+.timeline-event-main {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 10px 4px 8px;
+}
+
+.timeline-event-main:hover {
+  background: var(--bg-hover);
+}
+
+.timeline-event-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  color: var(--text-secondary);
+}
+
+.timeline-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.timeline-event-heading {
+  font-weight: 600;
+  flex: 1;
+}
+
+.timeline-time {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.timeline-contact,
+.timeline-subject,
+.timeline-preview {
+  margin: 4px 0 0 28px;
+}
+
+.timeline-subject {
+  font-weight: 550;
+}
+
+.timeline-preview {
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+.timeline-more {
+  display: inline-block;
+  margin: 6px 0 0 28px;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.timeline-email-meta {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 2px 8px;
+  margin: 8px 0 0 28px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+
+.timeline-email-meta dt {
+  color: var(--text-muted);
+}
+
+.timeline-email-meta dd {
+  margin: 0;
+}
+
+.timeline-event-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 4px 10px 28px;
+}
+
+.direction-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.radio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-priority {
+  margin-bottom: 8px;
+}
+
+.dialog-body {
+  max-height: min(60vh, 520px);
+  overflow: auto;
+}
+
 .next-action {
   background: var(--bg-next);
 }

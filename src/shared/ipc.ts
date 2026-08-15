@@ -3,6 +3,7 @@ import type {
   ContactDetail,
   ContactSummary,
   CreateContactInput,
+  CreateEventInput,
   CreateMatterInput,
   CreateOrganisationInput,
   IpcResult,
@@ -15,7 +16,9 @@ import type {
   OrganisationDetail,
   OrganisationSummary,
   Tag,
+  TimelineEvent,
   UpdateContactInput,
+  UpdateEventInput,
   UpdateMatterInput,
   UpdateOrganisationInput
 } from './types'
@@ -53,6 +56,13 @@ export type MatterDockApi = {
   tags: {
     list: () => Promise<IpcResult<Tag[]>>
   }
+  events: {
+    list: (matterId: string) => Promise<IpcResult<TimelineEvent[]>>
+    get: (id: string) => Promise<IpcResult<TimelineEvent>>
+    create: (input: CreateEventInput) => Promise<IpcResult<TimelineEvent>>
+    update: (id: string, input: UpdateEventInput) => Promise<IpcResult<TimelineEvent>>
+    remove: (id: string) => Promise<IpcResult<{ id: string }>>
+  }
 }
 
 export const IPC_CHANNELS = {
@@ -79,5 +89,10 @@ export const IPC_CHANNELS = {
   contactsUpdate: 'contacts:update',
   contactsRemove: 'contacts:remove',
   contactsSearch: 'contacts:search',
-  tagsList: 'tags:list'
+  tagsList: 'tags:list',
+  eventsList: 'events:list',
+  eventsGet: 'events:get',
+  eventsCreate: 'events:create',
+  eventsUpdate: 'events:update',
+  eventsRemove: 'events:remove'
 } as const

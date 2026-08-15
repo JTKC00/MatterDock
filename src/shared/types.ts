@@ -184,6 +184,66 @@ export type LinkMatterContactInput = {
   role?: string | null
 }
 
+export const EVENT_TYPES = ['note', 'phone', 'email', 'whatsapp', 'meeting', 'letter'] as const
+
+export type EventType = (typeof EVENT_TYPES)[number]
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  note: 'Note',
+  phone: 'Phone Call',
+  email: 'Email',
+  whatsapp: 'WhatsApp',
+  meeting: 'Meeting',
+  letter: 'Letter'
+}
+
+export const EVENT_DIRECTIONS = ['incoming', 'outgoing', 'internal'] as const
+
+export type EventDirection = (typeof EVENT_DIRECTIONS)[number]
+
+export type EventEmailDetails = {
+  fromAddress: string | null
+  toAddresses: string | null
+  ccAddresses: string | null
+  subject: string | null
+}
+
+export type TimelineEvent = {
+  id: string
+  matterId: string
+  type: EventType
+  title: string | null
+  body: string | null
+  contactId: string | null
+  contactName: string | null
+  contactOrganisation: string | null
+  direction: EventDirection | null
+  occurredAt: string
+  createdAt: string
+  updatedAt: string
+  email: EventEmailDetails | null
+}
+
+export type CreateEventInput = {
+  matterId: string
+  type: EventType
+  title?: string | null
+  body?: string | null
+  contactId?: string | null
+  direction?: EventDirection | null
+  occurredAt?: string
+  email?: EventEmailDetails | null
+}
+
+export type UpdateEventInput = {
+  title?: string | null
+  body?: string | null
+  contactId?: string | null
+  direction?: EventDirection | null
+  occurredAt?: string
+  email?: EventEmailDetails | null
+}
+
 export type IpcOk<T> = { ok: true; data: T }
 export type IpcErr = { ok: false; error: string }
 export type IpcResult<T> = IpcOk<T> | IpcErr

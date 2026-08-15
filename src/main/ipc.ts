@@ -3,6 +3,7 @@ import { AppError, USER_ERRORS, toUserError } from '@shared/errors'
 import { IPC_CHANNELS } from '@shared/ipc'
 import type {
   CreateContactInput,
+  CreateEventInput,
   CreateMatterInput,
   CreateOrganisationInput,
   IpcResult,
@@ -10,9 +11,10 @@ import type {
   MatterListQuery,
   UpdateContactInput,
   UpdateMatterInput,
+  UpdateEventInput,
   UpdateOrganisationInput
 } from '@shared/types'
-import { DatabaseStore, contacts, listTags, matters, organisations } from './db/store'
+import { DatabaseStore, contacts, events, listTags, matters, organisations } from './db/store'
 
 function wrap<T>(fn: () => T): IpcResult<T> {
   try {
@@ -102,4 +104,20 @@ export function registerIpc(store: DatabaseStore): void {
   )
 
   ipcMain.handle(IPC_CHANNELS.tagsList, () => wrap(() => store.query((db) => listTags(db))))
+
+  ipcMain.handle(IPC_CHANNELS.eventsList, (_event, matterId: string) =>
+    wrap(() => store.query((db) => events.listEventsForMatter(db, matterId)))
+  )
+  ipcMain.handle(IPC_CHANNELS.eventsGet, (_event, id: string) =>
+    wrap(() => store.query((db) => events.getEvent(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.eventsCreate, (_event, input: CreateEventInput) =>
+    wrap(() => store.mutate((db) => events.createEvent(db, input)))
+  )
+  ipcMain.handle(IPC_CHANNELS.eventsUpdate, (_event, id: string, input: UpdateEventInput) =>
+    wrap(() => store.mutate((db) => events.updateEvent(db, id, input)))
+  )
+  ipcMain.handle(IPC_CHANNELS.eventsRemove, (_event, id: string) =>
+    wrap(() => store.mutate((db) => events.deleteEvent(db, id)))
+  )
 }

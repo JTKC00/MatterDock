@@ -59,5 +59,14 @@ export const api = {
   },
   tags: {
     list: () => unwrap(window.matterdock.tags.list())
+  },
+  events: {
+    list: (matterId: string) => unwrap(window.matterdock.events.list(matterId)),
+    get: (id: string) => unwrap(window.matterdock.events.get(id)),
+    create: (input: Parameters<Window['matterdock']['events']['create']>[0]) =>
+      unwrap(window.matterdock.events.create(input)),
+    update: (...args: Parameters<Window['matterdock']['events']['update']>) =>
+      unwrap(window.matterdock.events.update(...args)),
+    remove: (id: string) => unwrap(window.matterdock.events.remove(id))
   }
 }

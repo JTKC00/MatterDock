@@ -1,5 +1,5 @@
 import { z } from 'zod/v3'
-import { MATTER_PRIORITIES, MATTER_STATUSES } from './types'
+import { EVENT_DIRECTIONS, EVENT_TYPES, MATTER_PRIORITIES, MATTER_STATUSES } from './types'
 import { normalizeAlias, normalizeWhitespace } from './normalize'
 
 const requiredName = (label: string, max = 200) =>
@@ -146,6 +146,123 @@ export const linkMatterContactSchema = z.object({
 })
 
 export const tagNameSchema = requiredName('Tag name', 48)
+
+export const eventTypeSchema = z.enum(EVENT_TYPES, {
+  errorMap: () => ({ message: 'Choose a valid activity type.' })
+})
+
+export const eventDirectionSchema = z.enum(EVENT_DIRECTIONS, {
+  errorMap: () => ({ message: 'Choose a valid direction.' })
+})
+
+const isoDateSchema = z
+  .string({ required_error: 'Date and time are required.' })
+  .transform((value) => value.trim())
+  .refine((value) => !Number.isNaN(Date.parse(value)), {
+    message: 'Enter a valid date and time.'
+  })
+
+const optionalLongText = (max = 20000) =>
+  z
+    .string()
+    .max(max, 'That text is too long.')
+    .transform((value) => {
+      const trimmed = value.trim()
+      return trimmed.length === 0 ? null : trimmed
+    })
+    .nullable()
+    .optional()
+
+export const eventEmailSchema = z.object({
+  fromAddress: optionalLongText(254),
+  toAddresses: optionalLongText(2000),
+  ccAddresses: optionalLongText(2000),
+  subject: optionalLongText(500)
+})
+
+const eventFields = {
+  title: optionalLongText(240),
+  body: optionalLongText(),
+  contactId: z.string().uuid().nullable().optional(),
+  direction: eventDirectionSchema.nullable().optional(),
+  occurredAt: isoDateSchema.optional(),
+  email: eventEmailSchema.nullable().optional()
+}
+
+export const createEventSchema = z
+  .object({
+    matterId: z.string().uuid({ message: 'This activity must belong to a matter.' }),
+    type: eventTypeSchema,
+    ...eventFields
+  })
+  .superRefine((value, ctx) => applyEventRules(value, ctx))
+
+export const updateEventSchema = z
+  .object(eventFields)
+  .superRefine((value, ctx) => applyEventRules({ ...value, type: undefined }, ctx, true))
+
+function applyEventRules(
+  value: {
+    type?: (typeof EVENT_TYPES)[number]
+    title?: string | null
+    body?: string | null
+    contactId?: string | null
+    direction?: (typeof EVENT_DIRECTIONS)[number] | null
+    email?: { subject?: string | null } | null
+  },
+  ctx: z.RefinementCtx,
+  isUpdate = false
+): void {
+  const type = value.type
+  if (!type && isUpdate) return
+
+  if (type === 'note' || type === 'meeting' || type === 'whatsapp') {
+    if (!value.body) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['body'],
+        message: type === 'note' ? 'Write a note before saving.' : 'Add some notes before saving.'
+      })
+    }
+  }
+
+  if (type === 'phone' && !value.body && !value.contactId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['body'],
+      message: 'Add a note or a contact so this call is useful later.'
+    })
+  }
+
+  if (type === 'email') {
+    const subject = value.email?.subject ?? null
+    if (!value.body && !subject) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['body'],
+        message: 'Add a subject or paste the email body.'
+      })
+    }
+  }
+
+  if (type === 'letter' && !value.body && !value.title) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['body'],
+      message: 'Add a title or some content for this letter.'
+    })
+  }
+
+  if ((type === 'phone' || type === 'email' || type === 'whatsapp' || type === 'letter') && !isUpdate) {
+    if (value.direction !== 'incoming' && value.direction !== 'outgoing') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['direction'],
+        message: 'Choose incoming or outgoing.'
+      })
+    }
+  }
+}
 
 export function formatZodError(error: z.ZodError): string {
   return error.issues[0]?.message ?? 'Please check the highlighted fields.'

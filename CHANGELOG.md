@@ -5,6 +5,26 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — 2026-08-15
+
+Added — Matter Timeline.
+
+A Matter now keeps a unified administrative history. Notes, calls, emails, WhatsApp messages, meetings and letters sit on one newest-first timeline.
+
+### Added
+
+- Migration `3 / matter_timeline`: `events` and `event_email_details`
+- Matter Detail `+ Add Activity` for Note, Phone Call, Email, WhatsApp, Meeting and Letter
+- Date grouping (Today / Yesterday / dated), compact event cards, expand for full body and email metadata
+- Optional contact on an activity, with Matter contacts listed first
+- Edit and delete (with confirmation). Create / edit / delete updates `matters.updated_at`
+- Durable persistence through the existing DatabaseStore
+- `Ctrl+Shift+A` opens Add Activity on Matter Detail
+
+### Not in this release
+
+Tasks, Waiting, Next Action, documents, email sync, WhatsApp import, system events, or automatic status changes.
+
 ## [0.1.1] — 2026-08-15
 
 Foundation Hardening.
