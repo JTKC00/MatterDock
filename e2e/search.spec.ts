@@ -89,3 +89,38 @@ test('search page and Ctrl+K find recorded context', async () => {
     rmSync(files, { recursive: true, force: true })
   }
 })
+
+test('organisation alias search finds the related matter', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'matterdock-alias-e2e-'))
+  const app = await launch(userData)
+  try {
+    const page = await firstWindow(app)
+    await page.evaluate(async () => {
+      const api = (
+        window as unknown as {
+          matterdock: {
+            organisations: {
+              create: (input: { name: string }) => Promise<{ ok: boolean; data?: { id: string }; error?: string }>
+              addAlias: (organisationId: string, alias: string) => Promise<unknown>
+            }
+            matters: {
+              create: (input: { title: string; organisationId: string }) => Promise<unknown>
+            }
+          }
+        }
+      ).matterdock
+      const org = await api.organisations.create({ name: 'CLP Power Hong Kong Limited' })
+      if (!org.ok || !org.data) throw new Error(org.error ?? 'org create failed')
+      await api.organisations.addAlias(org.data.id, '中電')
+      await api.matters.create({ title: 'Electricity Account Termination', organisationId: org.data.id })
+    })
+
+    await page.getByRole('link', { name: 'Search' }).click()
+    await page.getByLabel('Search MatterDock').fill('中電')
+    await expect(page.getByText('Electricity Account Termination').first()).toBeVisible()
+    await expect(page.getByText('CLP Power Hong Kong Limited').first()).toBeVisible()
+  } finally {
+    await app.close().catch(() => undefined)
+    rmSync(userData, { recursive: true, force: true })
+  }
+})

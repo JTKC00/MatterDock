@@ -12,10 +12,19 @@ import {
   quarantineManagedDirectory,
   readFileMeta,
   removeManagedDirectory,
+  removeQuarantineDirectory,
   restoreQuarantine
 } from './files'
 
-export function createDocumentService(store: DatabaseStore, documentsRoot: string) {
+export type DocumentServiceHooks = {
+  cleanupQuarantine?: (root: string, documentId: string) => void
+}
+
+export function createDocumentService(
+  store: DatabaseStore,
+  documentsRoot: string,
+  hooks: DocumentServiceHooks = {}
+) {
   function decorate(doc: MatterDocument): MatterDocument {
     if (doc.storageMode === 'copy') {
       const resolved = absoluteManagedPath(documentsRoot, doc.managedPath)
@@ -143,9 +152,16 @@ export function createDocumentService(store: DatabaseStore, documentsRoot: strin
     },
 
     relink(id: string, input: RelinkDocumentInput): MatterDocument {
+      const existing = store.query((db) => documents.getDocument(db, id))
+      if (existing.storageMode !== 'reference') {
+        throw new AppError(USER_ERRORS.cannotRelinkCopy, 'CANNOT_RELINK_COPY')
+      }
       const meta = readFileMeta(input.path)
-      return store.mutate((db) =>
-        decorate(
+      return store.mutate((db) => {
+        if (documents.findDuplicate(db, existing.matterId, 'reference', meta.path, existing.id)) {
+          throw new AppError(USER_ERRORS.documentDuplicate, 'DOCUMENT_DUPLICATE')
+        }
+        return decorate(
           documents.relinkDocument(db, id, {
             originalPath: meta.path,
             displayName: meta.name,
@@ -154,7 +170,7 @@ export function createDocumentService(store: DatabaseStore, documentsRoot: strin
             fileSize: meta.size
           })
         )
-      )
+      })
     },
 
     update(id: string, input: UpdateDocumentInput): MatterDocument {
@@ -170,10 +186,17 @@ export function createDocumentService(store: DatabaseStore, documentsRoot: strin
       const trash = quarantineManagedDirectory(documentsRoot, existing.id)
       try {
         store.mutate((db) => documents.deleteDocumentRecord(db, id))
-        if (trash) removeManagedDirectory(documentsRoot, `.removing-${existing.id}`)
       } catch (error) {
-        if (trash) restoreQuarantine(trash, join(documentsRoot, existing.id))
+        if (trash) restoreQuarantine(documentsRoot, trash, join(documentsRoot, existing.id))
         throw error instanceof AppError ? error : new AppError(USER_ERRORS.documentRemoveFailed, 'DOCUMENT_REMOVE_FAILED')
+      }
+      if (trash) {
+        try {
+          const cleanup = hooks.cleanupQuarantine ?? removeQuarantineDirectory
+          cleanup(documentsRoot, existing.id)
+        } catch (error) {
+          console.error('[matterdock] stale managed-copy quarantine retained', error)
+        }
       }
       return { id }
     }

@@ -32,6 +32,7 @@ async function seeded() {
     organisations.addAlias(db, org.id, '中電')
     organisations.addAlias(db, org.id, 'CLP')
     organisations.addAlias(db, org.id, '中華電力')
+    organisations.addAlias(db, org.id, 'China Light & Power')
     const empf = organisations.createOrganisation(db, { name: 'eMPF Platform Company Limited' })
     const contact = contacts.createContact(db, { name: 'Ms Chan', organisationId: empf.id })
     const matter = matters.createMatter(db, {
@@ -126,6 +127,38 @@ describe('global search', () => {
     const { store } = await seeded()
     store.query((db) => {
       expect(globalSearch(db, '   ').hits).toHaveLength(0)
+    })
+  })
+
+  it('surfaces related matters from organisation aliases', async () => {
+    const { store, org, archived } = await seeded()
+    store.query((db) => {
+      for (const query of ['中電', 'CLP', '中華電力', 'China Light & Power']) {
+        const result = globalSearch(db, query)
+        expect(result.hits.some((hit) => hit.id === org.id && hit.type === 'organisation'), query).toBe(true)
+        const matterHit = result.hits.find((hit) => hit.id === archived.id && hit.type === 'matter')
+        expect(matterHit, query).toBeTruthy()
+        expect(matterHit?.archived).toBe(true)
+        expect(matterHit?.subtitle).toContain('CLP Power Hong Kong Limited')
+      }
+    })
+  })
+
+  it('drops a document from search after remove and updates after relink', async () => {
+    const { store, docs, document, source } = await seeded()
+    store.query((db) => {
+      expect(globalSearch(db, 'subsidy-confirmation').hits.some((hit) => hit.id === document.id)).toBe(true)
+    })
+    const next = join(source, '..', 'new-file.pdf')
+    writeFileSync(next, 'NEW')
+    docs.relink(document.id, { path: next })
+    store.query((db) => {
+      expect(globalSearch(db, 'subsidy-confirmation').hits.some((hit) => hit.id === document.id)).toBe(false)
+      expect(globalSearch(db, 'new-file').hits.some((hit) => hit.id === document.id)).toBe(true)
+    })
+    docs.remove(document.id)
+    store.query((db) => {
+      expect(globalSearch(db, 'new-file').hits.some((hit) => hit.id === document.id && hit.type === 'document')).toBe(false)
     })
   })
 })

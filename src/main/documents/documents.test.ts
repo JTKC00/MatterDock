@@ -7,6 +7,8 @@ import { persistDatabase } from '../db/open'
 import { DatabaseStore } from '../db/store'
 import * as matters from '../db/matters'
 import { createDocumentService } from './service'
+import { quarantineName } from './files'
+import * as documents from '../db/documents'
 
 const dirs: string[] = []
 
@@ -118,5 +120,64 @@ describe('document reference and copy', () => {
     writeFileSync(source, 'X')
     service.addReference({ matterId: matter.id, path: source })
     expect(() => service.addReference({ matterId: matter.id, path: source })).toThrow(USER_ERRORS.documentDuplicate)
+  })
+
+  it('rolls managed copy removal back if durable delete fails', async () => {
+    const userData = tempDir('matterdock-rm-fail-')
+    const sourceDir = tempDir('matterdock-rm-fail-src-')
+    let fail = false
+    const store = new DatabaseStore(join(userData, 'matterdock.sqlite'), (db, filePath) => {
+      if (fail) throw new Error('simulated persist failure')
+      persistDatabase(db, filePath)
+    })
+    await store.initialize()
+    const matter = store.mutate((db) => matters.createMatter(db, { title: 'EMPF Subsidy Application' }))
+    const service = createDocumentService(store, join(userData, 'documents'))
+    const source = join(sourceDir, 'pack.pdf')
+    writeFileSync(source, 'BYTES')
+    const doc = service.addCopy({ matterId: matter.id, path: source })
+    fail = true
+    expect(() => service.remove(doc.id)).toThrow()
+    expect(store.query((db) => documents.getDocument(db, doc.id)).id).toBe(doc.id)
+    expect(existsSync(join(userData, 'documents', doc.id))).toBe(true)
+    expect(existsSync(join(userData, 'documents', quarantineName(doc.id)))).toBe(false)
+    expect(existsSync(source)).toBe(true)
+  })
+
+  it('does not restore an active folder if cleanup fails after durable delete', async () => {
+    const { userData, sourceDir, matter, store } = await setup()
+    const service = createDocumentService(store, join(userData, 'documents'), {
+      cleanupQuarantine: () => {
+        throw new Error('cleanup failed')
+      }
+    })
+    const source = join(sourceDir, 'pack.pdf')
+    writeFileSync(source, 'BYTES')
+    const doc = service.addCopy({ matterId: matter.id, path: source })
+    expect(service.remove(doc.id)).toEqual({ id: doc.id })
+    expect(service.listForMatter(matter.id)).toHaveLength(0)
+    expect(existsSync(join(userData, 'documents', doc.id))).toBe(false)
+    expect(existsSync(join(userData, 'documents', quarantineName(doc.id)))).toBe(true)
+    expect(existsSync(source)).toBe(true)
+  })
+
+  it('rejects relink on copies and duplicate reference paths, but allows self-relink', async () => {
+    const { sourceDir, matter, service } = await setup()
+    const first = join(sourceDir, 'one.pdf')
+    const second = join(sourceDir, 'two.pdf')
+    const copySource = join(sourceDir, 'copy.pdf')
+    writeFileSync(first, '1')
+    writeFileSync(second, '2')
+    writeFileSync(copySource, 'C')
+    const referenceA = service.addReference({ matterId: matter.id, path: first })
+    const referenceB = service.addReference({ matterId: matter.id, path: second })
+    const copied = service.addCopy({ matterId: matter.id, path: copySource })
+
+    expect(() => service.relink(copied.id, { path: first })).toThrow(USER_ERRORS.cannotRelinkCopy)
+    expect(() => service.relink(referenceB.id, { path: first })).toThrow(USER_ERRORS.documentDuplicate)
+
+    const same = service.relink(referenceA.id, { path: first })
+    expect(same.id).toBe(referenceA.id)
+    expect(same.originalPath).toBe(first)
   })
 })

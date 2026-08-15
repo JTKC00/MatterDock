@@ -44,13 +44,17 @@ export function findDuplicate(
   db: Database,
   matterId: string,
   storageMode: DocumentStorageMode,
-  originalPath: string
+  originalPath: string,
+  excludeId?: string
 ): MatterDocument | null {
   const row = get<DocumentRow>(
     db,
-    `SELECT * FROM documents
-     WHERE matter_id = ? AND storage_mode = ? AND lower(original_path) = lower(?)`,
-    [matterId, storageMode, originalPath]
+    excludeId
+      ? `SELECT * FROM documents
+         WHERE matter_id = ? AND storage_mode = ? AND lower(original_path) = lower(?) AND id != ?`
+      : `SELECT * FROM documents
+         WHERE matter_id = ? AND storage_mode = ? AND lower(original_path) = lower(?)`,
+    excludeId ? [matterId, storageMode, originalPath, excludeId] : [matterId, storageMode, originalPath]
   )
   return row ? mapDocument(row) : null
 }
@@ -127,6 +131,9 @@ export function relinkDocument(
   }
 ): MatterDocument {
   const existing = getDocument(db, id)
+  if (existing.storageMode !== 'reference') {
+    throw new AppError(USER_ERRORS.cannotRelinkCopy, 'CANNOT_RELINK_COPY')
+  }
   const now = nowIso()
   db.run(
     `UPDATE documents

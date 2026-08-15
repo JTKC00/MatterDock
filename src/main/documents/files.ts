@@ -1,6 +1,9 @@
-import { copyFileSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs'
 import { basename, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { AppError, USER_ERRORS } from '@shared/errors'
+
+const DOCUMENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const QUARANTINE_PREFIX = '.removing-'
 
 const MIME_BY_EXT: Record<string, string> = {
   pdf: 'application/pdf',
@@ -82,6 +85,31 @@ export function fileExists(filePath: string | null | undefined): boolean {
   }
 }
 
+function samePath(left: string, right: string): boolean {
+  return process.platform === 'win32' ? left.toLowerCase() === right.toLowerCase() : left === right
+}
+
+export function isDocumentId(value: string): boolean {
+  return DOCUMENT_ID.test(value)
+}
+
+export function assertDocumentId(value: string): string {
+  if (!isDocumentId(value)) {
+    throw new AppError(USER_ERRORS.unsafeDocumentPath, 'UNSAFE_PATH')
+  }
+  return value
+}
+
+export function quarantineName(documentId: string): string {
+  return `${QUARANTINE_PREFIX}${assertDocumentId(documentId)}`
+}
+
+export function parseQuarantineName(name: string): string | null {
+  if (!name.startsWith(QUARANTINE_PREFIX)) return null
+  const id = name.slice(QUARANTINE_PREFIX.length)
+  return isDocumentId(id) ? id : null
+}
+
 export function isInsideRoot(root: string, candidate: string): boolean {
   const resolvedRoot = resolve(root)
   const resolved = resolve(candidate)
@@ -89,6 +117,13 @@ export function isInsideRoot(root: string, candidate: string): boolean {
   if (!rel || rel === '') return true
   if (rel.startsWith('..') || isAbsolute(rel)) return false
   return !rel.split(/[/\\]/).includes('..')
+}
+
+export function isStrictlyInsideRoot(root: string, candidate: string): boolean {
+  const resolvedRoot = resolve(root)
+  const resolved = resolve(candidate)
+  if (samePath(resolvedRoot, resolved)) return false
+  return isInsideRoot(root, candidate)
 }
 
 export function assertInsideDocumentsRoot(root: string, candidate: string): string {
@@ -99,16 +134,24 @@ export function assertInsideDocumentsRoot(root: string, candidate: string): stri
   return resolved
 }
 
+export function assertStrictlyInsideDocumentsRoot(root: string, candidate: string): string {
+  const resolved = resolve(candidate)
+  if (!isStrictlyInsideRoot(root, resolved)) {
+    throw new AppError(USER_ERRORS.unsafeDocumentPath, 'UNSAFE_PATH')
+  }
+  return resolved
+}
+
 export function copyIntoWorkspace(
   root: string,
   documentId: string,
   sourcePath: string
 ): { relativePath: string; meta: FileMeta } {
+  assertDocumentId(documentId)
   const source = readFileMeta(sourcePath)
-  const dir = join(root, documentId)
+  const dir = assertStrictlyInsideDocumentsRoot(root, join(root, documentId))
   const fileName = safeFileName(source.name)
-  const destination = join(dir, fileName)
-  assertInsideDocumentsRoot(root, destination)
+  const destination = assertStrictlyInsideDocumentsRoot(root, join(dir, fileName))
   mkdirSync(dir, { recursive: true })
   try {
     copyFileSync(source.path, destination)
@@ -127,24 +170,53 @@ export function copyIntoWorkspace(
 }
 
 export function removeManagedDirectory(root: string, documentId: string): void {
-  const dir = assertInsideDocumentsRoot(root, join(root, documentId))
+  const dir = assertStrictlyInsideDocumentsRoot(root, join(root, assertDocumentId(documentId)))
+  if (!existsSync(dir)) return
+  rmSync(dir, { recursive: true, force: true })
+}
+
+export function removeQuarantineDirectory(root: string, documentId: string): void {
+  const dir = assertStrictlyInsideDocumentsRoot(root, join(root, quarantineName(documentId)))
   if (!existsSync(dir)) return
   rmSync(dir, { recursive: true, force: true })
 }
 
 export function quarantineManagedDirectory(root: string, documentId: string): string | null {
-  const dir = assertInsideDocumentsRoot(root, join(root, documentId))
+  const dir = assertStrictlyInsideDocumentsRoot(root, join(root, assertDocumentId(documentId)))
   if (!existsSync(dir)) return null
-  const trash = assertInsideDocumentsRoot(root, join(root, `.removing-${documentId}`))
+  const trash = assertStrictlyInsideDocumentsRoot(root, join(root, quarantineName(documentId)))
   if (existsSync(trash)) rmSync(trash, { recursive: true, force: true })
   renameSync(dir, trash)
   return trash
 }
 
-export function restoreQuarantine(trash: string, originalDir: string): void {
+export function restoreQuarantine(root: string, trash: string, originalDir: string): void {
+  assertStrictlyInsideDocumentsRoot(root, trash)
+  assertStrictlyInsideDocumentsRoot(root, originalDir)
   if (!existsSync(trash)) return
   if (existsSync(originalDir)) rmSync(originalDir, { recursive: true, force: true })
   renameSync(trash, originalDir)
+}
+
+export function cleanupStaleQuarantines(root: string): void {
+  if (!existsSync(root)) return
+  let entries: Array<{ name: string; isDirectory: () => boolean }>
+  try {
+    entries = readdirSync(root, { withFileTypes: true })
+  } catch (error) {
+    console.error('[matterdock] could not scan document quarantines', error)
+    return
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const documentId = parseQuarantineName(entry.name)
+    if (!documentId) continue
+    try {
+      removeQuarantineDirectory(root, documentId)
+    } catch (error) {
+      console.error('[matterdock] stale managed-copy quarantine retained', error)
+    }
+  }
 }
 
 export function absoluteManagedPath(root: string, managedPath: string | null): string | null {

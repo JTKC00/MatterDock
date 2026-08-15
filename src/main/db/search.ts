@@ -90,9 +90,11 @@ export function globalSearch(db: Database, rawQuery: string, documentsRoot?: str
     description: string | null
     status: string
     organisation_name: string | null
+    aliases: string | null
   }>(
     db,
-    `SELECT DISTINCT m.id, m.title, m.reference, m.description, m.status, o.name AS organisation_name
+    `SELECT DISTINCT m.id, m.title, m.reference, m.description, m.status, o.name AS organisation_name,
+            (SELECT GROUP_CONCAT(alias, char(31)) FROM organisation_aliases WHERE organisation_id = o.id) AS aliases
      FROM matters m
      LEFT JOIN organisations o ON o.id = m.organisation_id
      LEFT JOIN organisation_aliases a ON a.organisation_id = o.id
@@ -100,10 +102,15 @@ export function globalSearch(db: Database, rawQuery: string, documentsRoot?: str
     matterWhere.params
   )
     .map((row) => {
+      const aliases = aliasList(row.aliases)
       const score = bestScore(query, tokens, [
         { value: row.title, exact: 100, prefix: 70, contains: 50 },
         { value: row.reference, exact: 98, prefix: 68, contains: 48 },
         { value: row.organisation_name, exact: 90, prefix: 55, contains: 35 },
+        ...aliases.flatMap((alias) => [
+          { value: alias, exact: 90, prefix: 58, contains: 38 },
+          { value: normalizeAlias(alias), exact: 90, prefix: 58, contains: 38 }
+        ]),
         { value: row.description, exact: 40, prefix: 28, contains: 18 }
       ])
       return {

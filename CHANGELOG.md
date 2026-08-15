@@ -5,6 +5,19 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.1] — 2026-08-15
+
+Document Safety & Search Integrity.
+
+### Fixed
+
+- Managed-copy removal no longer restores an active orphan after durable DB deletion
+- Stale managed-copy quarantines are cleaned safely on startup
+- Destructive document paths cannot target the documents root
+- Relink is restricted to referenced originals
+- Relink prevents duplicate references
+- Organisation aliases now surface related Matters in Global Search
+
 ## [0.4.0] — 2026-08-15
 
 Documents & Global Search.

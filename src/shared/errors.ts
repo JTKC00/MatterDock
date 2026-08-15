@@ -50,5 +50,6 @@ export const USER_ERRORS = {
   fileOpenFailed: 'The file could not be opened.',
   fileRevealFailed: 'The file location could not be shown.',
   documentRemoveFailed: 'The document could not be removed.',
-  unsafeDocumentPath: 'That file is outside the MatterDock workspace and cannot be changed.'
+  unsafeDocumentPath: 'That file is outside the MatterDock workspace and cannot be changed.',
+  cannotRelinkCopy: 'MatterDock copies cannot be relinked to another source file.'
 } as const
