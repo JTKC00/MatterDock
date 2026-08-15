@@ -105,5 +105,12 @@ export const api = {
   },
   search: {
     global: (query: string) => unwrap(window.matterdock.search.global(query))
+  },
+  context: {
+    build: (matterId: string, options: Parameters<Window['matterdock']['context']['build']>[1]) =>
+      unwrap(window.matterdock.context.build(matterId, options)),
+    copy: (text: string) => unwrap(window.matterdock.context.copy(text)),
+    save: (input: Parameters<Window['matterdock']['context']['save']>[0]) =>
+      unwrap(window.matterdock.context.save(input))
   }
 }

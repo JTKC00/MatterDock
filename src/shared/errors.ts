@@ -51,5 +51,7 @@ export const USER_ERRORS = {
   fileRevealFailed: 'The file location could not be shown.',
   documentRemoveFailed: 'The document could not be removed.',
   unsafeDocumentPath: 'That file is outside the MatterDock workspace and cannot be changed.',
-  cannotRelinkCopy: 'MatterDock copies cannot be relinked to another source file.'
+  cannotRelinkCopy: 'MatterDock copies cannot be relinked to another source file.',
+  contextNotBuilt: 'This matter context could not be prepared.',
+  contextSaveFailed: 'The context file could not be saved. No MatterDock data was changed.'
 } as const

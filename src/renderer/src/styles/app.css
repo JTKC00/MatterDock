@@ -480,6 +480,10 @@ a {
   line-height: 1.2;
 }
 
+.matter-toolbar {
+  margin: 12px 0 8px;
+}
+
 .next-action,
 .timeline-panel {
   margin-top: 22px;
@@ -807,6 +811,37 @@ a {
   border-radius: 12px;
   box-shadow: var(--shadow);
   padding: 22px 22px 18px;
+}
+
+.dialog-wide {
+  width: min(960px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+}
+
+.context-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  gap: 18px;
+  min-height: 420px;
+}
+
+.context-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.context-preview-body {
+  margin: 8px 0 0;
+  padding: 12px;
+  max-height: 520px;
+  overflow: auto;
+  background: var(--bg-app);
+  border-radius: 8px;
+  white-space: pre-wrap;
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 .dialog h2 {

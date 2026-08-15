@@ -32,7 +32,10 @@ import type {
   MatterDocument,
   PickedFile,
   RelinkDocumentInput,
-  SearchResponse
+  SearchResponse,
+  ContextExport,
+  ContextOptions,
+  ContextSaveInput
 } from './types'
 
 export type MatterDockApi = {
@@ -105,6 +108,11 @@ export type MatterDockApi = {
   search: {
     global: (query: string) => Promise<IpcResult<SearchResponse>>
   }
+  context: {
+    build: (matterId: string, options: ContextOptions) => Promise<IpcResult<ContextExport>>
+    copy: (text: string) => Promise<IpcResult<{ copied: true }>>
+    save: (input: ContextSaveInput) => Promise<IpcResult<{ saved: boolean }>>
+  }
 }
 
 export const IPC_CHANNELS = {
@@ -160,5 +168,8 @@ export const IPC_CHANNELS = {
   documentsRelink: 'documents:relink',
   documentsUpdate: 'documents:update',
   documentsRemove: 'documents:remove',
-  searchGlobal: 'search:global'
+  searchGlobal: 'search:global',
+  contextBuild: 'context:build',
+  contextCopy: 'context:copy',
+  contextSave: 'context:save'
 } as const

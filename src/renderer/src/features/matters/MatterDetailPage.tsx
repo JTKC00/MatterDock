@@ -18,6 +18,7 @@ import { PriorityBadge, StatusBadge } from '@/components/ui/StatusBadge'
 import { api, UserFacingError } from '@/lib/api'
 import { formatDateTime } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
+import { PrepareContextDialog } from '@/features/context-export/PrepareContextDialog'
 import { MatterDocuments } from '@/features/documents/MatterDocuments'
 import { MatterTimeline } from '@/features/timeline/MatterTimeline'
 import { MatterWork } from '@/features/tasks/MatterWork'
@@ -27,6 +28,7 @@ export function MatterDetailPage() {
   const navigate = useNavigate()
   const toast = useToast()
   const queryClient = useQueryClient()
+  const [prepareOpen, setPrepareOpen] = useState(false)
   const matter = useQuery({
     queryKey: ['matter', matterId],
     queryFn: () => api.matters.get(matterId),
@@ -95,6 +97,9 @@ export function MatterDetailPage() {
           </div>
           <h1 className="matter-heading">{item.title}</h1>
           <div className="muted">{item.organisationName ?? 'No organisation linked'}</div>
+          <div className="matter-toolbar">
+            <Button onClick={() => setPrepareOpen(true)}>Prepare Context</Button>
+          </div>
 
           <MatterWork matterId={item.id} matterContacts={item.contacts} />
           <MatterDocuments matterId={item.id} />
@@ -174,6 +179,9 @@ export function MatterDetailPage() {
           </div>
         </aside>
       </div>
+      {prepareOpen ? (
+        <PrepareContextDialog open matterId={item.id} onClose={() => setPrepareOpen(false)} />
+      ) : null}
     </div>
   )
 }

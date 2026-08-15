@@ -5,6 +5,21 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-08-15
+
+Safe Context Export / AI Prepare.
+
+### Added
+
+- Prepare Context from a Matter
+- Context scope controls
+- Markdown / Plain Text / JSON exports
+- Privacy-safe redaction options
+- Stable contact / organisation / email replacement labels
+- Custom redaction values
+- Preview before copy or save
+- Local-only clipboard and file export
+
 ## [0.4.2] — 2026-08-15
 
 Document Quarantine Recovery.

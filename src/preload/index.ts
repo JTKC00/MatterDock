@@ -72,6 +72,11 @@ const api: MatterDockApi = {
   },
   search: {
     global: (query) => ipcRenderer.invoke(IPC_CHANNELS.searchGlobal, query)
+  },
+  context: {
+    build: (matterId, options) => ipcRenderer.invoke(IPC_CHANNELS.contextBuild, matterId, options),
+    copy: (text) => ipcRenderer.invoke(IPC_CHANNELS.contextCopy, text),
+    save: (input) => ipcRenderer.invoke(IPC_CHANNELS.contextSave, input)
   }
 }
 

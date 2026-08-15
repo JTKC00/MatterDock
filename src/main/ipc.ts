@@ -1,8 +1,11 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, clipboard, dialog, ipcMain } from 'electron'
+import { writeFileSync } from 'node:fs'
 import { AppError, USER_ERRORS, toUserError } from '@shared/errors'
 import { IPC_CHANNELS } from '@shared/ipc'
 import type {
   AttachDocumentInput,
+  ContextOptions,
+  ContextSaveInput,
   CreateActionInput,
   CreateContactInput,
   CreateEventInput,
@@ -20,6 +23,7 @@ import type {
   UpdateOrganisationInput,
   UpdateWorkItemInput
 } from '@shared/types'
+import { buildMatterContext } from './context/build'
 import { createDocumentService } from './documents/service'
 import { DatabaseStore, contacts, events, listTags, matters, organisations, search, tasks } from './db/store'
 
@@ -211,5 +215,37 @@ export function registerIpc(store: DatabaseStore, options: { documentsRoot: stri
 
   ipcMain.handle(IPC_CHANNELS.searchGlobal, (_event, query: string) =>
     wrap(() => store.query((db) => search.globalSearch(db, query, options.documentsRoot)))
+  )
+
+  ipcMain.handle(IPC_CHANNELS.contextBuild, (_event, matterId: string, input: ContextOptions) =>
+    wrap(() => store.query((db) => buildMatterContext(db, matterId, input, options.documentsRoot)))
+  )
+  ipcMain.handle(IPC_CHANNELS.contextCopy, (_event, text: string) =>
+    wrap(() => {
+      clipboard.writeText(String(text ?? ''))
+      return { copied: true as const }
+    })
+  )
+  ipcMain.handle(IPC_CHANNELS.contextSave, (event, input: ContextSaveInput) =>
+    wrapAsync(async () => {
+      const window = BrowserWindow.fromWebContents(event.sender)
+      const ext = input.format === 'json' ? 'json' : input.format === 'text' ? 'txt' : 'md'
+      const result = window
+        ? await dialog.showSaveDialog(window, {
+            defaultPath: input.suggestedName,
+            filters: [{ name: 'Context', extensions: [ext] }]
+          })
+        : await dialog.showSaveDialog({
+            defaultPath: input.suggestedName,
+            filters: [{ name: 'Context', extensions: [ext] }]
+          })
+      if (result.canceled || !result.filePath) return { saved: false }
+      try {
+        writeFileSync(result.filePath, input.content, 'utf8')
+        return { saved: true }
+      } catch (error) {
+        throw new AppError(USER_ERRORS.contextSaveFailed, 'CONTEXT_SAVE_FAILED', { cause: error })
+      }
+    })
   )
 }

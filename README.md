@@ -22,7 +22,7 @@ Organisation → Contacts → Matters → Timeline / Tasks / Documents
 - **Waiting** — you have acted, and are waiting on someone else
 - **Next Action** — the single most important thing to do next
 
-This repository currently ships through **Phase 5**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents and Global Search.
+This repository currently ships through **Phase 6**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents, Global Search, and Prepare Context.
 
 ## Requirements
 
@@ -67,6 +67,7 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 - **Waiting** — follow-up due, upcoming, and items without a date
 - **Documents** — reference an original file or keep a managed workspace copy
 - **Search** — find matters, people, activity and document metadata
+- **Prepare Context** — preview, redact and export a Matter as Markdown, plain text or JSON
 - **Organisations** — list, create, edit, detail, alias management
 - **Contacts** — list, create, edit, detail, link to organisation and matter
 - **Tags** — create on the fly, attach to a matter

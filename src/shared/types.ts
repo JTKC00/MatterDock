@@ -394,6 +394,52 @@ export type SearchResponse = {
   hits: SearchHit[]
 }
 
+export const CONTEXT_PRESETS = ['full', 'current_work', 'timeline', 'privacy_safe'] as const
+export type ContextPreset = (typeof CONTEXT_PRESETS)[number]
+
+export const CONTEXT_FORMATS = ['markdown', 'text', 'json'] as const
+export type ContextFormat = (typeof CONTEXT_FORMATS)[number]
+
+export const TIMELINE_RANGES = ['all', '30d', '90d'] as const
+export type TimelineRange = (typeof TIMELINE_RANGES)[number]
+
+export type ContextOptions = {
+  includeOverview: boolean
+  includeOrganisation: boolean
+  includeContacts: boolean
+  contactsMinimal: boolean
+  includeNextAction: boolean
+  includeOpenActions: boolean
+  includeWaiting: boolean
+  includeClosedWork: boolean
+  includeTimeline: boolean
+  timelineRange: TimelineRange
+  includeDocuments: boolean
+  includeFilePaths: boolean
+  redactContactNames: boolean
+  redactOrganisationNames: boolean
+  redactEmails: boolean
+  redactPhones: boolean
+  redactReference: boolean
+  hideFilePaths: boolean
+  customRedactions: string[]
+  format: ContextFormat
+}
+
+export type ContextExport = {
+  format: ContextFormat
+  content: string
+  generatedAt: string
+  characterCount: number
+  suggestedName: string
+}
+
+export type ContextSaveInput = {
+  suggestedName: string
+  format: ContextFormat
+  content: string
+}
+
 export type IpcOk<T> = { ok: true; data: T }
 export type IpcErr = { ok: false; error: string }
 export type IpcResult<T> = IpcOk<T> | IpcErr

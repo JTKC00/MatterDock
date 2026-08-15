@@ -8,7 +8,8 @@ export function Dialog({
   title,
   description,
   children,
-  actions
+  actions,
+  wide = false
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -16,12 +17,16 @@ export function Dialog({
   description?: string
   children: ReactNode
   actions: ReactNode
+  wide?: boolean
 }) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="dialog-overlay">
-          <DialogPrimitive.Content className="dialog" aria-describedby={description ? undefined : undefined}>
+          <DialogPrimitive.Content
+            className={wide ? 'dialog dialog-wide' : 'dialog'}
+            aria-describedby={description ? undefined : undefined}
+          >
             <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
             {description ? (
               <DialogPrimitive.Description className="muted">{description}</DialogPrimitive.Description>

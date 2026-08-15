@@ -348,6 +348,29 @@ export const relinkDocumentSchema = z.object({
   path: requiredPath
 })
 
+export const contextOptionsSchema = z.object({
+  includeOverview: z.boolean(),
+  includeOrganisation: z.boolean(),
+  includeContacts: z.boolean(),
+  contactsMinimal: z.boolean(),
+  includeNextAction: z.boolean(),
+  includeOpenActions: z.boolean(),
+  includeWaiting: z.boolean(),
+  includeClosedWork: z.boolean(),
+  includeTimeline: z.boolean(),
+  timelineRange: z.enum(['all', '30d', '90d']),
+  includeDocuments: z.boolean(),
+  includeFilePaths: z.boolean(),
+  redactContactNames: z.boolean(),
+  redactOrganisationNames: z.boolean(),
+  redactEmails: z.boolean(),
+  redactPhones: z.boolean(),
+  redactReference: z.boolean(),
+  hideFilePaths: z.boolean(),
+  customRedactions: z.array(z.string()),
+  format: z.enum(['markdown', 'text', 'json'])
+})
+
 export function formatZodError(error: z.ZodError): string {
   return error.issues[0]?.message ?? 'Please check the highlighted fields.'
 }
