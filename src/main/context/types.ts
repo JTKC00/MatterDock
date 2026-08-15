@@ -40,6 +40,11 @@ export type ContextDocument = {
   path: string | null
 }
 
+export type PrivacyOrganisation = {
+  name: string
+  aliases: string[]
+}
+
 export type MatterContextSnapshot = {
   generatedAt: string
   matter: {
@@ -65,4 +70,7 @@ export type MatterContextSnapshot = {
   closedWork: ContextWorkItem[]
   timeline: ContextEvent[]
   documents: ContextDocument[]
+  privacySources?: {
+    organisations: PrivacyOrganisation[]
+  }
 }

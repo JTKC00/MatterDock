@@ -139,6 +139,14 @@ test('prepare context preview, privacy-safe redaction and source integrity', asy
     await expect(preview).toContainText('[Email 1]')
     await expect(preview).toContainText('[Matter Reference]')
 
+    await dialog.getByRole('checkbox', { name: 'Contacts', exact: true }).uncheck()
+    await expect(preview).not.toContainText('## Contacts')
+    await expect(preview).toContainText('## Timeline')
+    await expect(preview).not.toContainText('Ms Chan')
+    await expect(preview).not.toContainText('chan@example.com')
+    await expect(preview).toContainText('[Contact 1]')
+    await expect(preview).toContainText('[Email 1]')
+
     await dialog.getByRole('button', { name: 'Copy' }).click()
     await expect(page.getByText('Copied', { exact: true })).toBeVisible()
 

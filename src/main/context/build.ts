@@ -5,13 +5,14 @@ import type { ContextExport, ContextOptions } from '@shared/types'
 import { ZodError } from 'zod/v3'
 import { startOfLocalDay } from './dates'
 import { loadMatterContextSnapshot } from './load'
-import { redactSnapshot } from './redact'
+import { applyRedactionPlan, buildRedactionPlan } from './redact'
 import { renderContext } from './render'
 import type { MatterContextSnapshot } from './types'
 
-function applyScope(snapshot: MatterContextSnapshot, options: ContextOptions, now: Date): MatterContextSnapshot {
-  const next: MatterContextSnapshot = {
-    ...snapshot,
+export function applyScope(snapshot: MatterContextSnapshot, options: ContextOptions, now: Date): MatterContextSnapshot {
+  return {
+    generatedAt: snapshot.generatedAt,
+    matter: snapshot.matter,
     organisation: options.includeOrganisation ? snapshot.organisation : null,
     contacts: options.includeContacts
       ? options.contactsMinimal
@@ -33,7 +34,6 @@ function applyScope(snapshot: MatterContextSnapshot, options: ContextOptions, no
     timeline: options.includeTimeline ? filterTimeline(snapshot.timeline, options.timelineRange, now) : [],
     documents: options.includeDocuments ? snapshot.documents : []
   }
-  return next
 }
 
 function filterTimeline(
@@ -58,8 +58,9 @@ export function buildMatterContext(
   try {
     const options = contextOptionsSchema.parse(rawOptions)
     const loaded = loadMatterContextSnapshot(db, matterId, documentsRoot, now)
+    const plan = buildRedactionPlan(loaded, options)
     const scoped = applyScope(loaded, options, now)
-    const redacted = redactSnapshot(scoped, options)
+    const redacted = applyRedactionPlan(scoped, plan, options)
     const content = renderContext(redacted, options.format, {
       overview: options.includeOverview,
       organisation: options.includeOrganisation && Boolean(redacted.organisation),

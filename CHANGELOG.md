@@ -5,6 +5,19 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] — 2026-08-15
+
+Context Privacy Integrity.
+
+### Fixed
+
+- Privacy redaction no longer depends on whether a source section is included in the export
+- Contact, email and phone redaction still applies when the Contacts section is excluded
+- Organisation redaction still applies when the Organisation section is excluded
+- Known document paths remain redacted outside the Documents section
+- Timeline contacts can be redacted even when they are not linked as Matter Contacts
+- Redaction labels remain deterministic across export scopes
+
 ## [0.5.0] — 2026-08-15
 
 Safe Context Export / AI Prepare.

@@ -20,6 +20,7 @@ export function loadMatterContextSnapshot(
   const linked = all<{
     name: string
     role: string | null
+    organisation_id: string | null
     organisation_name: string | null
     job_title: string | null
     email: string | null
@@ -27,7 +28,7 @@ export function loadMatterContextSnapshot(
     notes: string | null
   }>(
     db,
-    `SELECT c.name, mc.role, o.name AS organisation_name, c.job_title, c.email, c.phone, c.notes
+    `SELECT c.name, mc.role, c.organisation_id, o.name AS organisation_name, c.job_title, c.email, c.phone, c.notes
      FROM matter_contacts mc
      INNER JOIN contacts c ON c.id = mc.contact_id
      LEFT JOIN organisations o ON o.id = c.organisation_id
@@ -35,6 +36,11 @@ export function loadMatterContextSnapshot(
      ORDER BY c.name COLLATE NOCASE`,
     [matterId]
   )
+  const organisationIds = new Set<string>()
+  if (matter.organisationId) organisationIds.add(matter.organisationId)
+  for (const row of linked) {
+    if (row.organisation_id) organisationIds.add(row.organisation_id)
+  }
   const items = tasks.listItemsForMatter(db, matterId)
   const mapWork = (item: (typeof items)[number]): ContextWorkItem => ({
     type: item.type,
@@ -110,6 +116,46 @@ export function loadMatterContextSnapshot(
           body: event.body
         })
       ),
-    documents: docs
+    documents: docs,
+    privacySources: {
+      organisations: loadOrganisationPrivacySources(db, [...organisationIds], matter.organisationId)
+    }
   }
+}
+
+function loadOrganisationPrivacySources(
+  db: Database,
+  ids: string[],
+  matterOrganisationId: string | null
+): { name: string; aliases: string[] }[] {
+  if (ids.length === 0) return []
+  const rows = all<{ id: string; name: string; alias: string | null }>(
+    db,
+    `SELECT o.id, o.name, a.alias
+     FROM organisations o
+     LEFT JOIN organisation_aliases a ON a.organisation_id = o.id
+     WHERE o.id IN (${ids.map(() => '?').join(',')})
+     ORDER BY o.name COLLATE NOCASE, a.alias COLLATE NOCASE`,
+    ids
+  )
+  const byId = new Map<string, { name: string; aliases: string[] }>()
+  for (const row of rows) {
+    const current = byId.get(row.id) ?? { name: row.name, aliases: [] }
+    if (row.alias && !current.aliases.includes(row.alias)) current.aliases.push(row.alias)
+    byId.set(row.id, current)
+  }
+  const ordered: { name: string; aliases: string[] }[] = []
+  if (matterOrganisationId) {
+    const matterOrg = byId.get(matterOrganisationId)
+    if (matterOrg) {
+      ordered.push(matterOrg)
+      byId.delete(matterOrganisationId)
+    }
+  }
+  for (const organisation of [...byId.values()].sort((left, right) =>
+    left.name.localeCompare(right.name, undefined, { sensitivity: 'base' })
+  )) {
+    ordered.push(organisation)
+  }
+  return ordered
 }
