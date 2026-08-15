@@ -1,0 +1,31 @@
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { AppProvider } from './app/AppContext'
+import { AppShell } from './app/layout/AppShell'
+import { SearchPage, SettingsPage, TodayPage, WaitingPage } from './app/pages/ComingSoonPage'
+import { ContactDetailPage, ContactListPage } from './features/contacts/ContactPages'
+import { MatterDetailPage } from './features/matters/MatterDetailPage'
+import { MatterListPage } from './features/matters/MatterListPage'
+import { OrganisationDetailPage, OrganisationListPage } from './features/organisations/OrganisationPages'
+
+export function App() {
+  return (
+    <AppProvider>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route path="/" element={<Navigate to="/matters" replace />} />
+          <Route path="/today" element={<TodayPage />} />
+          <Route path="/matters" element={<MatterListPage />} />
+          <Route path="/matters/:matterId" element={<MatterDetailPage />} />
+          <Route path="/waiting" element={<WaitingPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/organisations" element={<OrganisationListPage />} />
+          <Route path="/organisations/:organisationId" element={<OrganisationDetailPage />} />
+          <Route path="/contacts" element={<ContactListPage />} />
+          <Route path="/contacts/:contactId" element={<ContactDetailPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<Navigate to="/matters" replace />} />
+        </Route>
+      </Routes>
+    </AppProvider>
+  )
+}

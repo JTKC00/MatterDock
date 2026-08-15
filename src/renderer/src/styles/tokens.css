@@ -1,0 +1,58 @@
+:root {
+  --bg-app: #f3f1ea;
+  --bg-sidebar: #ebe7dd;
+  --bg-surface: #fffef8;
+  --bg-surface-raised: #fffef8;
+  --bg-hover: rgba(28, 25, 20, 0.045);
+  --bg-active: rgba(47, 93, 74, 0.1);
+  --bg-muted: #f6f3ec;
+  --bg-next: #f7f3ea;
+
+  --text: #1c1914;
+  --text-secondary: #5c574e;
+  --text-muted: #8a8478;
+  --text-inverse: #fffef8;
+
+  --border: #ddd8cc;
+  --border-strong: #c6c0b2;
+  --focus: #2f5d4a;
+
+  --accent: #2f5d4a;
+  --accent-hover: #254a3b;
+  --accent-soft: #e4eee8;
+
+  --danger: #8b2e2e;
+  --danger-soft: #f6e8e6;
+  --warning: #8a5a20;
+  --info: #3d5a80;
+
+  --status-new: #5c574e;
+  --status-progress: #2f5d4a;
+  --status-waiting: #8a5a20;
+  --status-scheduled: #3d5a80;
+  --status-completed: #5c574e;
+  --status-archived: #8a8478;
+
+  --priority-high: #8a4b1f;
+  --priority-urgent: #8b2e2e;
+
+  --shadow: 0 1px 2px rgba(28, 25, 20, 0.04), 0 10px 28px rgba(28, 25, 20, 0.07);
+  --shadow-sm: 0 1px 2px rgba(28, 25, 20, 0.06);
+
+  --sidebar-width: 228px;
+  --details-width: 300px;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Segoe UI Mono", Consolas, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

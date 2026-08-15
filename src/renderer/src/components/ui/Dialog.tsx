@@ -1,0 +1,46 @@
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import type { ReactNode } from 'react'
+import { Button } from './Button'
+
+export function Dialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  actions
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: string
+  description?: string
+  children: ReactNode
+  actions: ReactNode
+}) {
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="dialog-overlay">
+          <DialogPrimitive.Content className="dialog" aria-describedby={description ? undefined : undefined}>
+            <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
+            {description ? (
+              <DialogPrimitive.Description className="muted">{description}</DialogPrimitive.Description>
+            ) : (
+              <DialogPrimitive.Description className="sr-only">{title}</DialogPrimitive.Description>
+            )}
+            <div className="dialog-body">{children}</div>
+            <div className="dialog-actions">{actions}</div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Overlay>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  )
+}
+
+export function DialogCloseButton({ children = 'Cancel' }: { children?: ReactNode }) {
+  return (
+    <DialogPrimitive.Close asChild>
+      <Button variant="ghost">{children}</Button>
+    </DialogPrimitive.Close>
+  )
+}
