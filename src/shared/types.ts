@@ -224,6 +224,84 @@ export type TimelineEvent = {
   email: EventEmailDetails | null
 }
 
+export const TASK_TYPES = ['action', 'waiting'] as const
+export type TaskType = (typeof TASK_TYPES)[number]
+
+export const TASK_STATUSES = ['open', 'done', 'cancelled'] as const
+export type TaskStatus = (typeof TASK_STATUSES)[number]
+
+export type WorkItem = {
+  id: string
+  matterId: string
+  type: TaskType
+  title: string
+  notes: string | null
+  status: TaskStatus
+  dueAt: string | null
+  waitingForContactId: string | null
+  waitingForText: string | null
+  waitingSince: string | null
+  isNextAction: boolean
+  priority: MatterPriority
+  completedAt: string | null
+  createdAt: string
+  updatedAt: string
+  waitingForDisplay: string | null
+  matterTitle?: string
+  matterStatus?: MatterStatus
+  organisationName?: string | null
+}
+
+export type CreateActionInput = {
+  matterId: string
+  title: string
+  notes?: string | null
+  dueAt?: string | null
+  priority?: MatterPriority
+  setAsNextAction?: boolean
+}
+
+export type CreateWaitingInput = {
+  matterId: string
+  title: string
+  notes?: string | null
+  dueAt?: string | null
+  priority?: MatterPriority
+  waitingForContactId?: string | null
+  waitingForText?: string | null
+  waitingSince?: string | null
+  setAsNextAction?: boolean
+}
+
+export type UpdateWorkItemInput = {
+  title?: string
+  notes?: string | null
+  dueAt?: string | null
+  priority?: MatterPriority
+  waitingForContactId?: string | null
+  waitingForText?: string | null
+  waitingSince?: string | null
+}
+
+export type TodaySummary = {
+  overdue: number
+  dueToday: number
+  waiting: number
+}
+
+export type TodayDashboard = {
+  summary: TodaySummary
+  needsAttention: WorkItem[]
+  waiting: WorkItem[]
+  recentMatters: MatterListItem[]
+}
+
+export type WaitingBoard = {
+  followUpDue: WorkItem[]
+  upcoming: WorkItem[]
+  noFollowUp: WorkItem[]
+}
+
 export type CreateEventInput = {
   matterId: string
   type: EventType

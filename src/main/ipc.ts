@@ -2,19 +2,22 @@ import { ipcMain } from 'electron'
 import { AppError, USER_ERRORS, toUserError } from '@shared/errors'
 import { IPC_CHANNELS } from '@shared/ipc'
 import type {
+  CreateActionInput,
   CreateContactInput,
   CreateEventInput,
   CreateMatterInput,
   CreateOrganisationInput,
+  CreateWaitingInput,
   IpcResult,
   LinkMatterContactInput,
   MatterListQuery,
   UpdateContactInput,
   UpdateMatterInput,
   UpdateEventInput,
-  UpdateOrganisationInput
+  UpdateOrganisationInput,
+  UpdateWorkItemInput
 } from '@shared/types'
-import { DatabaseStore, contacts, events, listTags, matters, organisations } from './db/store'
+import { DatabaseStore, contacts, events, listTags, matters, organisations, tasks } from './db/store'
 
 function wrap<T>(fn: () => T): IpcResult<T> {
   try {
@@ -120,4 +123,48 @@ export function registerIpc(store: DatabaseStore): void {
   ipcMain.handle(IPC_CHANNELS.eventsRemove, (_event, id: string) =>
     wrap(() => store.mutate((db) => events.deleteEvent(db, id)))
   )
+
+  ipcMain.handle(IPC_CHANNELS.tasksListForMatter, (_event, matterId: string) =>
+    wrap(() => store.query((db) => tasks.listItemsForMatter(db, matterId)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksGet, (_event, id: string) =>
+    wrap(() => store.query((db) => tasks.getTask(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksNext, (_event, matterId: string) =>
+    wrap(() => store.query((db) => tasks.getNextActionForMatter(db, matterId)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksCreateAction, (_event, input: CreateActionInput) =>
+    wrap(() => store.mutate((db) => tasks.createAction(db, input)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksCreateWaiting, (_event, input: CreateWaitingInput) =>
+    wrap(() => store.mutate((db) => tasks.createWaiting(db, input)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksUpdate, (_event, id: string, input: UpdateWorkItemInput) =>
+    wrap(() => store.mutate((db) => tasks.updateTask(db, id, input)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksComplete, (_event, id: string) =>
+    wrap(() => store.mutate((db) => tasks.completeTask(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksResolve, (_event, id: string) =>
+    wrap(() => store.mutate((db) => tasks.resolveWaiting(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksCancel, (_event, id: string) =>
+    wrap(() => store.mutate((db) => tasks.cancelTask(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksReopen, (_event, id: string) =>
+    wrap(() => store.mutate((db) => tasks.reopenTask(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksSetNext, (_event, id: string) =>
+    wrap(() => store.mutate((db) => tasks.setNextAction(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksClearNext, (_event, matterId: string) =>
+    wrap(() =>
+      store.mutate((db) => {
+        tasks.clearNextAction(db, matterId)
+        return { matterId }
+      })
+    )
+  )
+  ipcMain.handle(IPC_CHANNELS.tasksListWaiting, () => wrap(() => store.query((db) => tasks.listWaiting(db))))
+  ipcMain.handle(IPC_CHANNELS.tasksToday, () => wrap(() => store.query((db) => tasks.getTodayDashboard(db))))
 }

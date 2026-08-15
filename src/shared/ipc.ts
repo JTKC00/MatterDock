@@ -2,9 +2,11 @@ import type {
   Contact,
   ContactDetail,
   ContactSummary,
+  CreateActionInput,
   CreateContactInput,
   CreateEventInput,
   CreateMatterInput,
+  CreateWaitingInput,
   CreateOrganisationInput,
   IpcResult,
   LinkMatterContactInput,
@@ -17,10 +19,14 @@ import type {
   OrganisationSummary,
   Tag,
   TimelineEvent,
+  TodayDashboard,
   UpdateContactInput,
   UpdateEventInput,
+  UpdateWorkItemInput,
   UpdateMatterInput,
-  UpdateOrganisationInput
+  UpdateOrganisationInput,
+  WaitingBoard,
+  WorkItem
 } from './types'
 
 export type MatterDockApi = {
@@ -63,6 +69,22 @@ export type MatterDockApi = {
     update: (id: string, input: UpdateEventInput) => Promise<IpcResult<TimelineEvent>>
     remove: (id: string) => Promise<IpcResult<{ id: string }>>
   }
+  tasks: {
+    listForMatter: (matterId: string) => Promise<IpcResult<WorkItem[]>>
+    get: (id: string) => Promise<IpcResult<WorkItem>>
+    next: (matterId: string) => Promise<IpcResult<WorkItem | null>>
+    createAction: (input: CreateActionInput) => Promise<IpcResult<WorkItem>>
+    createWaiting: (input: CreateWaitingInput) => Promise<IpcResult<WorkItem>>
+    update: (id: string, input: UpdateWorkItemInput) => Promise<IpcResult<WorkItem>>
+    complete: (id: string) => Promise<IpcResult<WorkItem>>
+    resolve: (id: string) => Promise<IpcResult<WorkItem>>
+    cancel: (id: string) => Promise<IpcResult<WorkItem>>
+    reopen: (id: string) => Promise<IpcResult<WorkItem>>
+    setNext: (id: string) => Promise<IpcResult<WorkItem>>
+    clearNext: (matterId: string) => Promise<IpcResult<{ matterId: string }>>
+    listWaiting: () => Promise<IpcResult<WaitingBoard>>
+    today: () => Promise<IpcResult<TodayDashboard>>
+  }
 }
 
 export const IPC_CHANNELS = {
@@ -94,5 +116,19 @@ export const IPC_CHANNELS = {
   eventsGet: 'events:get',
   eventsCreate: 'events:create',
   eventsUpdate: 'events:update',
-  eventsRemove: 'events:remove'
+  eventsRemove: 'events:remove',
+  tasksListForMatter: 'tasks:listForMatter',
+  tasksGet: 'tasks:get',
+  tasksNext: 'tasks:next',
+  tasksCreateAction: 'tasks:createAction',
+  tasksCreateWaiting: 'tasks:createWaiting',
+  tasksUpdate: 'tasks:update',
+  tasksComplete: 'tasks:complete',
+  tasksResolve: 'tasks:resolve',
+  tasksCancel: 'tasks:cancel',
+  tasksReopen: 'tasks:reopen',
+  tasksSetNext: 'tasks:setNext',
+  tasksClearNext: 'tasks:clearNext',
+  tasksListWaiting: 'tasks:listWaiting',
+  tasksToday: 'tasks:today'
 } as const

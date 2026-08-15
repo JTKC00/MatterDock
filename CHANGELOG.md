@@ -5,6 +5,28 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] — 2026-08-15
+
+Added — Tasks, Waiting & Next Action.
+
+A Matter now answers “what should I do next?” and “who am I waiting on?” without becoming a generic todo list.
+
+### Added
+
+- Migration `4 / tasks_waiting_next_action` with a partial unique index: one open Next Action per Matter
+- Actions: create, edit, due date, priority, complete, cancel, reopen
+- Waiting: contact or free text, waiting since, follow-up date, resolve, cancel
+- Contact deletion keeps `waiting_for_text` so the name still shows
+- Matter Detail: Next Action, Open Items (Actions / Waiting), collapsed Completed / Closed, Timeline below
+- Today: overdue / due today / waiting counts, Needs Attention, compact Waiting, Recent Matters
+- Waiting page: Follow-up due, Upcoming, No follow-up date
+- Local-day overdue and due-today helpers
+- Durable writes through DatabaseStore
+
+### Not in this release
+
+Notifications, recurring tasks, assignees, Kanban, documents, search, AI, or automatic Matter status changes.
+
 ## [0.2.1] — 2026-08-15
 
 Timeline UX fixes.

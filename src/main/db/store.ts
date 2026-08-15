@@ -8,6 +8,7 @@ import * as contacts from './contacts'
 import * as matters from './matters'
 import * as organisations from './organisations'
 import * as events from './events'
+import * as tasks from './tasks'
 import { listTags } from './tags'
 import { withTransaction } from './sql'
 
@@ -95,4 +96,4 @@ export function databasePath(userData: string): string {
   return join(userData, 'matterdock.sqlite')
 }
 
-export { contacts, matters, organisations, events, listTags }
+export { contacts, matters, organisations, events, tasks, listTags }

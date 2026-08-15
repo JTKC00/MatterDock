@@ -33,5 +33,8 @@ export const USER_ERRORS = {
   persistFailed: 'Changes could not be saved to disk. Please try again.',
   eventNotFound: 'This activity could not be found.',
   eventNotSaved: 'Activity could not be saved. Your changes have not been lost. Please try again.',
+  taskNotFound: 'This item could not be found.',
+  taskNotSaved: 'That item could not be saved. Your changes have not been lost. Please try again.',
+  nextActionClosed: 'Only an open item can be the next action.',
   unexpected: 'Something went wrong. Please try again.'
 } as const

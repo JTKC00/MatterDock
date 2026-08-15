@@ -133,5 +133,39 @@ export const migrations: Migration[] = [
       CREATE INDEX idx_events_matter_occurred ON events(matter_id, occurred_at DESC);
       CREATE INDEX idx_events_contact ON events(contact_id);
     `
+  },
+  {
+    version: 4,
+    name: 'tasks_waiting_next_action',
+    sql: `
+      CREATE TABLE tasks (
+        id TEXT PRIMARY KEY,
+        matter_id TEXT NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
+        type TEXT NOT NULL CHECK (type IN ('action', 'waiting')),
+        title TEXT NOT NULL,
+        notes TEXT,
+        status TEXT NOT NULL CHECK (status IN ('open', 'done', 'cancelled')),
+        due_at TEXT,
+        waiting_for_contact_id TEXT REFERENCES contacts(id) ON DELETE SET NULL,
+        waiting_for_text TEXT,
+        waiting_since TEXT,
+        is_next_action INTEGER NOT NULL DEFAULT 0 CHECK (is_next_action IN (0, 1)),
+        priority TEXT NOT NULL DEFAULT 'normal' CHECK (
+          priority IN ('low', 'normal', 'high', 'urgent')
+        ),
+        completed_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX idx_tasks_matter ON tasks(matter_id);
+      CREATE INDEX idx_tasks_status ON tasks(status);
+      CREATE INDEX idx_tasks_type ON tasks(type);
+      CREATE INDEX idx_tasks_due_at ON tasks(due_at);
+      CREATE INDEX idx_tasks_waiting_contact ON tasks(waiting_for_contact_id);
+      CREATE UNIQUE INDEX idx_one_next_action_per_matter
+        ON tasks(matter_id)
+        WHERE is_next_action = 1 AND status = 'open';
+    `
   }
 ]

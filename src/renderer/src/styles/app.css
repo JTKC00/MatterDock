@@ -667,6 +667,76 @@ a {
   overflow: auto;
 }
 
+.open-items {
+  margin-top: 22px;
+}
+
+.work-card {
+  position: relative;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.work-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.work-kicker,
+.kicker-line {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.work-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.work-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.work-menu {
+  right: 0;
+  left: auto;
+  min-width: 180px;
+}
+
+.next-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.overdue {
+  color: var(--priority-urgent);
+}
+
+.today-summary {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 22px;
+  color: var(--text-secondary);
+}
+
 .next-action {
   background: var(--bg-next);
 }

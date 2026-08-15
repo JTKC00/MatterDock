@@ -42,6 +42,22 @@ const api: MatterDockApi = {
     create: (input) => ipcRenderer.invoke(IPC_CHANNELS.eventsCreate, input),
     update: (id, input) => ipcRenderer.invoke(IPC_CHANNELS.eventsUpdate, id, input),
     remove: (id) => ipcRenderer.invoke(IPC_CHANNELS.eventsRemove, id)
+  },
+  tasks: {
+    listForMatter: (matterId) => ipcRenderer.invoke(IPC_CHANNELS.tasksListForMatter, matterId),
+    get: (id) => ipcRenderer.invoke(IPC_CHANNELS.tasksGet, id),
+    next: (matterId) => ipcRenderer.invoke(IPC_CHANNELS.tasksNext, matterId),
+    createAction: (input) => ipcRenderer.invoke(IPC_CHANNELS.tasksCreateAction, input),
+    createWaiting: (input) => ipcRenderer.invoke(IPC_CHANNELS.tasksCreateWaiting, input),
+    update: (id, input) => ipcRenderer.invoke(IPC_CHANNELS.tasksUpdate, id, input),
+    complete: (id) => ipcRenderer.invoke(IPC_CHANNELS.tasksComplete, id),
+    resolve: (id) => ipcRenderer.invoke(IPC_CHANNELS.tasksResolve, id),
+    cancel: (id) => ipcRenderer.invoke(IPC_CHANNELS.tasksCancel, id),
+    reopen: (id) => ipcRenderer.invoke(IPC_CHANNELS.tasksReopen, id),
+    setNext: (id) => ipcRenderer.invoke(IPC_CHANNELS.tasksSetNext, id),
+    clearNext: (matterId) => ipcRenderer.invoke(IPC_CHANNELS.tasksClearNext, matterId),
+    listWaiting: () => ipcRenderer.invoke(IPC_CHANNELS.tasksListWaiting),
+    today: () => ipcRenderer.invoke(IPC_CHANNELS.tasksToday)
   }
 }
 

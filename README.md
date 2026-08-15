@@ -62,6 +62,9 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 - Desktop shell with sidebar navigation
 - **Matters** — list, create, detail, inline edit, archive / restore
 - **Timeline** — notes, phone calls, emails, WhatsApp, meetings and letters on the Matter
+- **Actions, Waiting and Next Action** — one clear next step per Matter
+- **Today** — overdue, due today, and who you are waiting on
+- **Waiting** — follow-up due, upcoming, and items without a date
 - **Organisations** — list, create, edit, detail, alias management
 - **Contacts** — list, create, edit, detail, link to organisation and matter
 - **Tags** — create on the fly, attach to a matter

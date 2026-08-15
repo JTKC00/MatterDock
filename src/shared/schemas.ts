@@ -264,6 +264,67 @@ function applyEventRules(
   }
 }
 
+const optionalIso = z
+  .string()
+  .transform((value) => value.trim())
+  .refine((value) => value.length === 0 || !Number.isNaN(Date.parse(value)), {
+    message: 'Enter a valid date and time.'
+  })
+  .transform((value) => (value.length === 0 ? null : value))
+  .nullable()
+  .optional()
+
+export const createActionSchema = z.object({
+  matterId: z.string().uuid(),
+  title: requiredName('Title', 240),
+  notes: optionalNote(),
+  dueAt: optionalIso,
+  priority: matterPrioritySchema.optional(),
+  setAsNextAction: z.boolean().optional()
+})
+
+export const createWaitingSchema = z
+  .object({
+    matterId: z.string().uuid(),
+    title: requiredName('What are you waiting for?', 240),
+    notes: optionalNote(),
+    dueAt: optionalIso,
+    priority: matterPrioritySchema.optional(),
+    waitingForContactId: z.string().uuid().nullable().optional(),
+    waitingForText: z
+      .string()
+      .transform((value) => normalizeWhitespace(value))
+      .pipe(z.string().max(200, 'That is too long.'))
+      .nullable()
+      .optional(),
+    waitingSince: isoDateSchema.optional(),
+    setAsNextAction: z.boolean().optional()
+  })
+  .superRefine((value, ctx) => {
+    if (!value.waitingForContactId && !value.waitingForText) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['waitingForText'],
+        message: 'Say who or what you are waiting for.'
+      })
+    }
+  })
+
+export const updateWorkItemSchema = z.object({
+  title: requiredName('Title', 240).optional(),
+  notes: optionalNote(),
+  dueAt: optionalIso,
+  priority: matterPrioritySchema.optional(),
+  waitingForContactId: z.string().uuid().nullable().optional(),
+  waitingForText: z
+    .string()
+    .transform((value) => normalizeWhitespace(value))
+    .pipe(z.string().max(200, 'That is too long.'))
+    .nullable()
+    .optional(),
+  waitingSince: isoDateSchema.optional()
+})
+
 export function formatZodError(error: z.ZodError): string {
   return error.issues[0]?.message ?? 'Please check the highlighted fields.'
 }

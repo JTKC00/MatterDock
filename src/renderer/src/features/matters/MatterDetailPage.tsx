@@ -19,6 +19,7 @@ import { api, UserFacingError } from '@/lib/api'
 import { formatDateTime } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
 import { MatterTimeline } from '@/features/timeline/MatterTimeline'
+import { MatterWork } from '@/features/tasks/MatterWork'
 
 export function MatterDetailPage() {
   const { matterId = '' } = useParams()
@@ -94,11 +95,7 @@ export function MatterDetailPage() {
           <h1 className="matter-heading">{item.title}</h1>
           <div className="muted">{item.organisationName ?? 'No organisation linked'}</div>
 
-          <section className="next-action">
-            <h2 className="section-label">Next action</h2>
-            <p className="quiet">No next action set</p>
-          </section>
-
+          <MatterWork matterId={item.id} matterContacts={item.contacts} />
           <MatterTimeline matterId={item.id} matterContacts={item.contacts} />
         </section>
 

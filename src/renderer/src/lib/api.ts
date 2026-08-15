@@ -68,5 +68,24 @@ export const api = {
     update: (...args: Parameters<Window['matterdock']['events']['update']>) =>
       unwrap(window.matterdock.events.update(...args)),
     remove: (id: string) => unwrap(window.matterdock.events.remove(id))
+  },
+  tasks: {
+    listForMatter: (matterId: string) => unwrap(window.matterdock.tasks.listForMatter(matterId)),
+    get: (id: string) => unwrap(window.matterdock.tasks.get(id)),
+    next: (matterId: string) => unwrap(window.matterdock.tasks.next(matterId)),
+    createAction: (input: Parameters<Window['matterdock']['tasks']['createAction']>[0]) =>
+      unwrap(window.matterdock.tasks.createAction(input)),
+    createWaiting: (input: Parameters<Window['matterdock']['tasks']['createWaiting']>[0]) =>
+      unwrap(window.matterdock.tasks.createWaiting(input)),
+    update: (...args: Parameters<Window['matterdock']['tasks']['update']>) =>
+      unwrap(window.matterdock.tasks.update(...args)),
+    complete: (id: string) => unwrap(window.matterdock.tasks.complete(id)),
+    resolve: (id: string) => unwrap(window.matterdock.tasks.resolve(id)),
+    cancel: (id: string) => unwrap(window.matterdock.tasks.cancel(id)),
+    reopen: (id: string) => unwrap(window.matterdock.tasks.reopen(id)),
+    setNext: (id: string) => unwrap(window.matterdock.tasks.setNext(id)),
+    clearNext: (matterId: string) => unwrap(window.matterdock.tasks.clearNext(matterId)),
+    listWaiting: () => unwrap(window.matterdock.tasks.listWaiting()),
+    today: () => unwrap(window.matterdock.tasks.today())
   }
 }

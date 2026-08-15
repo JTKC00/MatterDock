@@ -22,26 +22,6 @@ export function ComingSoonPage({
   )
 }
 
-export function TodayPage() {
-  return (
-    <ComingSoonPage
-      kicker="Later"
-      title="Today"
-      body="A quiet view of what needs attention today will live here. For now, open Matters to see everything currently in motion."
-    />
-  )
-}
-
-export function WaitingPage() {
-  return (
-    <ComingSoonPage
-      kicker="Later"
-      title="Waiting"
-      body="Waiting items will appear here once follow-ups can be marked as waiting on someone else. Until then, filter Matters by Waiting."
-    />
-  )
-}
-
 export function SearchPage() {
   return (
     <ComingSoonPage
