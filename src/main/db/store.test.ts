@@ -147,4 +147,18 @@ describe('matter core persistence', () => {
     expect(matter.organisationName).toBe('CLP Power Hong Kong Limited')
     expect(organisations.listOrganisations(db)).toHaveLength(1)
   })
+
+  it('preserves multiline organisation, contact and matter notes', async () => {
+    const db = await memoryDb()
+    const notes = 'Line one\n\nLine two\n- A\n- B'
+    const org = organisations.createOrganisation(db, { name: 'eMPF Platform Company Limited', notes })
+    const contact = contacts.createContact(db, { name: 'Ms Chan', notes })
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const updated = matters.updateMatter(db, matter.id, { description: notes })
+    expect(org.notes).toBe(notes)
+    expect(contact.notes).toBe(notes)
+    expect(updated.description).toBe(notes)
+    expect(organisations.getOrganisation(db, org.id).notes).toBe(notes)
+    expect(contacts.getContact(db, contact.id).notes).toBe(notes)
+  })
 })

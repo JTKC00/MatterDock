@@ -1,6 +1,6 @@
 import { z } from 'zod/v3'
 import { EVENT_DIRECTIONS, EVENT_TYPES, MATTER_PRIORITIES, MATTER_STATUSES } from './types'
-import { normalizeAlias, normalizeWhitespace } from './normalize'
+import { normalizeAlias, normalizeMultilineText, normalizeWhitespace } from './normalize'
 
 const requiredName = (label: string, max = 200) =>
   z
@@ -17,10 +17,7 @@ const optionalNote = (max = 4000) =>
   z
     .string()
     .max(max, 'That text is too long.')
-    .transform((value) => {
-      const trimmed = normalizeWhitespace(value)
-      return trimmed.length === 0 ? null : trimmed
-    })
+    .transform((value) => normalizeMultilineText(value))
     .nullable()
     .optional()
 
@@ -158,18 +155,21 @@ export const eventDirectionSchema = z.enum(EVENT_DIRECTIONS, {
 const isoDateSchema = z
   .string({ required_error: 'Date and time are required.' })
   .transform((value) => value.trim())
-  .refine((value) => !Number.isNaN(Date.parse(value)), {
-    message: 'Enter a valid date and time.'
+  .superRefine((value, ctx) => {
+    if (value.length === 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Date and time are required.' })
+      return
+    }
+    if (Number.isNaN(Date.parse(value))) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter a valid date and time.' })
+    }
   })
 
 const optionalLongText = (max = 20000) =>
   z
     .string()
     .max(max, 'That text is too long.')
-    .transform((value) => {
-      const trimmed = value.trim()
-      return trimmed.length === 0 ? null : trimmed
-    })
+    .transform((value) => normalizeMultilineText(value))
     .nullable()
     .optional()
 

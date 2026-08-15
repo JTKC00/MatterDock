@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { api, UserFacingError } from '@/lib/api'
-import { fromDatetimeLocal, toDatetimeLocal } from '@/lib/dates'
+import { fromOptionalDatetimeLocal, InvalidDatetimeError, toDatetimeLocal } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
 
 export function ActionDialog({
@@ -54,7 +54,7 @@ function ActionForm({
         return api.tasks.update(item.id, {
           title,
           notes,
-          dueAt: dueAt ? fromDatetimeLocal(dueAt) : null,
+          dueAt: fromOptionalDatetimeLocal(dueAt),
           priority
         })
       }
@@ -62,7 +62,7 @@ function ActionForm({
         matterId,
         title,
         notes,
-        dueAt: dueAt ? fromDatetimeLocal(dueAt) : null,
+        dueAt: fromOptionalDatetimeLocal(dueAt),
         priority,
         setAsNextAction: showNextCheckbox && setAsNext
       })
@@ -73,7 +73,10 @@ function ActionForm({
       onClose()
     },
     onError: (cause) => {
-      const message = cause instanceof UserFacingError ? cause.message : 'That item could not be saved. Your changes have not been lost. Please try again.'
+      const message =
+        cause instanceof UserFacingError || cause instanceof InvalidDatetimeError
+          ? cause.message
+          : 'That item could not be saved. Your changes have not been lost. Please try again.'
       setError(message)
       toast.push(message, 'error')
     }

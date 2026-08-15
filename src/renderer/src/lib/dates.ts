@@ -44,8 +44,25 @@ export function toDatetimeLocal(iso: string): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-export function fromDatetimeLocal(value: string): string {
+export class InvalidDatetimeError extends Error {
+  constructor(message = 'Enter a valid date and time.') {
+    super(message)
+    this.name = 'InvalidDatetimeError'
+  }
+}
+
+export function fromOptionalDatetimeLocal(value: string | null | undefined): string | null {
+  if (value == null || value.trim().length === 0) return null
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return new Date().toISOString()
+  if (Number.isNaN(date.getTime())) throw new InvalidDatetimeError()
+  return date.toISOString()
+}
+
+export function fromRequiredDatetimeLocal(value: string | null | undefined): string {
+  if (value == null || value.trim().length === 0) {
+    throw new InvalidDatetimeError('Date and time are required.')
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) throw new InvalidDatetimeError()
   return date.toISOString()
 }

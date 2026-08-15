@@ -114,3 +114,28 @@ test('timeline events persist, edit and delete across relaunch', async () => {
     rmSync(userData, { recursive: true, force: true })
   }
 })
+
+test('timeline note rejects an empty date instead of inventing now', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'matterdock-date-'))
+  const app = await launch(userData)
+  try {
+    const page = await firstWindow(app)
+    await page.getByRole('link', { name: 'Matters', exact: true }).click()
+    await page.locator('header').getByRole('button', { name: 'New Matter' }).click()
+    await page.getByRole('dialog', { name: 'New matter' }).getByLabel('Title').fill('Datetime Integrity Matter')
+    await page.getByRole('dialog', { name: 'New matter' }).getByRole('button', { name: 'Create matter' }).click()
+
+    await page.getByRole('button', { name: 'Add Activity' }).first().click()
+    await page.getByRole('menuitem', { name: 'Note' }).click()
+    const noteDialog = page.getByRole('dialog', { name: 'Add note' })
+    await noteDialog.getByRole('textbox', { name: 'Note' }).fill('Should not invent a timestamp.')
+    await noteDialog.getByLabel('Date & time').fill('')
+    await noteDialog.getByRole('button', { name: 'Save' }).click()
+    await expect(noteDialog.getByText(/date and time/i)).toBeVisible()
+    await noteDialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(page.getByText('Should not invent a timestamp.')).toHaveCount(0)
+  } finally {
+    await app.close().catch(() => undefined)
+    rmSync(userData, { recursive: true, force: true })
+  }
+})

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { api, UserFacingError } from '@/lib/api'
-import { fromDatetimeLocal, toDatetimeLocal } from '@/lib/dates'
+import { fromRequiredDatetimeLocal, InvalidDatetimeError, toDatetimeLocal } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
 import { EventContactField } from './EventContactField'
 import { defaultDirection, directionFieldLabel, usesDirection } from './labels'
@@ -73,7 +73,7 @@ function EventForm({
         body,
         contactId,
         direction: usesDirection(type) ? direction : defaultDirection(type),
-        occurredAt: fromDatetimeLocal(occurredAt),
+        occurredAt: fromRequiredDatetimeLocal(occurredAt),
         email:
           type === 'email'
             ? { fromAddress, toAddresses, ccAddresses, subject }
@@ -90,7 +90,9 @@ function EventForm({
     },
     onError: (cause) => {
       const message =
-        cause instanceof UserFacingError ? cause.message : 'Activity could not be saved. Your changes have not been lost. Please try again.'
+        cause instanceof UserFacingError || cause instanceof InvalidDatetimeError
+          ? cause.message
+          : 'Activity could not be saved. Your changes have not been lost. Please try again.'
       setError(message)
       toast.push(message, 'error')
     }

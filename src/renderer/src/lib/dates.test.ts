@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { formatDateTime, formatRelativeDate } from './dates'
+import {
+  formatDateTime,
+  formatRelativeDate,
+  fromOptionalDatetimeLocal,
+  fromRequiredDatetimeLocal,
+  InvalidDatetimeError
+} from './dates'
 
 describe('formatRelativeDate', () => {
   it('describes today and yesterday', () => {
@@ -7,5 +13,18 @@ describe('formatRelativeDate', () => {
     expect(formatRelativeDate('2026-08-15T08:00:00', now)).toBe('Updated today')
     expect(formatRelativeDate('2026-08-14T22:00:00', now)).toBe('Updated yesterday')
     expect(formatDateTime('2026-08-15T08:00:00')).toContain('Aug 2026')
+  })
+})
+
+describe('datetime local conversion', () => {
+  it('does not invent the current time for empty or invalid values', () => {
+    expect(fromOptionalDatetimeLocal('')).toBeNull()
+    expect(fromOptionalDatetimeLocal('   ')).toBeNull()
+    expect(() => fromOptionalDatetimeLocal('not-a-date')).toThrow(InvalidDatetimeError)
+    expect(() => fromRequiredDatetimeLocal('')).toThrow(/required/i)
+    expect(() => fromRequiredDatetimeLocal('not-a-date')).toThrow(/valid date/i)
+    const parsed = fromRequiredDatetimeLocal('2026-08-15T10:30')
+    expect(parsed).not.toBe(new Date().toISOString())
+    expect(new Date(parsed).getFullYear()).toBe(2026)
   })
 })

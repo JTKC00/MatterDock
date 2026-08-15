@@ -167,6 +167,98 @@ describe('next action clear and waiting integrity', () => {
   })
 })
 
+describe('archive hides work items from global views', () => {
+  it('excludes archived matter actions from Today and restores them without closing items', async () => {
+    const db = await memoryDb()
+    const now = new Date(2026, 7, 15, 12, 0, 0)
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const action = tasks.createAction(db, {
+      matterId: matter.id,
+      title: 'Send pack',
+      dueAt: new Date(2026, 7, 14, 10, 0, 0).toISOString(),
+      setAsNextAction: true
+    })
+    expect(tasks.getTodayDashboard(db, now).summary.overdue).toBe(1)
+    expect(tasks.getTodayDashboard(db, now).needsAttention.map((item) => item.id)).toContain(action.id)
+
+    matters.archiveMatter(db, matter.id)
+    expect(tasks.getTask(db, action.id).status).toBe('open')
+    expect(tasks.getTask(db, action.id).isNextAction).toBe(true)
+    expect(tasks.getNextActionForMatter(db, matter.id)?.id).toBe(action.id)
+    expect(tasks.listItemsForMatter(db, matter.id)).toHaveLength(1)
+    expect(tasks.getTodayDashboard(db, now).summary.overdue).toBe(0)
+    expect(tasks.getTodayDashboard(db, now).needsAttention).toHaveLength(0)
+
+    matters.restoreMatter(db, matter.id)
+    expect(tasks.getTodayDashboard(db, now).summary.overdue).toBe(1)
+    expect(tasks.getTodayDashboard(db, now).needsAttention.map((item) => item.id)).toContain(action.id)
+  })
+
+  it('excludes archived waiting from the waiting board and Today counts', async () => {
+    const db = await memoryDb()
+    const now = new Date(2026, 7, 15, 12, 0, 0)
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const waiting = tasks.createWaiting(db, {
+      matterId: matter.id,
+      title: 'Confirmation',
+      waitingForText: 'Ms Chan',
+      dueAt: new Date(2026, 7, 15, 18, 0, 0).toISOString()
+    })
+    expect(tasks.getTodayDashboard(db, now).summary.waiting).toBe(1)
+    expect(tasks.getTodayDashboard(db, now).waiting.map((item) => item.id)).toContain(waiting.id)
+    expect(tasks.listWaiting(db, now).followUpDue.map((item) => item.id)).toContain(waiting.id)
+
+    matters.archiveMatter(db, matter.id)
+    expect(tasks.getTask(db, waiting.id).status).toBe('open')
+    expect(tasks.getTodayDashboard(db, now).summary.waiting).toBe(0)
+    expect(tasks.getTodayDashboard(db, now).waiting).toHaveLength(0)
+    expect(tasks.listWaiting(db, now).followUpDue).toHaveLength(0)
+
+    matters.restoreMatter(db, matter.id)
+    expect(tasks.getTodayDashboard(db, now).summary.waiting).toBe(1)
+    expect(tasks.listWaiting(db, now).followUpDue.map((item) => item.id)).toContain(waiting.id)
+  })
+})
+
+describe('multiline work item notes', () => {
+  it('preserves action and waiting note line breaks', async () => {
+    const db = await memoryDb()
+    const notes = 'Line one\n\nLine two\n- A\n- B'
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const action = tasks.createAction(db, { matterId: matter.id, title: 'Send pack', notes })
+    const waiting = tasks.createWaiting(db, {
+      matterId: matter.id,
+      title: 'Confirmation',
+      waitingForText: 'Ms Chan',
+      notes
+    })
+    expect(tasks.getTask(db, action.id).notes).toBe(notes)
+    expect(tasks.getTask(db, waiting.id).notes).toBe(notes)
+  })
+
+  it('stores empty optional due dates as null and rejects invalid waiting since', async () => {
+    const db = await memoryDb()
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const action = tasks.createAction(db, { matterId: matter.id, title: 'Send pack', dueAt: '' })
+    expect(action.dueAt).toBeNull()
+    const waiting = tasks.createWaiting(db, {
+      matterId: matter.id,
+      title: 'Confirmation',
+      waitingForText: 'Ms Chan',
+      dueAt: ''
+    })
+    expect(waiting.dueAt).toBeNull()
+    expect(() =>
+      tasks.createWaiting(db, {
+        matterId: matter.id,
+        title: 'Bad since',
+        waitingForText: 'Ms Chan',
+        waitingSince: 'not-a-date'
+      })
+    ).toThrow(/valid date/i)
+  })
+})
+
 describe('matter touch', () => {
   it('updates the matter when work items change', async () => {
     const db = await memoryDb()

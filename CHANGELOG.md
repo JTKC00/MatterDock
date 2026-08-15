@@ -5,6 +5,17 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.3.2] — 2026-08-15
+
+Data Fidelity & Archive Lifecycle Patch.
+
+### Fixed
+
+- Archived Matters no longer surface open work items in Today or Waiting
+- Restored Matters resume normal global work-item visibility
+- Multi-line notes preserve line breaks
+- Required date/time fields no longer silently fall back to current time
+
 ## [0.3.1] — 2026-08-15
 
 Work Item Integrity & UX Patch.

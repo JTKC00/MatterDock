@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   aliasSchema,
+  createActionSchema,
   createContactSchema,
   createEventSchema,
   createMatterSchema,
   createOrganisationSchema,
-  formatZodError
+  createWaitingSchema,
+  formatZodError,
+  updateMatterSchema
 } from './schemas'
 
 describe('createMatterSchema', () => {
@@ -79,5 +82,62 @@ describe('createEventSchema', () => {
       email: { subject: 'Request', fromAddress: '', toAddresses: '', ccAddresses: '' }
     })
     expect(withSubject.email?.subject).toBe('Request')
+  })
+
+  it('rejects empty or invalid occurredAt instead of inventing now', () => {
+    const empty = createEventSchema.safeParse({
+      matterId,
+      type: 'note',
+      body: 'Prepared pack.',
+      occurredAt: ''
+    })
+    expect(empty.success).toBe(false)
+    if (!empty.success) expect(formatZodError(empty.error)).toMatch(/date and time/i)
+
+    const invalid = createEventSchema.safeParse({
+      matterId,
+      type: 'note',
+      body: 'Prepared pack.',
+      occurredAt: 'not-a-date'
+    })
+    expect(invalid.success).toBe(false)
+    if (!invalid.success) expect(formatZodError(invalid.error)).toBe('Enter a valid date and time.')
+  })
+})
+
+describe('multiline notes', () => {
+  const notes = 'Line one\n\nLine two\n- A\n- B'
+
+  it('keeps line breaks on matter, organisation, contact, action and waiting notes', () => {
+    expect(updateMatterSchema.parse({ description: notes }).description).toBe(notes)
+    expect(createOrganisationSchema.parse({ name: 'eMPF', notes }).notes).toBe(notes)
+    expect(createContactSchema.parse({ name: 'Ms Chan', notes }).notes).toBe(notes)
+    expect(createActionSchema.parse({ matterId: '11111111-1111-1111-1111-111111111111', title: 'Send pack', notes }).notes).toBe(
+      notes
+    )
+  })
+})
+
+describe('work item datetimes', () => {
+  const matterId = '11111111-1111-1111-1111-111111111111'
+
+  it('stores empty optional due dates as null and rejects invalid waiting since', () => {
+    expect(createActionSchema.parse({ matterId, title: 'Send pack', dueAt: '' }).dueAt).toBeNull()
+    expect(
+      createWaitingSchema.parse({
+        matterId,
+        title: 'Reply',
+        waitingForText: 'Ms Chan',
+        dueAt: ''
+      }).dueAt
+    ).toBeNull()
+    const invalidSince = createWaitingSchema.safeParse({
+      matterId,
+      title: 'Reply',
+      waitingForText: 'Ms Chan',
+      waitingSince: 'not-a-date'
+    })
+    expect(invalidSince.success).toBe(false)
+    if (!invalidSince.success) expect(formatZodError(invalidSince.error)).toBe('Enter a valid date and time.')
   })
 })

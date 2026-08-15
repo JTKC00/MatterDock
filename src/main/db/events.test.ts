@@ -79,6 +79,36 @@ describe('timeline events', () => {
     expect(list[1].email?.subject).toBe('Request for additional documents')
   })
 
+  it('rejects empty or invalid occurredAt and does not invent now', async () => {
+    const db = await memoryDb()
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    expect(() =>
+      events.createEvent(db, {
+        matterId: matter.id,
+        type: 'note',
+        body: 'Should not save.',
+        occurredAt: ''
+      })
+    ).toThrow(/date and time/i)
+    expect(() =>
+      events.createEvent(db, {
+        matterId: matter.id,
+        type: 'note',
+        body: 'Should not save.',
+        occurredAt: 'not-a-date'
+      })
+    ).toThrow(/valid date/i)
+    expect(events.listEventsForMatter(db, matter.id)).toHaveLength(0)
+  })
+
+  it('preserves multiline event bodies', async () => {
+    const db = await memoryDb()
+    const matter = matters.createMatter(db, { title: 'EMPF Subsidy Application' })
+    const body = 'Called Ms Chan.\n\nDocuments required:\n- Salary record\n- MPF statement'
+    const note = events.createEvent(db, { matterId: matter.id, type: 'note', body })
+    expect(events.getEvent(db, note.id).body).toBe(body)
+  })
+
   it('links a contact, keeps the event if the contact is later deleted, and updates matter time', async () => {
     const db = await memoryDb()
     const org = organisations.createOrganisation(db, { name: 'eMPF Platform Company Limited' })

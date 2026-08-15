@@ -229,7 +229,11 @@ function unsetNextFlags(db: Database, matterId: string, at: string): void {
 }
 
 export function listWaiting(db: Database, now = new Date()): WaitingBoard {
-  const items = loadItems(db, `WHERE t.type = 'waiting' AND t.status = 'open'`, []).sort(byDueThenTitle)
+  const items = loadItems(
+    db,
+    `WHERE t.type = 'waiting' AND t.status = 'open' AND m.status != 'archived'`,
+    []
+  ).sort(byDueThenTitle)
   return {
     followUpDue: items.filter((item) => isOverdue(item.dueAt, now) || isDueToday(item.dueAt, now)),
     upcoming: items.filter((item) => isUpcoming(item.dueAt, now)),
@@ -238,7 +242,7 @@ export function listWaiting(db: Database, now = new Date()): WaitingBoard {
 }
 
 export function getTodayDashboard(db: Database, now = new Date()): TodayDashboard {
-  const open = loadItems(db, `WHERE t.status = 'open'`, [])
+  const open = loadItems(db, `WHERE t.status = 'open' AND m.status != 'archived'`, [])
   const overdue = open.filter((item) => isOverdue(item.dueAt, now))
   const dueToday = open.filter((item) => isDueToday(item.dueAt, now))
   const waiting = open.filter((item) => item.type === 'waiting')

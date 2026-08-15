@@ -6,7 +6,12 @@ import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { EventContactField } from '@/features/timeline/EventContactField'
 import { api, UserFacingError } from '@/lib/api'
-import { fromDatetimeLocal, toDatetimeLocal } from '@/lib/dates'
+import {
+  fromOptionalDatetimeLocal,
+  fromRequiredDatetimeLocal,
+  InvalidDatetimeError,
+  toDatetimeLocal
+} from '@/lib/dates'
 import { useToast } from '@/lib/toast'
 
 export function WaitingDialog({
@@ -69,10 +74,10 @@ function WaitingForm({
       const payload = {
         title,
         notes,
-        dueAt: dueAt ? fromDatetimeLocal(dueAt) : null,
+        dueAt: fromOptionalDatetimeLocal(dueAt),
         waitingForContactId: contactId,
         waitingForText: contactId ? selectedName || contactQuery : contactQuery,
-        waitingSince: fromDatetimeLocal(waitingSince)
+        waitingSince: fromRequiredDatetimeLocal(waitingSince)
       }
       if (item) {
         return api.tasks.update(item.id, payload)
@@ -89,7 +94,10 @@ function WaitingForm({
       onClose()
     },
     onError: (cause) => {
-      const message = cause instanceof UserFacingError ? cause.message : 'That item could not be saved. Your changes have not been lost. Please try again.'
+      const message =
+        cause instanceof UserFacingError || cause instanceof InvalidDatetimeError
+          ? cause.message
+          : 'That item could not be saved. Your changes have not been lost. Please try again.'
       setError(message)
       toast.push(message, 'error')
     }
