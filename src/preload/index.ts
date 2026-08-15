@@ -58,6 +58,20 @@ const api: MatterDockApi = {
     clearNext: (matterId) => ipcRenderer.invoke(IPC_CHANNELS.tasksClearNext, matterId),
     listWaiting: () => ipcRenderer.invoke(IPC_CHANNELS.tasksListWaiting),
     today: () => ipcRenderer.invoke(IPC_CHANNELS.tasksToday)
+  },
+  documents: {
+    listForMatter: (matterId) => ipcRenderer.invoke(IPC_CHANNELS.documentsListForMatter, matterId),
+    pick: () => ipcRenderer.invoke(IPC_CHANNELS.documentsPick),
+    addReference: (input) => ipcRenderer.invoke(IPC_CHANNELS.documentsAddReference, input),
+    addCopy: (input) => ipcRenderer.invoke(IPC_CHANNELS.documentsAddCopy, input),
+    open: (id) => ipcRenderer.invoke(IPC_CHANNELS.documentsOpen, id),
+    reveal: (id) => ipcRenderer.invoke(IPC_CHANNELS.documentsReveal, id),
+    relink: (id, input) => ipcRenderer.invoke(IPC_CHANNELS.documentsRelink, id, input),
+    update: (id, input) => ipcRenderer.invoke(IPC_CHANNELS.documentsUpdate, id, input),
+    remove: (id) => ipcRenderer.invoke(IPC_CHANNELS.documentsRemove, id)
+  },
+  search: {
+    global: (query) => ipcRenderer.invoke(IPC_CHANNELS.searchGlobal, query)
   }
 }
 

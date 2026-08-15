@@ -1,7 +1,8 @@
-import { ipcMain } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { AppError, USER_ERRORS, toUserError } from '@shared/errors'
 import { IPC_CHANNELS } from '@shared/ipc'
 import type {
+  AttachDocumentInput,
   CreateActionInput,
   CreateContactInput,
   CreateEventInput,
@@ -11,13 +12,16 @@ import type {
   IpcResult,
   LinkMatterContactInput,
   MatterListQuery,
+  RelinkDocumentInput,
   UpdateContactInput,
+  UpdateDocumentInput,
   UpdateMatterInput,
   UpdateEventInput,
   UpdateOrganisationInput,
   UpdateWorkItemInput
 } from '@shared/types'
-import { DatabaseStore, contacts, events, listTags, matters, organisations, tasks } from './db/store'
+import { createDocumentService } from './documents/service'
+import { DatabaseStore, contacts, events, listTags, matters, organisations, search, tasks } from './db/store'
 
 function wrap<T>(fn: () => T): IpcResult<T> {
   try {
@@ -33,7 +37,22 @@ function wrap<T>(fn: () => T): IpcResult<T> {
   }
 }
 
-export function registerIpc(store: DatabaseStore): void {
+async function wrapAsync<T>(fn: () => Promise<T> | T): Promise<IpcResult<T>> {
+  try {
+    return { ok: true, data: await fn() }
+  } catch (error) {
+    const message = toUserError(error, USER_ERRORS.unexpected)
+    if (!(error instanceof AppError)) {
+      console.error('[matterdock] ipc error', error)
+    } else {
+      console.error(`[matterdock] ${error.code}: ${error.message}`)
+    }
+    return { ok: false, error: message }
+  }
+}
+
+export function registerIpc(store: DatabaseStore, options: { documentsRoot: string }): void {
+  const docs = createDocumentService(store, options.documentsRoot)
   ipcMain.handle(IPC_CHANNELS.mattersList, (_event, query?: MatterListQuery) =>
     wrap(() => store.query((db) => matters.listMatters(db, query)))
   )
@@ -167,4 +186,30 @@ export function registerIpc(store: DatabaseStore): void {
   )
   ipcMain.handle(IPC_CHANNELS.tasksListWaiting, () => wrap(() => store.query((db) => tasks.listWaiting(db))))
   ipcMain.handle(IPC_CHANNELS.tasksToday, () => wrap(() => store.query((db) => tasks.getTodayDashboard(db))))
+
+  ipcMain.handle(IPC_CHANNELS.documentsListForMatter, (_event, matterId: string) =>
+    wrap(() => docs.listForMatter(matterId))
+  )
+  ipcMain.handle(IPC_CHANNELS.documentsPick, (event) =>
+    wrapAsync(() => docs.pick(BrowserWindow.fromWebContents(event.sender)))
+  )
+  ipcMain.handle(IPC_CHANNELS.documentsAddReference, (_event, input: AttachDocumentInput) =>
+    wrap(() => docs.addReference(input))
+  )
+  ipcMain.handle(IPC_CHANNELS.documentsAddCopy, (_event, input: AttachDocumentInput) =>
+    wrap(() => docs.addCopy(input))
+  )
+  ipcMain.handle(IPC_CHANNELS.documentsOpen, (_event, id: string) => wrapAsync(() => docs.open(id)))
+  ipcMain.handle(IPC_CHANNELS.documentsReveal, (_event, id: string) => wrap(() => docs.reveal(id)))
+  ipcMain.handle(IPC_CHANNELS.documentsRelink, (_event, id: string, input: RelinkDocumentInput) =>
+    wrap(() => docs.relink(id, input))
+  )
+  ipcMain.handle(IPC_CHANNELS.documentsUpdate, (_event, id: string, input: UpdateDocumentInput) =>
+    wrap(() => docs.update(id, input))
+  )
+  ipcMain.handle(IPC_CHANNELS.documentsRemove, (_event, id: string) => wrap(() => docs.remove(id)))
+
+  ipcMain.handle(IPC_CHANNELS.searchGlobal, (_event, query: string) =>
+    wrap(() => store.query((db) => search.globalSearch(db, query, options.documentsRoot)))
+  )
 }

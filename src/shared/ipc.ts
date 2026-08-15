@@ -21,12 +21,18 @@ import type {
   TimelineEvent,
   TodayDashboard,
   UpdateContactInput,
+  UpdateDocumentInput,
   UpdateEventInput,
   UpdateWorkItemInput,
   UpdateMatterInput,
   UpdateOrganisationInput,
   WaitingBoard,
-  WorkItem
+  WorkItem,
+  AttachDocumentInput,
+  MatterDocument,
+  PickedFile,
+  RelinkDocumentInput,
+  SearchResponse
 } from './types'
 
 export type MatterDockApi = {
@@ -85,6 +91,20 @@ export type MatterDockApi = {
     listWaiting: () => Promise<IpcResult<WaitingBoard>>
     today: () => Promise<IpcResult<TodayDashboard>>
   }
+  documents: {
+    listForMatter: (matterId: string) => Promise<IpcResult<MatterDocument[]>>
+    pick: () => Promise<IpcResult<PickedFile | null>>
+    addReference: (input: AttachDocumentInput) => Promise<IpcResult<MatterDocument>>
+    addCopy: (input: AttachDocumentInput) => Promise<IpcResult<MatterDocument>>
+    open: (id: string) => Promise<IpcResult<{ id: string }>>
+    reveal: (id: string) => Promise<IpcResult<{ id: string }>>
+    relink: (id: string, input: RelinkDocumentInput) => Promise<IpcResult<MatterDocument>>
+    update: (id: string, input: UpdateDocumentInput) => Promise<IpcResult<MatterDocument>>
+    remove: (id: string) => Promise<IpcResult<{ id: string }>>
+  }
+  search: {
+    global: (query: string) => Promise<IpcResult<SearchResponse>>
+  }
 }
 
 export const IPC_CHANNELS = {
@@ -130,5 +150,15 @@ export const IPC_CHANNELS = {
   tasksSetNext: 'tasks:setNext',
   tasksClearNext: 'tasks:clearNext',
   tasksListWaiting: 'tasks:listWaiting',
-  tasksToday: 'tasks:today'
+  tasksToday: 'tasks:today',
+  documentsListForMatter: 'documents:listForMatter',
+  documentsPick: 'documents:pick',
+  documentsAddReference: 'documents:addReference',
+  documentsAddCopy: 'documents:addCopy',
+  documentsOpen: 'documents:open',
+  documentsReveal: 'documents:reveal',
+  documentsRelink: 'documents:relink',
+  documentsUpdate: 'documents:update',
+  documentsRemove: 'documents:remove',
+  searchGlobal: 'search:global'
 } as const

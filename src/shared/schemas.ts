@@ -325,6 +325,29 @@ export const updateWorkItemSchema = z.object({
   waitingSince: isoDateSchema.optional()
 })
 
+export const documentStorageModeSchema = z.enum(['reference', 'copy'], {
+  errorMap: () => ({ message: 'Choose how MatterDock should keep this file.' })
+})
+
+const requiredPath = z
+  .string({ required_error: 'Choose a file.' })
+  .transform((value) => value.trim())
+  .pipe(z.string().min(1, 'Choose a file.').max(1000, 'That file path is too long.'))
+
+export const attachDocumentSchema = z.object({
+  matterId: z.string().uuid(),
+  path: requiredPath,
+  notes: optionalNote()
+})
+
+export const updateDocumentSchema = z.object({
+  notes: optionalNote()
+})
+
+export const relinkDocumentSchema = z.object({
+  path: requiredPath
+})
+
 export function formatZodError(error: z.ZodError): string {
   return error.issues[0]?.message ?? 'Please check the highlighted fields.'
 }

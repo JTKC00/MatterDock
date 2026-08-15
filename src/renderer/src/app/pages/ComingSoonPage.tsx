@@ -22,16 +22,6 @@ export function ComingSoonPage({
   )
 }
 
-export function SearchPage() {
-  return (
-    <ComingSoonPage
-      kicker="Later"
-      title="Search"
-      body="Global search is not part of this foundation release. Use the search field on Matters, Organisations, or Contacts."
-    />
-  )
-}
-
 export function SettingsPage() {
   return (
     <ComingSoonPage

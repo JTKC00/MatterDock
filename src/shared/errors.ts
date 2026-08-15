@@ -40,5 +40,15 @@ export const USER_ERRORS = {
   notWaiting: 'Only a waiting item can be resolved.',
   alreadyClosed: 'This item is already closed.',
   alreadyOpen: 'This item is already open.',
-  unexpected: 'Something went wrong. Please try again.'
+  unexpected: 'Something went wrong. Please try again.',
+  documentNotFound: 'This document could not be found.',
+  documentNotSaved: 'The document could not be saved. Your changes have not been lost. Please try again.',
+  documentDuplicate: 'This file is already attached to the matter.',
+  fileUnavailable: 'The original file could not be found at its saved location.',
+  managedCopyMissing: 'The MatterDock workspace copy is missing.',
+  fileCopyFailed: 'The file could not be copied into MatterDock. The original file was not changed.',
+  fileOpenFailed: 'The file could not be opened.',
+  fileRevealFailed: 'The file location could not be shown.',
+  documentRemoveFailed: 'The document could not be removed.',
+  unsafeDocumentPath: 'That file is outside the MatterDock workspace and cannot be changed.'
 } as const

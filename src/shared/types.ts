@@ -322,6 +322,78 @@ export type UpdateEventInput = {
   email?: EventEmailDetails | null
 }
 
+export const DOCUMENT_STORAGE_MODES = ['reference', 'copy'] as const
+export type DocumentStorageMode = (typeof DOCUMENT_STORAGE_MODES)[number]
+
+export type MatterDocument = {
+  id: string
+  matterId: string
+  displayName: string
+  storageMode: DocumentStorageMode
+  originalPath: string | null
+  managedPath: string | null
+  fileExtension: string | null
+  mimeType: string | null
+  fileSize: number | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  available: boolean
+  availability: 'ok' | 'missing_reference' | 'missing_copy'
+  resolvedPath: string | null
+}
+
+export type PickedFile = {
+  path: string
+  name: string
+  size: number
+  extension: string
+}
+
+export type AttachDocumentInput = {
+  matterId: string
+  path: string
+  notes?: string | null
+}
+
+export type UpdateDocumentInput = {
+  notes?: string | null
+}
+
+export type RelinkDocumentInput = {
+  path: string
+}
+
+export const SEARCH_HIT_TYPES = ['matter', 'organisation', 'contact', 'event', 'task', 'document'] as const
+export type SearchHitType = (typeof SEARCH_HIT_TYPES)[number]
+
+export type SearchHit = {
+  id: string
+  type: SearchHitType
+  label: string
+  title: string
+  subtitle: string
+  snippet: string | null
+  href: string
+  matterId: string | null
+  matterTitle: string | null
+  archived: boolean
+  score: number
+  fileUnavailable?: boolean
+}
+
+export type SearchGroup = {
+  key: string
+  label: string
+  hits: SearchHit[]
+}
+
+export type SearchResponse = {
+  query: string
+  groups: SearchGroup[]
+  hits: SearchHit[]
+}
+
 export type IpcOk<T> = { ok: true; data: T }
 export type IpcErr = { ok: false; error: string }
 export type IpcResult<T> = IpcOk<T> | IpcErr

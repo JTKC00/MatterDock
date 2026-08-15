@@ -87,5 +87,23 @@ export const api = {
     clearNext: (matterId: string) => unwrap(window.matterdock.tasks.clearNext(matterId)),
     listWaiting: () => unwrap(window.matterdock.tasks.listWaiting()),
     today: () => unwrap(window.matterdock.tasks.today())
+  },
+  documents: {
+    listForMatter: (matterId: string) => unwrap(window.matterdock.documents.listForMatter(matterId)),
+    pick: () => unwrap(window.matterdock.documents.pick()),
+    addReference: (input: Parameters<Window['matterdock']['documents']['addReference']>[0]) =>
+      unwrap(window.matterdock.documents.addReference(input)),
+    addCopy: (input: Parameters<Window['matterdock']['documents']['addCopy']>[0]) =>
+      unwrap(window.matterdock.documents.addCopy(input)),
+    open: (id: string) => unwrap(window.matterdock.documents.open(id)),
+    reveal: (id: string) => unwrap(window.matterdock.documents.reveal(id)),
+    relink: (id: string, input: Parameters<Window['matterdock']['documents']['relink']>[1]) =>
+      unwrap(window.matterdock.documents.relink(id, input)),
+    update: (...args: Parameters<Window['matterdock']['documents']['update']>) =>
+      unwrap(window.matterdock.documents.update(...args)),
+    remove: (id: string) => unwrap(window.matterdock.documents.remove(id))
+  },
+  search: {
+    global: (query: string) => unwrap(window.matterdock.search.global(query))
   }
 }

@@ -22,7 +22,7 @@ Organisation → Contacts → Matters → Timeline / Tasks / Documents
 - **Waiting** — you have acted, and are waiting on someone else
 - **Next Action** — the single most important thing to do next
 
-This repository currently ships **Phase 1 (Foundation)** and **Phase 2 (Matter Core)**. Timeline, tasks, waiting, documents, search and AI are not implemented yet.
+This repository currently ships through **Phase 5**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents and Global Search.
 
 ## Requirements
 
@@ -65,18 +65,18 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 - **Actions, Waiting and Next Action** — one clear next step per Matter
 - **Today** — overdue, due today, and who you are waiting on
 - **Waiting** — follow-up due, upcoming, and items without a date
+- **Documents** — reference an original file or keep a managed workspace copy
+- **Search** — find matters, people, activity and document metadata
 - **Organisations** — list, create, edit, detail, alias management
 - **Contacts** — list, create, edit, detail, link to organisation and matter
 - **Tags** — create on the fly, attach to a matter
 - Local SQLite persistence (survives quit and relaunch)
 - `Ctrl+N` — New Matter
+- `Ctrl+K` — Search
 - `Ctrl+Shift+A` — Add Activity on Matter Detail
 
 Coming later, with a product empty state today:
 
-- Today
-- Waiting
-- Search
 - Settings
 
 ## Data
@@ -133,7 +133,8 @@ Renderer never runs SQL. The main process owns the database.
 - An organisation cannot be deleted while matters still point at it
 - A contact cannot be deleted while it is still linked to a matter
 - Unlinking a contact removes the relationship only
-- Next Action and Timeline are intentional empty states until later sprints
+- Documents never delete a user’s original file
+- Search is local metadata only — not file contents, not AI
 
 ## Changelog
 

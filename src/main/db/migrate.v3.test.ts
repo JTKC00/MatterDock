@@ -44,7 +44,7 @@ describe('migration v3', () => {
 
     expect(appliedVersions(db)).toEqual([1, 2])
     const ran = migrate(db)
-    expect(ran).toEqual([3, 4])
+    expect(ran).toEqual([3, 4, 5])
     expect(tableNames(db)).toEqual(expect.arrayContaining(['events', 'event_email_details']))
 
     const kept = matters.getMatter(db, matter.id)

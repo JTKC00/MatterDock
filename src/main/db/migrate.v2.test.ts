@@ -18,8 +18,8 @@ describe('migration v2', () => {
   it('applies foundation then archive_previous_status on a fresh database', async () => {
     const db = await emptyDb()
     const ran = migrate(db)
-    expect(ran).toEqual([1, 2, 3, 4])
-    expect(appliedVersions(db)).toEqual([1, 2, 3, 4])
+    expect(ran).toEqual([1, 2, 3, 4, 5])
+    expect(appliedVersions(db)).toEqual([1, 2, 3, 4, 5])
     expect(tableNames(db)).toEqual(
       expect.arrayContaining(['matters', 'schema_migrations', 'organisations'])
     )
@@ -71,7 +71,7 @@ describe('migration v2', () => {
     expect(appliedVersions(db)).toEqual([1])
 
     const ran = migrate(db)
-    expect(ran).toEqual([2, 3, 4])
+    expect(ran).toEqual([2, 3, 4, 5])
 
     const kept = matters.getMatter(db, waiting.id)
     expect(kept.title).toBe('EMPF Subsidy Application')

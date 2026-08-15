@@ -18,6 +18,7 @@ import { PriorityBadge, StatusBadge } from '@/components/ui/StatusBadge'
 import { api, UserFacingError } from '@/lib/api'
 import { formatDateTime } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
+import { MatterDocuments } from '@/features/documents/MatterDocuments'
 import { MatterTimeline } from '@/features/timeline/MatterTimeline'
 import { MatterWork } from '@/features/tasks/MatterWork'
 
@@ -96,6 +97,7 @@ export function MatterDetailPage() {
           <div className="muted">{item.organisationName ?? 'No organisation linked'}</div>
 
           <MatterWork matterId={item.id} matterContacts={item.contacts} />
+          <MatterDocuments matterId={item.id} />
           <MatterTimeline matterId={item.id} matterContacts={item.contacts} />
         </section>
 

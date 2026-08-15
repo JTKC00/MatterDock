@@ -1,5 +1,6 @@
 import { app, BrowserWindow, session } from 'electron'
 import { join } from 'node:path'
+import { documentsRoot } from './documents/files'
 import { databasePath, DatabaseStore } from './db/store'
 import { registerIpc } from './ipc'
 
@@ -57,7 +58,7 @@ void app.whenReady().then(async () => {
   })
 
   await store.initialize()
-  registerIpc(store)
+  registerIpc(store, { documentsRoot: documentsRoot(app.getPath('userData')) })
   createWindow()
 
   app.on('activate', () => {

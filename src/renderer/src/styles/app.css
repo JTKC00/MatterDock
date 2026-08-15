@@ -930,6 +930,27 @@ a {
   color: var(--text);
 }
 
+.doc-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 420px;
+}
+
+.search-hit + .search-hit {
+  margin-top: 8px;
+}
+
+.search-hit.active {
+  border-color: var(--accent);
+}
+
+.search-overlay-results {
+  max-height: 360px;
+  overflow: auto;
+  margin-top: 12px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

@@ -5,6 +5,20 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-08-15
+
+Documents & Global Search.
+
+### Added
+
+- Matter document references
+- Managed workspace copies
+- Safe file open / reveal / remove flows
+- Missing reference detection and relink
+- Global Search
+- Ctrl+K Search
+- Search across MatterDock entities
+
 ## [0.3.2] — 2026-08-15
 
 Data Fidelity & Archive Lifecycle Patch.

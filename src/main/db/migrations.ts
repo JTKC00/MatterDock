@@ -167,5 +167,28 @@ export const migrations: Migration[] = [
         ON tasks(matter_id)
         WHERE is_next_action = 1 AND status = 'open';
     `
+  },
+  {
+    version: 5,
+    name: 'documents',
+    sql: `
+      CREATE TABLE documents (
+        id TEXT PRIMARY KEY,
+        matter_id TEXT NOT NULL REFERENCES matters(id) ON DELETE CASCADE,
+        display_name TEXT NOT NULL,
+        storage_mode TEXT NOT NULL CHECK (storage_mode IN ('reference', 'copy')),
+        original_path TEXT,
+        managed_path TEXT,
+        file_extension TEXT,
+        mime_type TEXT,
+        file_size INTEGER,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX idx_documents_matter ON documents(matter_id);
+      CREATE INDEX idx_documents_mode ON documents(storage_mode);
+    `
   }
 ]
