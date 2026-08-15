@@ -35,9 +35,14 @@ export function listDocumentsForMatter(db: Database, matterId: string): MatterDo
 }
 
 export function getDocument(db: Database, id: string): MatterDocument {
+  const found = findDocument(db, id)
+  if (!found) throw new AppError(USER_ERRORS.documentNotFound, 'DOCUMENT_NOT_FOUND')
+  return found
+}
+
+export function findDocument(db: Database, id: string): MatterDocument | null {
   const row = get<DocumentRow>(db, 'SELECT * FROM documents WHERE id = ?', [id])
-  if (!row) throw new AppError(USER_ERRORS.documentNotFound, 'DOCUMENT_NOT_FOUND')
-  return mapDocument(row)
+  return row ? mapDocument(row) : null
 }
 
 export function findDuplicate(

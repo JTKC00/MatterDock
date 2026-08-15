@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest'
 import { USER_ERRORS } from '@shared/errors'
 import {
   assertInsideDocumentsRoot,
-  cleanupStaleQuarantines,
   copyIntoWorkspace,
+  listQuarantineDocumentIds,
   isInsideRoot,
   isStrictlyInsideRoot,
   quarantineName,
@@ -63,16 +63,15 @@ describe('document path safety', () => {
     }
   })
 
-  it('cleans only valid quarantine directories on startup', () => {
+  it('lists only valid quarantine document ids', () => {
     const root = mkdtempSync(join(tmpdir(), 'matterdock-docs-'))
     try {
       mkdirSync(join(root, quarantineName(uuid)), { recursive: true })
-      writeFileSync(join(root, quarantineName(uuid), 'left.pdf'), 'x')
       mkdirSync(join(root, 'random-folder'))
       mkdirSync(join(root, '.something-else'))
       mkdirSync(join(root, '.removing-foo'))
-      cleanupStaleQuarantines(root)
-      expect(existsSync(join(root, quarantineName(uuid)))).toBe(false)
+      mkdirSync(join(root, '.removing-'))
+      expect(listQuarantineDocumentIds(root)).toEqual([uuid])
       expect(existsSync(join(root, 'random-folder'))).toBe(true)
       expect(existsSync(join(root, '.something-else'))).toBe(true)
       expect(existsSync(join(root, '.removing-foo'))).toBe(true)

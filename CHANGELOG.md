@@ -5,6 +5,17 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.2] — 2026-08-15
+
+Document Quarantine Recovery.
+
+### Fixed
+
+- Managed copies are restored after a crash that occurs before durable document deletion
+- Committed removals clean retained quarantines safely on the next launch
+- Startup quarantine recovery now reconciles filesystem state against the document database
+- Ambiguous quarantine states are preserved instead of being destructively guessed
+
 ## [0.4.1] — 2026-08-15
 
 Document Safety & Search Integrity.

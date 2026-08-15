@@ -198,25 +198,34 @@ export function restoreQuarantine(root: string, trash: string, originalDir: stri
   renameSync(trash, originalDir)
 }
 
-export function cleanupStaleQuarantines(root: string): void {
-  if (!existsSync(root)) return
-  let entries: Array<{ name: string; isDirectory: () => boolean }>
+export function listQuarantineDocumentIds(root: string): string[] {
+  if (!existsSync(root)) return []
   try {
-    entries = readdirSync(root, { withFileTypes: true })
+    return readdirSync(root, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => parseQuarantineName(entry.name))
+      .filter((id): id is string => Boolean(id))
   } catch (error) {
     console.error('[matterdock] could not scan document quarantines', error)
-    return
+    return []
   }
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue
-    const documentId = parseQuarantineName(entry.name)
-    if (!documentId) continue
-    try {
-      removeQuarantineDirectory(root, documentId)
-    } catch (error) {
-      console.error('[matterdock] stale managed-copy quarantine retained', error)
-    }
-  }
+}
+
+export function managedDirectoryPath(root: string, documentId: string): string {
+  return assertStrictlyInsideDocumentsRoot(root, join(root, assertDocumentId(documentId)))
+}
+
+export function quarantineDirectoryPath(root: string, documentId: string): string {
+  return assertStrictlyInsideDocumentsRoot(root, join(root, quarantineName(documentId)))
+}
+
+export function restoreQuarantineIfAbsent(root: string, documentId: string): 'restored' | 'collision' | 'missing' {
+  const trash = quarantineDirectoryPath(root, documentId)
+  const active = managedDirectoryPath(root, documentId)
+  if (!existsSync(trash)) return 'missing'
+  if (existsSync(active)) return 'collision'
+  renameSync(trash, active)
+  return 'restored'
 }
 
 export function absoluteManagedPath(root: string, managedPath: string | null): string | null {

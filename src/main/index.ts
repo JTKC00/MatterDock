@@ -1,6 +1,7 @@
 import { app, BrowserWindow, session } from 'electron'
 import { join } from 'node:path'
-import { cleanupStaleQuarantines, documentsRoot } from './documents/files'
+import { documentsRoot } from './documents/files'
+import { reconcileDocumentQuarantinesFromStore } from './documents/recovery'
 import { databasePath, DatabaseStore } from './db/store'
 import { registerIpc } from './ipc'
 
@@ -60,9 +61,9 @@ void app.whenReady().then(async () => {
   await store.initialize()
   const docsRoot = documentsRoot(app.getPath('userData'))
   try {
-    cleanupStaleQuarantines(docsRoot)
+    reconcileDocumentQuarantinesFromStore(store, docsRoot)
   } catch (error) {
-    console.error('[matterdock] document quarantine cleanup failed', error)
+    console.error('[matterdock] document quarantine recovery failed', error)
   }
   registerIpc(store, { documentsRoot: docsRoot })
   createWindow()
