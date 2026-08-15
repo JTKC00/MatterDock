@@ -82,8 +82,8 @@ test('timeline events persist, edit and delete across relaunch', async () => {
     await expect(page.getByText('Request for additional documents')).toBeVisible()
     await expect(page.getByText('Ms Chan').first()).toBeVisible()
 
-    await page.getByText('Prepared salary supporting documents.').click()
-    await page.getByRole('button', { name: 'Edit' }).click()
+    await page.getByRole('button', { name: 'Activity actions' }).nth(2).click()
+    await page.getByRole('menuitem', { name: 'Edit' }).click()
     const editDialog = page.getByRole('dialog', { name: 'Edit note' })
     await editDialog.getByRole('textbox', { name: 'Note' }).fill('Prepared salary supporting documents and signed copies.')
     await editDialog.getByRole('button', { name: 'Save' }).click()
@@ -96,8 +96,8 @@ test('timeline events persist, edit and delete across relaunch', async () => {
     await page.getByText('EMPF Subsidy Application').click()
     await expect(page.getByText('Prepared salary supporting documents and signed copies.')).toBeVisible()
 
-    await page.getByText('Prepared salary supporting documents and signed copies.').click()
-    await page.getByRole('button', { name: 'Delete' }).click()
+    await page.getByRole('button', { name: 'Activity actions' }).nth(2).click()
+    await page.getByRole('menuitem', { name: 'Delete' }).click()
     await page.getByRole('dialog', { name: 'Delete this activity?' }).getByRole('button', { name: 'Delete' }).click()
     await expect(page.getByText('Prepared salary supporting documents and signed copies.')).toHaveCount(0)
 

@@ -5,16 +5,20 @@ import { Combobox } from '@/components/ui/Combobox'
 import { Field } from '@/components/ui/Field'
 import { api } from '@/lib/api'
 
+import { selectedContactStillMatches } from './contactSelection'
+
 export function EventContactField({
   matterContacts,
   query,
   selectedId,
+  selectedName,
   onQueryChange,
   onSelect
 }: {
   matterContacts: MatterContact[]
   query: string
   selectedId: string | null
+  selectedName?: string | null
   onQueryChange: (value: string) => void
   onSelect: (id: string | null, name: string) => void
 }) {
@@ -48,7 +52,9 @@ export function EventContactField({
         query={query}
         onQueryChange={(value) => {
           onQueryChange(value)
-          if (!value.trim()) onSelect(null, '')
+          if (!selectedContactStillMatches(value, selectedName ?? query)) {
+            onSelect(null, value)
+          }
         }}
         options={others.map((contact) => ({
           id: contact.id,

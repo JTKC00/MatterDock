@@ -5,6 +5,15 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] — 2026-08-15
+
+Timeline UX fixes.
+
+### Fixed
+
+- Contact picker no longer keeps a stale selected contact when the typed name no longer matches that person.
+- Timeline events always expose a compact **•••** menu for Edit and Delete, including short events with no “Show more”.
+
 ## [0.2.0] — 2026-08-15
 
 Added — Matter Timeline.

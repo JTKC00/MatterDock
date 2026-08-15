@@ -59,6 +59,7 @@ function EventForm({
   const [occurredAt, setOccurredAt] = useState(toDatetimeLocal(event?.occurredAt ?? new Date().toISOString()))
   const [contactId, setContactId] = useState<string | null>(event?.contactId ?? null)
   const [contactQuery, setContactQuery] = useState(event?.contactName ?? '')
+  const [selectedContactName, setSelectedContactName] = useState(event?.contactName ?? '')
   const [fromAddress, setFromAddress] = useState(event?.email?.fromAddress ?? '')
   const [toAddresses, setToAddresses] = useState(event?.email?.toAddresses ?? '')
   const [ccAddresses, setCcAddresses] = useState(event?.email?.ccAddresses ?? '')
@@ -152,10 +153,12 @@ function EventForm({
         matterContacts={matterContacts}
         query={contactQuery}
         selectedId={contactId}
+        selectedName={selectedContactName}
         onQueryChange={setContactQuery}
         onSelect={(id, name) => {
           setContactId(id)
           setContactQuery(name)
+          setSelectedContactName(id ? name : '')
         }}
       />
       {type === 'email' ? (
