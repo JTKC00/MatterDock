@@ -5,6 +5,27 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] — 2026-08-15
+
+Foundation Hardening.
+
+No new product surfaces. This release makes the existing Foundation trustworthy: a successful save is a durable disk write, archive remembers the previous status, and Matter search understands organisation aliases.
+
+### Fixed
+
+- Mutations now persist the SQLite file **before** IPC returns success. A disk write failure is returned as an error (`Changes could not be saved to disk.`) and the in-memory database is rolled back to the pre-mutation snapshot.
+- Archive → Restore now restores the status the matter had before archive (Waiting stays Waiting, Scheduled stays Scheduled, and so on). Previously restore always became In Progress (or Completed if `completed_at` was set).
+- Matter list search matches organisation aliases (canonical name still works). Searching `中電` or `clp` finds matters under CLP Power Hong Kong Limited.
+
+### Added
+
+- Migration `2 / archive_previous_status` adds `matters.status_before_archive`. Existing archived rows without that field fall back to `completed` when `completed_at` is set, otherwise `in_progress`.
+- GitHub Actions quality gate on `windows-latest`: typecheck, lint, unit tests, build, and Electron e2e.
+
+### Security
+
+- Unchanged: `contextIsolation`, no `nodeIntegration`, sandboxed preload, denied permission requests, blocked external navigation, no telemetry or cloud.
+
 ## [0.1.0] — 2026-08-15
 
 Foundation Sprint: Phase 1 (Foundation) + Phase 2 (Matter Core).

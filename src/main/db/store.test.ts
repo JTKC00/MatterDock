@@ -94,7 +94,7 @@ describe('matter core persistence', () => {
     expect(matters.listMatters(db, { status: 'archived' })).toHaveLength(1)
 
     const restored = matters.restoreMatter(db, matter.id)
-    expect(restored.status).toBe('in_progress')
+    expect(restored.status).toBe('waiting')
 
     const dir = mkdtempSync(join(tmpdir(), 'matterdock-'))
     tempDirs.push(dir)

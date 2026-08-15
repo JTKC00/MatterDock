@@ -1,6 +1,6 @@
 import type { Database } from 'sql.js'
 import { AppError, USER_ERRORS } from '@shared/errors'
-import { optionalText } from '@shared/normalize'
+import { normalizeAlias, optionalText } from '@shared/normalize'
 import {
   createMatterSchema,
   formatZodError,
@@ -57,10 +57,24 @@ export function listMatters(db: Database, query: MatterListQuery = {}): MatterLi
 
   if (search) {
     clauses.push(
-      `(m.title LIKE ? ESCAPE '\\' OR IFNULL(m.reference, '') LIKE ? ESCAPE '\\' OR IFNULL(o.name, '') LIKE ? ESCAPE '\\')`
+      `(
+         m.title LIKE ? ESCAPE '\\'
+         OR IFNULL(m.reference, '') LIKE ? ESCAPE '\\'
+         OR IFNULL(o.name, '') LIKE ? ESCAPE '\\'
+         OR EXISTS (
+           SELECT 1 FROM organisation_aliases a
+           WHERE a.organisation_id = m.organisation_id
+             AND (
+               a.alias LIKE ? ESCAPE '\\'
+               OR a.normalized_alias = ?
+               OR a.normalized_alias LIKE ? ESCAPE '\\'
+             )
+         )
+       )`
     )
     const like = `%${escapeLike(search)}%`
-    params.push(like, like, like)
+    const normalized = normalizeAlias(search)
+    params.push(like, like, like, like, normalized, like)
   }
 
   const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''
@@ -157,14 +171,26 @@ export function updateMatter(db: Database, id: string, input: UpdateMatterInput)
     if (parsed.organisationId) assertOrganisation(db, parsed.organisationId)
     const nextStatus = parsed.status ?? existing.status
     const now = nowIso()
+    const enteringArchive = existing.status !== 'archived' && nextStatus === 'archived'
+    const leavingArchive = existing.status === 'archived' && nextStatus !== 'archived'
     const completedAt =
       nextStatus === 'completed'
         ? (existing.completed_at ?? now)
         : nextStatus === 'archived'
           ? existing.completed_at
-          : null
-    const archivedAt =
-      nextStatus === 'archived' ? (existing.archived_at ?? now) : parsed.status ? null : existing.archived_at
+          : nextStatus === existing.status
+            ? existing.completed_at
+            : null
+    const archivedAt = enteringArchive
+      ? (existing.archived_at ?? now)
+      : leavingArchive
+        ? null
+        : existing.archived_at
+    const statusBeforeArchive = enteringArchive
+      ? existing.status
+      : leavingArchive
+        ? null
+        : existing.status_before_archive
 
     db.run(
       `UPDATE matters
@@ -176,7 +202,8 @@ export function updateMatter(db: Database, id: string, input: UpdateMatterInput)
            description = ?,
            updated_at = ?,
            completed_at = ?,
-           archived_at = ?
+           archived_at = ?,
+           status_before_archive = ?
        WHERE id = ?`,
       [
         parsed.title ?? existing.title,
@@ -188,6 +215,7 @@ export function updateMatter(db: Database, id: string, input: UpdateMatterInput)
         now,
         completedAt,
         archivedAt,
+        statusBeforeArchive,
         id
       ]
     )
@@ -205,8 +233,22 @@ export function archiveMatter(db: Database, id: string): MatterDetail {
 export function restoreMatter(db: Database, id: string): MatterDetail {
   const existing = get<MatterRow>(db, 'SELECT * FROM matters WHERE id = ?', [id])
   if (!existing) throw new AppError(USER_ERRORS.matterNotFound, 'MATTER_NOT_FOUND')
-  const nextStatus: MatterStatus = existing.completed_at ? 'completed' : 'in_progress'
-  return updateMatter(db, id, { status: nextStatus })
+  if (existing.status !== 'archived') return getMatter(db, id)
+  return updateMatter(db, id, { status: statusBeforeArchive(existing) })
+}
+
+const RESTORABLE_STATUSES: Array<Exclude<MatterStatus, 'archived'>> = [
+  'new',
+  'in_progress',
+  'waiting',
+  'scheduled',
+  'completed'
+]
+
+function statusBeforeArchive(row: MatterRow): Exclude<MatterStatus, 'archived'> {
+  const previous = row.status_before_archive
+  if (previous && RESTORABLE_STATUSES.includes(previous)) return previous
+  return 'in_progress'
 }
 
 export function setMatterTags(db: Database, id: string, tagNames: string[]): MatterDetail {

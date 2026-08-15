@@ -50,6 +50,7 @@ export type MatterRow = {
   updated_at: string
   completed_at: string | null
   archived_at: string | null
+  status_before_archive: Exclude<MatterStatus, 'archived'> | null
 }
 
 export type TagRow = {

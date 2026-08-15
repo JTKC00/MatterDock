@@ -55,6 +55,8 @@ If `npm run dev` shows `403 Restricted` / `outside of Vite serving allow list`, 
 | `npm test` | Unit tests (Vitest) |
 | `npm run test:e2e` | Build, then Playwright Electron persistence test |
 
+CI on `main` and pull requests runs typecheck, lint, unit tests, build and the Electron e2e on `windows-latest`.
+
 ## What works now
 
 - Desktop shell with sidebar navigation

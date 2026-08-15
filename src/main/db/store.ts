@@ -1,8 +1,8 @@
 import { join } from 'node:path'
-import type { Database } from 'sql.js'
+import type { Database, SqlJsStatic } from 'sql.js'
 import { AppError, USER_ERRORS, toUserError } from '@shared/errors'
 import { migrate } from './migrate'
-import { persistDatabase, openDatabase } from './open'
+import { loadSqlJs, persistDatabase, openDatabase } from './open'
 import { seedIfEmpty } from './seed'
 import * as contacts from './contacts'
 import * as matters from './matters'
@@ -10,19 +10,23 @@ import * as organisations from './organisations'
 import { listTags } from './tags'
 import { withTransaction } from './sql'
 
+export type PersistFn = (db: Database, filePath: string) => void
+
 export class DatabaseStore {
   private db: Database | null = null
-  private persistTimer: ReturnType<typeof setTimeout> | null = null
-  private writeChain: Promise<void> = Promise.resolve()
+  private SQL: SqlJsStatic | null = null
 
-  constructor(private readonly filePath: string) {}
+  constructor(
+    private readonly filePath: string,
+    private readonly persistFn: PersistFn = persistDatabase
+  ) {}
 
   async initialize(): Promise<void> {
+    this.SQL = await loadSqlJs()
     this.db = await openDatabase(this.filePath)
     migrate(this.db)
-    const seeded = seedIfEmpty(this.db)
-    if (seeded) this.persistNow()
-    else this.persistNow()
+    seedIfEmpty(this.db)
+    this.persistNow()
   }
 
   path(): string {
@@ -30,11 +34,6 @@ export class DatabaseStore {
   }
 
   async close(): Promise<void> {
-    if (this.persistTimer) {
-      clearTimeout(this.persistTimer)
-      this.persistTimer = null
-    }
-    await this.writeChain
     if (this.db) {
       this.persistNow()
       this.db.close()
@@ -44,9 +43,16 @@ export class DatabaseStore {
 
   mutate<T>(fn: (db: Database) => T): T {
     const db = this.requireDb()
+    const snapshot = db.export()
     try {
       const result = withTransaction(db, () => fn(db))
-      this.schedulePersist()
+      try {
+        this.persistNow()
+      } catch (persistError) {
+        this.restoreSnapshot(snapshot)
+        console.error('[matterdock] persist failed', persistError)
+        throw new AppError(USER_ERRORS.persistFailed, 'PERSIST_FAILED', { cause: persistError })
+      }
       return result
     } catch (error) {
       if (error instanceof AppError) throw error
@@ -71,19 +77,16 @@ export class DatabaseStore {
     return this.db
   }
 
-  private schedulePersist(): void {
-    if (this.persistTimer) clearTimeout(this.persistTimer)
-    this.persistTimer = setTimeout(() => {
-      this.persistTimer = null
-      this.writeChain = this.writeChain.then(() => this.persistNow()).catch((error) => {
-        console.error('[matterdock] persist failed', error)
-      })
-    }, 40)
-  }
-
   private persistNow(): void {
     if (!this.db) return
-    persistDatabase(this.db, this.filePath)
+    this.persistFn(this.db, this.filePath)
+  }
+
+  private restoreSnapshot(snapshot: Uint8Array): void {
+    if (!this.SQL) throw new AppError(USER_ERRORS.database, 'DATABASE_CLOSED')
+    this.db?.close()
+    this.db = new this.SQL.Database(snapshot)
+    this.db.run('PRAGMA foreign_keys = ON')
   }
 }
 

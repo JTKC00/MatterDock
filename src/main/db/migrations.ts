@@ -85,5 +85,20 @@ export const migrations: Migration[] = [
       CREATE INDEX idx_matter_contacts_contact ON matter_contacts(contact_id);
       CREATE INDEX idx_matter_tags_tag ON matter_tags(tag_id);
     `
+  },
+  {
+    version: 2,
+    name: 'archive_previous_status',
+    sql: `
+      ALTER TABLE matters ADD COLUMN status_before_archive TEXT;
+
+      UPDATE matters
+      SET status_before_archive = CASE
+        WHEN completed_at IS NOT NULL THEN 'completed'
+        ELSE 'in_progress'
+      END
+      WHERE status = 'archived'
+        AND status_before_archive IS NULL;
+    `
   }
 ]
