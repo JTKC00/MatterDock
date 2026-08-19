@@ -15,7 +15,7 @@ export function localDayKey(value: Date | string, now = new Date()): string {
 
 export function compareLocalDay(dueAt: string, now = new Date()): number {
   const due = new Date(dueAt)
-  if (Number.isNaN(due.getTime())) return 0
+  if (Number.isNaN(due.getTime())) return Number.NaN
   return startOfLocalDay(due).getTime() - startOfLocalDay(now).getTime()
 }
 

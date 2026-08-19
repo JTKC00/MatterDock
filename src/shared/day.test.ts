@@ -28,6 +28,13 @@ describe('local day classification', () => {
     expect(isOverdue(null, now)).toBe(false)
     expect(isDueToday(undefined, now)).toBe(false)
   })
+
+  it('does not treat an invalid due date string as due today or overdue', () => {
+    expect(isDueToday('invalid-date', now)).toBe(false)
+    expect(isOverdue('invalid-date', now)).toBe(false)
+    expect(isUpcoming('invalid-date', now)).toBe(false)
+    expect(attentionReason({ dueAt: 'invalid-date' }, now)).toBeNull()
+  })
 })
 
 describe('attentionReason', () => {
