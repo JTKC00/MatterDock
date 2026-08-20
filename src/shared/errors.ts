@@ -53,5 +53,18 @@ export const USER_ERRORS = {
   unsafeDocumentPath: 'That file is outside the MatterDock workspace and cannot be changed.',
   cannotRelinkCopy: 'MatterDock copies cannot be relinked to another source file.',
   contextNotBuilt: 'This matter context could not be prepared.',
-  contextSaveFailed: 'The context file could not be saved. No MatterDock data was changed.'
+  contextSaveFailed: 'The context file could not be saved. No MatterDock data was changed.',
+  workspaceBusy: 'MatterDock is busy with a backup or restore. Please try again in a moment.',
+  backupFailed: 'The backup could not be created. Your MatterDock data was not changed.',
+  backupManagedMissing:
+    'The backup could not be created because a MatterDock-owned file is missing. Your MatterDock data was not changed.',
+  backupInvalid: 'This file is not a valid MatterDock backup.',
+  backupDamaged: 'This backup is damaged and cannot be restored.',
+  backupNewerVersion:
+    'This backup was created by a newer MatterDock version and cannot be restored safely.',
+  restoreFailedRecovered:
+    'The backup could not be restored. Your previous MatterDock data has been recovered.',
+  restoreFailedUnrecovered:
+    'Restore failed and MatterDock could not automatically recover the previous workspace. A recovery copy remains available.',
+  exportFailed: 'The data export could not be created. Your MatterDock data was not changed.'
 } as const

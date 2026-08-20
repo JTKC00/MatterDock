@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppProvider } from './app/AppContext'
 import { AppShell } from './app/layout/AppShell'
-import { SettingsPage } from './app/pages/ComingSoonPage'
+import { SettingsPage } from './features/settings/SettingsPage'
 import { SearchPage } from './features/search/SearchPage'
 import { TodayPage } from './features/tasks/TodayPage'
 import { WaitingPage } from './features/tasks/WaitingPage'

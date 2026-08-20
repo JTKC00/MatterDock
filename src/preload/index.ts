@@ -77,6 +77,14 @@ const api: MatterDockApi = {
     build: (matterId, options) => ipcRenderer.invoke(IPC_CHANNELS.contextBuild, matterId, options),
     copy: (text) => ipcRenderer.invoke(IPC_CHANNELS.contextCopy, text),
     save: (input) => ipcRenderer.invoke(IPC_CHANNELS.contextSave, input)
+  },
+  backup: {
+    create: () => ipcRenderer.invoke(IPC_CHANNELS.backupCreate),
+    inspect: () => ipcRenderer.invoke(IPC_CHANNELS.backupInspect),
+    restore: (token) => ipcRenderer.invoke(IPC_CHANNELS.backupRestore, token),
+    revealBackup: () => ipcRenderer.invoke(IPC_CHANNELS.backupReveal),
+    exportData: () => ipcRenderer.invoke(IPC_CHANNELS.dataExportCreate),
+    revealExport: () => ipcRenderer.invoke(IPC_CHANNELS.dataExportReveal)
   }
 }
 

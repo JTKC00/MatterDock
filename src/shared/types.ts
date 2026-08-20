@@ -440,6 +440,14 @@ export type ContextSaveInput = {
   content: string
 }
 
+export type {
+  BackupCreateResult,
+  BackupInspectResult,
+  BackupRestoreResult,
+  BackupSummary,
+  DataExportResult
+} from './backup'
+
 export type IpcOk<T> = { ok: true; data: T }
 export type IpcErr = { ok: false; error: string }
 export type IpcResult<T> = IpcOk<T> | IpcErr

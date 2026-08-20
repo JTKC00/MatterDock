@@ -112,5 +112,13 @@ export const api = {
     copy: (text: string) => unwrap(window.matterdock.context.copy(text)),
     save: (input: Parameters<Window['matterdock']['context']['save']>[0]) =>
       unwrap(window.matterdock.context.save(input))
+  },
+  backup: {
+    create: () => unwrap(window.matterdock.backup.create()),
+    inspect: () => unwrap(window.matterdock.backup.inspect()),
+    restore: (token: string) => unwrap(window.matterdock.backup.restore(token)),
+    revealBackup: () => unwrap(window.matterdock.backup.revealBackup()),
+    exportData: () => unwrap(window.matterdock.backup.exportData()),
+    revealExport: () => unwrap(window.matterdock.backup.revealExport())
   }
 }

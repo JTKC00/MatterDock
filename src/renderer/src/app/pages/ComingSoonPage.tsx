@@ -21,13 +21,3 @@ export function ComingSoonPage({
     </div>
   )
 }
-
-export function SettingsPage() {
-  return (
-    <ComingSoonPage
-      kicker="Local-first"
-      title="Settings"
-      body="MatterDock keeps every matter, contact and document reference on this computer. There is no account and nothing is sent to the cloud."
-    />
-  )
-}

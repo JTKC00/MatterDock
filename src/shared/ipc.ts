@@ -35,7 +35,11 @@ import type {
   SearchResponse,
   ContextExport,
   ContextOptions,
-  ContextSaveInput
+  ContextSaveInput,
+  BackupCreateResult,
+  BackupInspectResult,
+  BackupRestoreResult,
+  DataExportResult
 } from './types'
 
 export type MatterDockApi = {
@@ -113,6 +117,14 @@ export type MatterDockApi = {
     copy: (text: string) => Promise<IpcResult<{ copied: true }>>
     save: (input: ContextSaveInput) => Promise<IpcResult<{ saved: boolean }>>
   }
+  backup: {
+    create: () => Promise<IpcResult<BackupCreateResult>>
+    inspect: () => Promise<IpcResult<BackupInspectResult>>
+    restore: (token: string) => Promise<IpcResult<BackupRestoreResult>>
+    revealBackup: () => Promise<IpcResult<{ revealed: boolean }>>
+    exportData: () => Promise<IpcResult<DataExportResult>>
+    revealExport: () => Promise<IpcResult<{ revealed: boolean }>>
+  }
 }
 
 export const IPC_CHANNELS = {
@@ -171,5 +183,11 @@ export const IPC_CHANNELS = {
   searchGlobal: 'search:global',
   contextBuild: 'context:build',
   contextCopy: 'context:copy',
-  contextSave: 'context:save'
+  contextSave: 'context:save',
+  backupCreate: 'backup:create',
+  backupInspect: 'backup:inspect',
+  backupRestore: 'backup:restore',
+  backupReveal: 'backup:reveal',
+  dataExportCreate: 'dataExport:create',
+  dataExportReveal: 'dataExport:reveal'
 } as const

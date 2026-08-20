@@ -996,3 +996,45 @@ a {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+
+.settings-page {
+  padding: 0 28px 40px;
+  max-width: 720px;
+}
+
+.settings-busy {
+  margin: 0 0 16px;
+  color: var(--text-secondary);
+}
+
+.settings-card {
+  margin-top: 14px;
+  padding: 16px 16px 14px;
+  border-radius: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+.settings-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.settings-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 52em;
+}
+
+.settings-note {
+  margin-top: 8px !important;
+  color: var(--text-muted) !important;
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}

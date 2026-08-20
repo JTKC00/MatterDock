@@ -16,25 +16,50 @@ import { withTransaction } from './sql'
 
 export type PersistFn = (db: Database, filePath: string) => void
 
+export type ExclusiveReason = 'backup' | 'restore' | 'export'
+
 export class DatabaseStore {
   private db: Database | null = null
   private SQL: SqlJsStatic | null = null
+  private exclusive: ExclusiveReason | null = null
 
   constructor(
     private readonly filePath: string,
     private readonly persistFn: PersistFn = persistDatabase
   ) {}
 
-  async initialize(): Promise<void> {
+  async initialize(options?: { seed?: boolean }): Promise<void> {
     this.SQL = await loadSqlJs()
     this.db = await openDatabase(this.filePath)
     migrate(this.db)
-    seedIfEmpty(this.db)
+    if (options?.seed !== false) seedIfEmpty(this.db)
     this.persistNow()
   }
 
   path(): string {
     return this.filePath
+  }
+
+  persist(): void {
+    this.persistNow()
+  }
+
+  assertWritable(): void {
+    if (this.exclusive) {
+      throw new AppError(USER_ERRORS.workspaceBusy, 'WORKSPACE_BUSY')
+    }
+  }
+
+  async withExclusive<T>(reason: ExclusiveReason, fn: () => Promise<T>): Promise<T> {
+    if (this.exclusive) {
+      throw new AppError(USER_ERRORS.workspaceBusy, 'WORKSPACE_BUSY')
+    }
+    this.exclusive = reason
+    try {
+      return await fn()
+    } finally {
+      this.exclusive = null
+    }
   }
 
   async close(): Promise<void> {
@@ -45,7 +70,15 @@ export class DatabaseStore {
     }
   }
 
+  async closeMemory(): Promise<void> {
+    if (this.db) {
+      this.db.close()
+      this.db = null
+    }
+  }
+
   mutate<T>(fn: (db: Database) => T): T {
+    this.assertWritable()
     const db = this.requireDb()
     const snapshot = db.export()
     try {
@@ -66,6 +99,9 @@ export class DatabaseStore {
   }
 
   query<T>(fn: (db: Database) => T): T {
+    if (!this.db && this.exclusive === 'restore') {
+      throw new AppError(USER_ERRORS.workspaceBusy, 'WORKSPACE_BUSY')
+    }
     const db = this.requireDb()
     try {
       return fn(db)

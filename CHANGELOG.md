@@ -5,6 +5,21 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-08-20
+
+Backup / Restore & Data Portability.
+
+### Added
+
+- Portable MatterDock backup bundles
+- Backup integrity manifest and SHA-256 verification
+- Managed document backup
+- Safe whole-workspace restore
+- Pre-restore recovery snapshots
+- Backup validation before replacement
+- Open JSON / CSV data export
+- Managed document portability export
+
 ## [0.5.1] — 2026-08-15
 
 Context Privacy Integrity.

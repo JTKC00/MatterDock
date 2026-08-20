@@ -1,5 +1,6 @@
 import { app, BrowserWindow, session } from 'electron'
 import { join } from 'node:path'
+import { reconcileInterruptedRestore } from './backup/recovery'
 import { documentsRoot } from './documents/files'
 import { reconcileDocumentQuarantinesFromStore } from './documents/recovery'
 import { databasePath, DatabaseStore } from './db/store'
@@ -58,14 +59,28 @@ void app.whenReady().then(async () => {
     callback(false)
   })
 
+  const userData = app.getPath('userData')
+  const docsRoot = documentsRoot(userData)
+  try {
+    await reconcileInterruptedRestore({
+      userData,
+      dbPath: store.path(),
+      documentsRoot: docsRoot
+    })
+  } catch (error) {
+    console.error('[matterdock] restore recovery failed', error)
+  }
   await store.initialize()
-  const docsRoot = documentsRoot(app.getPath('userData'))
   try {
     reconcileDocumentQuarantinesFromStore(store, docsRoot)
   } catch (error) {
     console.error('[matterdock] document quarantine recovery failed', error)
   }
-  registerIpc(store, { documentsRoot: docsRoot })
+  registerIpc(store, {
+    documentsRoot: docsRoot,
+    userData,
+    appVersion: app.getVersion()
+  })
   createWindow()
 
   app.on('activate', () => {

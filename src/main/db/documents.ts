@@ -26,6 +26,13 @@ type DocumentRow = {
   updated_at: string
 }
 
+export function listAllDocuments(db: Database): MatterDocument[] {
+  return all<DocumentRow>(
+    db,
+    `SELECT * FROM documents ORDER BY created_at DESC, display_name COLLATE NOCASE`
+  ).map(mapDocument)
+}
+
 export function listDocumentsForMatter(db: Database, matterId: string): MatterDocument[] {
   return all<DocumentRow>(
     db,

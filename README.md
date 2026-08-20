@@ -22,7 +22,7 @@ Organisation → Contacts → Matters → Timeline / Tasks / Documents
 - **Waiting** — you have acted, and are waiting on someone else
 - **Next Action** — the single most important thing to do next
 
-This repository currently ships through **Phase 6**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents, Global Search, and Prepare Context.
+This repository currently ships through **Phase 7**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents, Global Search, Prepare Context, Backup / Restore, and Data Portability.
 
 ## Requirements
 
@@ -68,6 +68,9 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 - **Documents** — reference an original file or keep a managed workspace copy
 - **Search** — find matters, people, activity and document metadata
 - **Prepare Context** — preview, redact and export a Matter as Markdown, plain text or JSON
+- **Backup** — portable MatterDock backup of the database and managed document copies
+- **Restore** — validated whole-workspace restore with a pre-restore recovery snapshot
+- **Data export** — open JSON, CSV and managed document files for use outside MatterDock
 - **Organisations** — list, create, edit, detail, alias management
 - **Contacts** — list, create, edit, detail, link to organisation and matter
 - **Tags** — create on the fly, attach to a matter
@@ -75,10 +78,6 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 - `Ctrl+N` — New Matter
 - `Ctrl+K` — Search
 - `Ctrl+Shift+A` — Add Activity on Matter Detail
-
-Coming later, with a product empty state today:
-
-- Settings
 
 ## Data
 
@@ -108,13 +107,14 @@ npm run dev
 ```
 src/
 ├── main/            Electron main process, SQLite, IPC
-│   └── db/          Versioned migrations + repositories
+│   ├── db/          Versioned migrations + repositories
+│   └── backup/      Portable backup, restore, data export
 ├── preload/         contextBridge API
 ├── shared/          Types, Zod schemas, alias normalization
 └── renderer/        React UI
     └── src/
-        ├── app/           Shell, sidebar, coming-soon pages
-        ├── features/      matters, organisations, contacts
+        ├── app/           Shell, sidebar
+        ├── features/      matters, organisations, contacts, settings
         └── components/    Dialogs, fields, badges
 ```
 

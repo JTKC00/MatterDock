@@ -78,6 +78,7 @@ export function createDocumentService(
     },
 
     addReference(input: AttachDocumentInput): MatterDocument {
+      store.assertWritable()
       const parsed = documents.parseAttachInput(input)
       const meta = readFileMeta(parsed.path)
       return store.mutate((db) => {
@@ -101,6 +102,7 @@ export function createDocumentService(
     },
 
     addCopy(input: AttachDocumentInput): MatterDocument {
+      store.assertWritable()
       const parsed = documents.parseAttachInput(input)
       const meta = readFileMeta(parsed.path)
       store.query((db) => {
@@ -152,6 +154,7 @@ export function createDocumentService(
     },
 
     relink(id: string, input: RelinkDocumentInput): MatterDocument {
+      store.assertWritable()
       const existing = store.query((db) => documents.getDocument(db, id))
       if (existing.storageMode !== 'reference') {
         throw new AppError(USER_ERRORS.cannotRelinkCopy, 'CANNOT_RELINK_COPY')
@@ -174,10 +177,12 @@ export function createDocumentService(
     },
 
     update(id: string, input: UpdateDocumentInput): MatterDocument {
+      store.assertWritable()
       return store.mutate((db) => decorate(documents.updateDocument(db, id, input)))
     },
 
     remove(id: string): { id: string } {
+      store.assertWritable()
       const existing = store.query((db) => documents.getDocument(db, id))
       if (existing.storageMode !== 'copy') {
         store.mutate((db) => documents.deleteDocumentRecord(db, id))
