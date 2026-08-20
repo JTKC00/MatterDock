@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { Database } from 'sql.js'
 import { AppError, USER_ERRORS } from '@shared/errors'
@@ -23,9 +23,8 @@ export async function createDataExport(input: CreateDataExportInput): Promise<st
   if (existsSync(destination)) {
     destination = join(input.destinationDirectory, `MatterDock-Data-Export-${stamp(generatedAt)}`)
   }
-  const staging = `${destination}.tmp`
-  rmSync(staging, { recursive: true, force: true })
-  mkdirSync(staging, { recursive: true })
+  mkdirSync(input.destinationDirectory, { recursive: true })
+  const staging = mkdtempSync(join(input.destinationDirectory, '.matterdock-export-'))
   try {
     await input.store.withExclusive('export', async () => {
       input.store.persist()
@@ -42,7 +41,6 @@ export async function createDataExport(input: CreateDataExportInput): Promise<st
         copyFileSync(file.sourcePath, dest)
       }
     })
-    mkdirSync(input.destinationDirectory, { recursive: true })
     renameSync(staging, destination)
     return destination
   } catch (error) {

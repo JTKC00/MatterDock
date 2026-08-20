@@ -127,7 +127,17 @@ test('backup restore round-trip returns the workspace to the backed-up state', a
     await page.getByPlaceholder('Search matters, contacts, activity and documents…').fill('EMPF Subsidy')
     await expect(page.getByText('EMPF Subsidy Application').first()).toBeVisible()
   } finally {
+    const child = app.process()
     await app.close()
+    if (child && child.exitCode === null) {
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, 5000)
+        child.once('exit', () => {
+          clearTimeout(timer)
+          resolve()
+        })
+      })
+    }
     rmSync(userData, { recursive: true, force: true })
     rmSync(files, { recursive: true, force: true })
     rmSync(backupDir, { recursive: true, force: true })

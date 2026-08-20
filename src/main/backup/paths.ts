@@ -73,5 +73,24 @@ export function managedArchivePath(documentId: string, fileName: string): string
 }
 
 export function identityKey(fileName: string): string {
-  return fileName.replace(/\/+$/, '')
+  return fileName.replace(/\/+$/, '').toLowerCase()
+}
+
+export function managedPathFilename(documentId: string, managedPath: string): string {
+  const normalized = managedPath.replaceAll('\\', '/')
+  if (!normalized || normalized.includes('\0') || normalized.split('/').includes('..')) {
+    throw new AppError(USER_ERRORS.backupFailed, 'MANAGED_PATH_IDENTITY')
+  }
+  const parts = normalized.split('/')
+  if (parts.length !== 2) {
+    throw new AppError(USER_ERRORS.backupFailed, 'MANAGED_PATH_IDENTITY')
+  }
+  const [idPart, filename] = parts
+  if (!idPart || idPart.toLowerCase() !== documentId.toLowerCase()) {
+    throw new AppError(USER_ERRORS.backupFailed, 'MANAGED_PATH_IDENTITY')
+  }
+  if (!filename || filename === '.' || filename === '..' || filename.includes('\\')) {
+    throw new AppError(USER_ERRORS.backupFailed, 'MANAGED_PATH_IDENTITY')
+  }
+  return filename
 }

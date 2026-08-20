@@ -8,6 +8,7 @@ import { extractBackupZip } from './zip'
 import { assertForeignKeys, assertIntegrity, validateExtractedBackup } from './validate'
 import { DATABASE_ENTRY } from './paths'
 import {
+  cleanupOwnedStaging,
   cleanupRestoreWork,
   clearRestoreState,
   copyFileReplace,
@@ -22,6 +23,8 @@ import {
 export type RestoreHooks = {
   afterRecoverySnapshot?: () => void
   afterActivate?: () => void
+  afterVerified?: () => void
+  afterCommitted?: () => void
 }
 
 export async function inspectBackupArchive(input: {
@@ -56,45 +59,78 @@ export async function restoreFromStaging(input: {
 
   try {
     await input.store.withExclusive('restore', async () => {
-      await validateExtractedBackup(input.stagingDir, { persistMigration: true })
-      input.store.persist()
-      snapshotWorkspace({
-        dbPath,
-        documentsRoot: input.documentsRoot,
-        recoveryPath
+      await performRestoreTransaction({ ...input, dbPath, recoveryPath, stateBase })
+      finalizeCommittedRestore({
+        userData: input.userData,
+        stagingDir: input.stagingDir,
+        recoveryPath,
+        hooks: input.hooks
       })
-      writeRestoreState(input.userData, { ...stateBase, phase: 'prepared' })
-      try {
-        input.hooks?.afterRecoverySnapshot?.()
-      } catch (error) {
-        clearRestoreState(input.userData)
-        throw error
-      }
-      writeRestoreState(input.userData, { ...stateBase, phase: 'replacing' })
-      await input.store.closeMemory()
-      try {
-        activateStaging({
-          dbPath,
-          documentsRoot: input.documentsRoot,
-          stagingDir: input.stagingDir
-        })
-        await input.store.initialize({ seed: false })
-        input.hooks?.afterActivate?.()
-        input.store.query((db) => {
-          assertIntegrity(db)
-          assertForeignKeys(db)
-        })
-        writeRestoreState(input.userData, { ...stateBase, phase: 'committed' })
-        promoteRecovery(input.userData, recoveryPath)
-        cleanupRestoreWork(input.stagingDir)
-        clearRestoreState(input.userData)
-      } catch (error) {
-        await rollbackActive(input, recoveryPath, error)
-      }
     })
   } catch (error) {
     if (error instanceof AppError) throw error
     throw new AppError(USER_ERRORS.restoreFailedRecovered, 'RESTORE_FAILED', { cause: error })
+  }
+}
+
+async function performRestoreTransaction(input: {
+  store: DatabaseStore
+  userData: string
+  documentsRoot: string
+  stagingDir: string
+  dbPath: string
+  recoveryPath: string
+  stateBase: Omit<RestoreState, 'phase'>
+  hooks?: RestoreHooks
+}): Promise<void> {
+  await validateExtractedBackup(input.stagingDir, { persistMigration: true })
+  input.store.persist()
+  snapshotWorkspace({
+    dbPath: input.dbPath,
+    documentsRoot: input.documentsRoot,
+    recoveryPath: input.recoveryPath
+  })
+  writeRestoreState(input.userData, { ...input.stateBase, phase: 'prepared' })
+  try {
+    input.hooks?.afterRecoverySnapshot?.()
+  } catch (error) {
+    clearRestoreState(input.userData)
+    throw error
+  }
+  writeRestoreState(input.userData, { ...input.stateBase, phase: 'replacing' })
+  await input.store.closeMemory()
+  try {
+    activateStaging({
+      dbPath: input.dbPath,
+      documentsRoot: input.documentsRoot,
+      stagingDir: input.stagingDir
+    })
+    await input.store.initialize({ seed: false })
+    input.hooks?.afterActivate?.()
+    input.store.query((db) => {
+      assertIntegrity(db)
+      assertForeignKeys(db)
+    })
+    input.hooks?.afterVerified?.()
+    writeRestoreState(input.userData, { ...input.stateBase, phase: 'committed' })
+  } catch (error) {
+    await rollbackActive(input, input.recoveryPath, error)
+  }
+}
+
+export function finalizeCommittedRestore(input: {
+  userData: string
+  stagingDir: string
+  recoveryPath: string
+  hooks?: RestoreHooks
+}): void {
+  try {
+    input.hooks?.afterCommitted?.()
+    promoteRecovery(input.userData, input.recoveryPath)
+    cleanupOwnedStaging(input.userData, input.stagingDir)
+    clearRestoreState(input.userData)
+  } catch (error) {
+    console.error('[matterdock] committed restore housekeeping failed', error)
   }
 }
 

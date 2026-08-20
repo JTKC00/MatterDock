@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Database } from 'sql.js'
 import { AppError, USER_ERRORS } from '@shared/errors'
@@ -8,7 +8,7 @@ import { databaseSchemaNewerThanApp, migrate, appliedSchemaVersion } from '../db
 import { loadSqlJs, persistDatabase } from '../db/open'
 import { all } from '../db/sql'
 import { parseBackupManifest, type BackupManifest } from './manifest'
-import { DATABASE_ENTRY, MANIFEST_ENTRY } from './paths'
+import { DATABASE_ENTRY, identityKey, MANIFEST_ENTRY, managedPathFilename } from './paths'
 import { sha256File } from './hash'
 import { documentCounts } from './snapshot'
 
@@ -56,6 +56,8 @@ export async function validateExtractedBackup(
     throw new AppError(USER_ERRORS.backupDamaged, 'BACKUP_DB_HASH')
   }
 
+  assertExtractedMembership(stagingDir, manifest)
+
   for (const file of manifest.managedDocuments) {
     const path = join(stagingDir, ...file.path.split('/'))
     if (!existsSync(path) || !statSync(path).isFile()) {
@@ -100,8 +102,14 @@ export async function validateExtractedBackup(
       if (!copy.managedPath) {
         throw new AppError(USER_ERRORS.backupDamaged, 'BACKUP_MANAGED_DB')
       }
-      const expected = `documents/${copy.id}/${copy.managedPath.split(/[/\\]/).pop()}`
-      if (entry.path !== expected) {
+      let filename: string
+      try {
+        filename = managedPathFilename(copy.id, copy.managedPath)
+      } catch {
+        throw new AppError(USER_ERRORS.backupDamaged, 'BACKUP_MANAGED_IDENTITY')
+      }
+      const expected = `documents/${copy.id}/${filename}`
+      if (identityKey(entry.path) !== identityKey(expected)) {
         throw new AppError(USER_ERRORS.backupDamaged, 'BACKUP_MANAGED_DB')
       }
     }
@@ -127,4 +135,36 @@ export async function validateExtractedBackup(
   } finally {
     db.close()
   }
+}
+
+export function assertExtractedMembership(stagingDir: string, manifest: BackupManifest): void {
+  const expected = new Set(
+    [MANIFEST_ENTRY, DATABASE_ENTRY, ...manifest.managedDocuments.map((file) => file.path)].map(identityKey)
+  )
+  const actual = listExtractedRegularFiles(stagingDir)
+  for (const path of actual) {
+    if (!expected.has(identityKey(path))) {
+      throw new AppError(USER_ERRORS.backupInvalid, 'BACKUP_UNEXPECTED_ENTRY')
+    }
+  }
+}
+
+function listExtractedRegularFiles(stagingDir: string): string[] {
+  const files: string[] = []
+  if (existsSync(join(stagingDir, MANIFEST_ENTRY))) files.push(MANIFEST_ENTRY)
+  if (existsSync(join(stagingDir, DATABASE_ENTRY))) files.push(DATABASE_ENTRY)
+  const documentsDir = join(stagingDir, 'documents')
+  if (!existsSync(documentsDir)) return files
+  for (const idEntry of readdirSync(documentsDir, { withFileTypes: true })) {
+    if (!idEntry.isDirectory()) {
+      files.push(`documents/${idEntry.name}`)
+      continue
+    }
+    const nested = join(documentsDir, idEntry.name)
+    for (const file of readdirSync(nested, { withFileTypes: true })) {
+      if (file.isFile()) files.push(`documents/${idEntry.name}/${file.name}`)
+      else files.push(`documents/${idEntry.name}/${file.name}`)
+    }
+  }
+  return files
 }

@@ -9,7 +9,6 @@ import {
   writeFileSync
 } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { tmpdir } from 'node:os'
 import { AppError, USER_ERRORS } from '@shared/errors'
 import { BACKUP_SCHEMA_VERSION } from '@shared/backup'
 import type { DatabaseStore } from '../db/store'
@@ -18,7 +17,12 @@ import { sha256File } from './hash'
 import { serializeManifest, type BackupManifestV1 } from './manifest'
 import { DATABASE_ENTRY, MANIFEST_ENTRY } from './paths'
 import { collectManagedSnapshot, documentCounts } from './snapshot'
-import { extractBackupZip, listZipEntries, writeZip } from './zip'
+import { extractBackupZip, writeZip } from './zip'
+import { validateExtractedBackup } from './validate'
+
+export type CreateBackupHooks = {
+  afterZipWrite?: (archivePath: string) => void
+}
 
 export type CreateBackupInput = {
   store: DatabaseStore
@@ -26,6 +30,7 @@ export type CreateBackupInput = {
   destinationPath: string
   appVersion: string
   now?: () => string
+  hooks?: CreateBackupHooks
 }
 
 export async function createBackupBundle(input: CreateBackupInput): Promise<BackupManifestV1> {
@@ -34,8 +39,10 @@ export async function createBackupBundle(input: CreateBackupInput): Promise<Back
   if (!existsSync(parent)) {
     throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_DESTINATION')
   }
-  const tempArchive = `${destinationPath}.tmp`
-  const staging = mkdtempSync(join(tmpdir(), 'matterdock-backup-'))
+  const owned = mkdtempSync(join(parent, '.matterdock-backup-'))
+  const staging = join(owned, 'contents')
+  const tempArchive = join(owned, 'archive.tmp')
+  const verifyDir = join(owned, 'verify')
   try {
     return await input.store.withExclusive('backup', async () => {
       input.store.persist()
@@ -91,44 +98,35 @@ export async function createBackupBundle(input: CreateBackupInput): Promise<Back
           archivePath: file.path
         }))
       ]
-      rmSync(tempArchive, { force: true })
       await writeZip(tempArchive, zipFiles)
-      await validateWrittenArchive(tempArchive, manifest)
-      renameSync(tempArchive, destinationPath)
+      input.hooks?.afterZipWrite?.(tempArchive)
+      await extractBackupZip(tempArchive, verifyDir)
+      await validateExtractedBackup(verifyDir)
+      replaceFileKeepPrevious(tempArchive, destinationPath, join(owned, 'previous'))
       return manifest
     })
   } catch (error) {
-    rmSync(tempArchive, { force: true })
     if (error instanceof AppError) throw error
     throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_FAILED', { cause: error })
   } finally {
-    rmSync(staging, { recursive: true, force: true })
+    rmSync(owned, { recursive: true, force: true })
   }
 }
 
-async function validateWrittenArchive(archivePath: string, manifest: BackupManifestV1): Promise<void> {
-  const entries = await listZipEntries(archivePath)
-  const names = new Set(entries.map((entry) => entry.fileName))
-  if (!names.has(MANIFEST_ENTRY) || !names.has(DATABASE_ENTRY)) {
-    throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_ARCHIVE_INCOMPLETE')
+function replaceFileKeepPrevious(source: string, destination: string, previousHold: string): void {
+  if (!existsSync(destination)) {
+    renameSync(source, destination)
+    return
   }
-  for (const file of manifest.managedDocuments) {
-    if (!names.has(file.path)) {
-      throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_ARCHIVE_INCOMPLETE')
+  renameSync(destination, previousHold)
+  try {
+    renameSync(source, destination)
+  } catch (error) {
+    try {
+      if (!existsSync(destination) && existsSync(previousHold)) renameSync(previousHold, destination)
+    } catch (restoreError) {
+      console.error('[matterdock] could not restore previous backup', restoreError)
     }
+    throw error
   }
-  const unexpected = entries.filter(
-    (entry) =>
-      entry.fileName !== MANIFEST_ENTRY &&
-      entry.fileName !== DATABASE_ENTRY &&
-      !entry.isDirectory &&
-      !manifest.managedDocuments.some((file) => file.path === entry.fileName)
-  )
-  if (unexpected.length > 0) {
-    throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_ARCHIVE_UNEXPECTED')
-  }
-}
-
-export async function assertArchiveRoundTrip(archivePath: string, stagingDir: string): Promise<void> {
-  await extractBackupZip(archivePath, stagingDir)
 }

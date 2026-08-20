@@ -66,5 +66,7 @@ export const USER_ERRORS = {
     'The backup could not be restored. Your previous MatterDock data has been recovered.',
   restoreFailedUnrecovered:
     'Restore failed and MatterDock could not automatically recover the previous workspace. A recovery copy remains available.',
+  restoreInterruptedFatal:
+    'MatterDock could not safely recover an interrupted restore. Your workspace has not been opened for editing.',
   exportFailed: 'The data export could not be created. Your MatterDock data was not changed.'
 } as const

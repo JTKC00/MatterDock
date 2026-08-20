@@ -10,7 +10,7 @@ import {
   isStrictlyInsideRoot,
   listQuarantineDocumentIds
 } from '../documents/files'
-import { managedArchivePath } from './paths'
+import { managedArchivePath, managedPathFilename } from './paths'
 
 export type ManagedSnapshotFile = {
   documentId: string
@@ -37,6 +37,7 @@ export function collectManagedSnapshot(db: Database, documentsRoot: string): Man
     if (!record.managedPath || !isDocumentId(record.id)) {
       throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_MANAGED_PATH')
     }
+    managedPathFilename(record.id, record.managedPath)
     let sourcePath: string
     try {
       sourcePath = absoluteManagedPath(documentsRoot, record.managedPath) ?? ''

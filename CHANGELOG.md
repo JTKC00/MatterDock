@@ -5,6 +5,23 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.6.1] — 2026-08-20
+
+Restore Transaction & Filesystem Safety.
+
+### Fixed
+
+- Restore no longer rolls back after the committed boundary
+- Committed restore housekeeping is retryable and non-destructive
+- Pre-restore recovery promotion is idempotent across crashes
+- MatterDock fails closed when interrupted restore recovery cannot establish a safe workspace
+- Backup and data-export staging use operation-owned unique temporary paths
+- Existing unrelated `.tmp` files and folders are never removed
+- Restore rejects archive files that are not declared in the backup manifest
+- Restore-state paths are constrained to MatterDock internal restore/recovery roots
+- Managed document paths are validated against their document IDs
+- Newly created backups are fully round-trip validated before success
+
 ## [0.6.0] — 2026-08-20
 
 Backup / Restore & Data Portability.

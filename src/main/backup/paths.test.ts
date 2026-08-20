@@ -3,7 +3,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { USER_ERRORS } from '@shared/errors'
-import { archiveEntryDestination, classifyBackupEntry, isUnsafeArchivePath } from './paths'
+import {
+  archiveEntryDestination,
+  classifyBackupEntry,
+  identityKey,
+  isUnsafeArchivePath,
+  managedPathFilename
+} from './paths'
 
 const uuid = '550e8400-e29b-41d4-a716-446655440000'
 
@@ -36,5 +42,18 @@ describe('backup archive paths', () => {
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  })
+
+  it('treats Windows archive paths as case-insensitive duplicates', () => {
+    expect(identityKey(`documents/${uuid}/File.pdf`)).toBe(identityKey(`documents/${uuid}/file.pdf`))
+  })
+
+  it('requires managed paths to be documentId/filename', () => {
+    expect(managedPathFilename(uuid, `${uuid}/report.pdf`)).toBe('report.pdf')
+    expect(managedPathFilename(uuid, `${uuid}\\report.pdf`)).toBe('report.pdf')
+    expect(() => managedPathFilename(uuid, `${uuid}/sub/report.pdf`)).toThrow()
+    expect(() => managedPathFilename(uuid, 'report.pdf')).toThrow()
+    expect(() => managedPathFilename(uuid, `other-id/report.pdf`)).toThrow()
+    expect(() => managedPathFilename(uuid, `../report.pdf`)).toThrow()
   })
 })

@@ -8,8 +8,10 @@ import {
   rmSync,
   writeFileSync
 } from 'node:fs'
+import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { AppError, USER_ERRORS } from '@shared/errors'
+import { isStrictlyInsideRoot } from '../documents/files'
 
 export const RESTORE_STATE_NAME = 'restore-state.json'
 export const RECOVERY_DIR = 'recovery'
@@ -37,18 +39,46 @@ export function lastPreRestorePath(userData: string): string {
   return join(recoveryRoot(userData), LAST_PRE_RESTORE)
 }
 
+export function restoreWorkRoot(userData: string): string {
+  return join(userData, 'restore')
+}
+
 export function readRestoreState(userData: string): RestoreState | null {
   const path = restoreStatePath(userData)
   if (!existsSync(path)) return null
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(readFileSync(path, 'utf8')) as Partial<RestoreState>
-    if (!RESTORE_PHASES.includes(parsed.phase as RestorePhase)) return null
-    if (typeof parsed.stagingPath !== 'string' || typeof parsed.recoveryPath !== 'string') return null
-    if (typeof parsed.startedAt !== 'string') return null
-    return parsed as RestoreState
+    parsed = JSON.parse(readFileSync(path, 'utf8'))
   } catch (error) {
-    console.error('[matterdock] restore-state could not be read', error)
-    return null
+    console.error('[matterdock] restore-state could not be parsed', error)
+    throw new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_STATE_INVALID', { cause: error })
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_STATE_INVALID')
+  }
+  const record = parsed as Partial<RestoreState>
+  if (!RESTORE_PHASES.includes(record.phase as RestorePhase)) {
+    throw new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_STATE_INVALID')
+  }
+  if (typeof record.stagingPath !== 'string' || typeof record.recoveryPath !== 'string') {
+    throw new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_STATE_INVALID')
+  }
+  if (typeof record.startedAt !== 'string') {
+    throw new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_STATE_INVALID')
+  }
+  const state = record as RestoreState
+  assertRestoreStatePaths(userData, state)
+  return state
+}
+
+export function assertRestoreStatePaths(userData: string, state: RestoreState): void {
+  const stagingRoot = restoreWorkRoot(userData)
+  const recoveryBase = recoveryRoot(userData)
+  if (!isStrictlyInsideRoot(stagingRoot, state.stagingPath)) {
+    throw new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_STATE_STAGING_PATH')
+  }
+  if (!isStrictlyInsideRoot(recoveryBase, state.recoveryPath)) {
+    throw new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_STATE_RECOVERY_PATH')
   }
 }
 
@@ -122,13 +152,49 @@ export function restoreWorkspaceFromRecovery(input: {
 
 export function promoteRecovery(userData: string, recoveryPath: string): void {
   const last = lastPreRestorePath(userData)
-  if (last === recoveryPath) return
+  if (resolveSame(last, recoveryPath)) return
+  const sourceExists = existsSync(recoveryPath)
+  const lastExists = existsSync(last)
+  if (!sourceExists && lastExists) return
+  if (!sourceExists && !lastExists) {
+    console.warn('[matterdock] committed restore has no recovery snapshot to promote')
+    return
+  }
   mkdirSync(recoveryRoot(userData), { recursive: true })
-  if (existsSync(last)) rmSync(last, { recursive: true, force: true })
-  if (existsSync(recoveryPath)) renameSync(recoveryPath, last)
+  if (!lastExists) {
+    renameSync(recoveryPath, last)
+    return
+  }
+  const retiring = join(recoveryRoot(userData), `.retiring-last-${randomUUID()}`)
+  renameSync(last, retiring)
+  try {
+    renameSync(recoveryPath, last)
+  } catch (error) {
+    try {
+      if (!existsSync(last) && existsSync(retiring)) renameSync(retiring, last)
+    } catch (restoreError) {
+      console.error('[matterdock] could not put last-pre-restore back', restoreError)
+    }
+    throw error
+  }
+  rmSync(retiring, { recursive: true, force: true })
+}
+
+function resolveSame(left: string, right: string): boolean {
+  const a = join(left)
+  const b = join(right)
+  return process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b
 }
 
 export function cleanupRestoreWork(stagingPath: string): void {
+  rmSync(stagingPath, { recursive: true, force: true })
+}
+
+export function cleanupOwnedStaging(userData: string, stagingPath: string): void {
+  if (!isStrictlyInsideRoot(restoreWorkRoot(userData), stagingPath)) {
+    console.warn('[matterdock] refused to delete restore staging outside restore root')
+    return
+  }
   rmSync(stagingPath, { recursive: true, force: true })
 }
 
@@ -139,7 +205,7 @@ export async function reconcileInterruptedRestore(input: {
 }): Promise<void> {
   const state = readRestoreState(input.userData)
   if (!state) {
-    const leftoverStaging = join(input.userData, 'restore')
+    const leftoverStaging = restoreWorkRoot(input.userData)
     if (existsSync(leftoverStaging)) {
       rmSync(leftoverStaging, { recursive: true, force: true })
     }
@@ -147,7 +213,7 @@ export async function reconcileInterruptedRestore(input: {
   }
 
   if (state.phase === 'prepared') {
-    cleanupRestoreWork(state.stagingPath)
+    cleanupOwnedStaging(input.userData, state.stagingPath)
     clearRestoreState(input.userData)
     return
   }
@@ -159,23 +225,24 @@ export async function reconcileInterruptedRestore(input: {
         documentsRoot: input.documentsRoot,
         recoveryPath: state.recoveryPath
       })
-      cleanupRestoreWork(state.stagingPath)
-      clearRestoreState(input.userData)
     } catch (error) {
       console.error('[matterdock] restore rollback failed', error)
       throw error instanceof AppError
-        ? error
-        : new AppError(USER_ERRORS.restoreFailedUnrecovered, 'RESTORE_ROLLBACK_FAILED', { cause: error })
+        ? new AppError(USER_ERRORS.restoreInterruptedFatal, error.code, { cause: error })
+        : new AppError(USER_ERRORS.restoreInterruptedFatal, 'RESTORE_ROLLBACK_FAILED', { cause: error })
     }
+    cleanupOwnedStaging(input.userData, state.stagingPath)
+    clearRestoreState(input.userData)
     return
   }
 
   if (state.phase === 'committed') {
     try {
       promoteRecovery(input.userData, state.recoveryPath)
-      cleanupRestoreWork(state.stagingPath)
-    } finally {
+      cleanupOwnedStaging(input.userData, state.stagingPath)
       clearRestoreState(input.userData)
+    } catch (error) {
+      console.error('[matterdock] committed restore housekeeping failed', error)
     }
   }
 }
