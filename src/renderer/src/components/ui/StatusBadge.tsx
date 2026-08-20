@@ -1,12 +1,15 @@
-import { PRIORITY_LABELS, STATUS_LABELS, type MatterPriority, type MatterStatus } from '@shared/types'
+import type { MatterPriority, MatterStatus } from '@shared/types'
+import { useT } from '@/i18n/LocaleProvider'
 
 export function StatusBadge({ status }: { status: MatterStatus }) {
-  return <span className={`badge badge-${status}`}>{STATUS_LABELS[status]}</span>
+  const t = useT()
+  return <span className={`badge badge-${status}`}>{t(`status.${status}`)}</span>
 }
 
 export function PriorityBadge({ priority }: { priority: MatterPriority }) {
+  const t = useT()
   if (priority === 'normal' || priority === 'low') {
-    return <span className="badge">{PRIORITY_LABELS[priority]}</span>
+    return <span className="badge">{t(`priority.${priority}`)}</span>
   }
-  return <span className={`badge badge-${priority}`}>{PRIORITY_LABELS[priority]}</span>
+  return <span className={`badge badge-${priority}`}>{t(`priority.${priority}`)}</span>
 }

@@ -43,7 +43,7 @@
   --details-width: 300px;
   --radius: 8px;
   --radius-sm: 6px;
-  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font: "Segoe UI Variable Text", "Segoe UI", "Microsoft JhengHei UI", "Microsoft JhengHei", system-ui, sans-serif;
   --mono: "Cascadia Mono", "Segoe UI Mono", Consolas, monospace;
 }
 

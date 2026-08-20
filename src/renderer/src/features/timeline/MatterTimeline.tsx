@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { EVENT_TYPE_LABELS, EVENT_TYPES, type EventType, type MatterContact, type TimelineEvent } from '@shared/types'
+import { EVENT_TYPES, type EventType, type MatterContact, type TimelineEvent } from '@shared/types'
 import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
+import { useT } from '@/i18n/LocaleProvider'
 import { api, UserFacingError } from '@/lib/api'
 import { formatDayHeading } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
@@ -17,6 +18,7 @@ export function MatterTimeline({
   matterId: string
   matterContacts: MatterContact[]
 }) {
+  const t = useT()
   const toast = useToast()
   const queryClient = useQueryClient()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -46,11 +48,11 @@ export function MatterTimeline({
     mutationFn: (id: string) => api.events.remove(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries()
-      toast.push('Activity deleted.')
+      toast.push(t('timeline.deleted'))
       setPendingDelete(null)
     },
     onError: (error) =>
-      toast.push(error instanceof UserFacingError ? error.message : 'This activity could not be deleted.', 'error')
+      toast.push(error instanceof UserFacingError ? error.message : t('timeline.deleteFailed'), 'error')
   })
 
   function startCreate(type: EventType) {
@@ -61,17 +63,17 @@ export function MatterTimeline({
   return (
     <section className="timeline-panel">
       <div className="timeline-heading">
-        <h2 className="section-label">Timeline</h2>
+        <h2 className="section-label">{t('timeline.title')}</h2>
         <div className="add-activity">
           <Button variant="secondary" onClick={() => setMenuOpen((value) => !value)}>
             <Plus />
-            Add Activity
+            {t('timeline.addActivity')}
           </Button>
           {menuOpen ? (
             <div className="combobox-menu add-activity-menu" role="menu">
               {EVENT_TYPES.map((type) => (
                 <button key={type} type="button" className="combobox-item" role="menuitem" onClick={() => startCreate(type)}>
-                  {EVENT_TYPE_LABELS[type]}
+                  {type === 'phone' ? t('timeline.phoneCall') : t(`timeline.${type}`)}
                 </button>
               ))}
             </div>
@@ -81,9 +83,9 @@ export function MatterTimeline({
 
       {(events.data?.length ?? 0) === 0 && !events.isLoading ? (
         <div className="timeline-empty">
-          <p className="quiet">No activity yet.</p>
-          <p className="muted">Add a note, call, email or other activity to start building this matter’s history.</p>
-          <Button onClick={() => setMenuOpen(true)}>+ Add Activity</Button>
+          <p className="quiet">{t('timeline.empty')}</p>
+          <p className="muted">{t('timeline.emptyHint')}</p>
+          <Button onClick={() => setMenuOpen(true)}>+ {t('timeline.addActivity')}</Button>
         </div>
       ) : (
         groups.map((group) => (
@@ -121,18 +123,18 @@ export function MatterTimeline({
         onOpenChange={(open) => {
           if (!open) setPendingDelete(null)
         }}
-        title="Delete this activity?"
-        description="This removes the activity from the matter timeline. This action cannot currently be undone."
+        title={t('timeline.deleteTitle')}
+        description={t('timeline.deleteBody')}
         actions={
           <>
             <DialogCloseButton />
             <Button variant="danger" onClick={() => pendingDelete && remove.mutate(pendingDelete.id)} disabled={remove.isPending}>
-              Delete
+              {t('common.delete')}
             </Button>
           </>
         }
       >
-        <p className="quiet">The contact itself will not be deleted.</p>
+        <p className="quiet">{t('timeline.deleteNote')}</p>
       </Dialog>
     </section>
   )

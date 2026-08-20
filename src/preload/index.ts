@@ -85,6 +85,10 @@ const api: MatterDockApi = {
     revealBackup: () => ipcRenderer.invoke(IPC_CHANNELS.backupReveal),
     exportData: () => ipcRenderer.invoke(IPC_CHANNELS.dataExportCreate),
     revealExport: () => ipcRenderer.invoke(IPC_CHANNELS.dataExportReveal)
+  },
+  settings: {
+    getLocale: () => ipcRenderer.invoke(IPC_CHANNELS.settingsGetLocale),
+    setLocale: (locale) => ipcRenderer.invoke(IPC_CHANNELS.settingsSetLocale, locale)
   }
 }
 

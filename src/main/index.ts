@@ -1,11 +1,14 @@
 import { app, BrowserWindow, dialog, session, shell } from 'electron'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { AppError, USER_ERRORS } from '@shared/errors'
+import { translate, type SupportedLocale } from '@shared/i18n'
 import { reconcileInterruptedRestore, recoveryRoot } from './backup/recovery'
 import { documentsRoot } from './documents/files'
 import { reconcileDocumentQuarantinesFromStore } from './documents/recovery'
 import { databasePath, DatabaseStore } from './db/store'
 import { registerIpc } from './ipc'
+import { readPreferences, writePreferences } from './prefs'
 
 app.setName('MatterDock')
 
@@ -62,6 +65,7 @@ void app.whenReady().then(async () => {
 
   const userData = app.getPath('userData')
   const docsRoot = documentsRoot(userData)
+  let currentLocale: SupportedLocale = readPreferences(userData, app.getLocale()).locale
   try {
     await reconcileInterruptedRestore({
       userData,
@@ -70,7 +74,7 @@ void app.whenReady().then(async () => {
     })
   } catch (error) {
     console.error('[matterdock] restore recovery failed', error)
-    await presentFatalRecovery(userData)
+    await presentFatalRecovery(userData, currentLocale)
     return
   }
   await store.initialize()
@@ -82,7 +86,17 @@ void app.whenReady().then(async () => {
   registerIpc(store, {
     documentsRoot: docsRoot,
     userData,
-    appVersion: app.getVersion()
+    appVersion: app.getVersion(),
+    getLocale: () => currentLocale,
+    setLocale: (locale) => {
+      currentLocale = locale
+      try {
+        writePreferences(userData, { locale })
+      } catch (error) {
+        console.error('[matterdock] language preference could not be saved', error)
+        throw new AppError(USER_ERRORS.persistFailed, 'LOCALE_PERSIST', { cause: error })
+      }
+    }
   })
   createWindow()
 
@@ -91,14 +105,14 @@ void app.whenReady().then(async () => {
   })
 })
 
-async function presentFatalRecovery(userData: string): Promise<void> {
+async function presentFatalRecovery(userData: string, locale: SupportedLocale): Promise<void> {
   const recovery = recoveryRoot(userData)
   const result = await dialog.showMessageBox({
     type: 'error',
-    title: 'MatterDock',
-    message: 'MatterDock could not safely recover an interrupted restore.',
-    detail: 'Your workspace has not been opened for editing. A recovery copy may still be available.',
-    buttons: ['Quit', 'Show Recovery Folder'],
+    title: translate(locale, 'native.fatalTitle'),
+    message: translate(locale, 'native.fatalMessage'),
+    detail: translate(locale, 'native.fatalDetail'),
+    buttons: [translate(locale, 'native.fatalQuit'), translate(locale, 'native.fatalShow')],
     defaultId: 0,
     cancelId: 0,
     noLink: true

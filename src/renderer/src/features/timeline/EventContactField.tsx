@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import type { MatterContact } from '@shared/types'
 import { Combobox } from '@/components/ui/Combobox'
 import { Field } from '@/components/ui/Field'
+import { useT } from '@/i18n/LocaleProvider'
 import { api } from '@/lib/api'
 
 import { selectedContactStillMatches } from './contactSelection'
@@ -22,6 +23,7 @@ export function EventContactField({
   onQueryChange: (value: string) => void
   onSelect: (id: string | null, name: string) => void
 }) {
+  const t = useT()
   const contacts = useQuery({
     queryKey: ['contacts', 'search', query],
     queryFn: () => api.contacts.search(query)
@@ -29,12 +31,13 @@ export function EventContactField({
 
   const matterIds = useMemo(() => new Set(matterContacts.map((contact) => contact.contactId)), [matterContacts])
   const others = (contacts.data ?? []).filter((contact) => !matterIds.has(contact.id))
+  const trimmed = query.trim()
 
   return (
-    <Field label="Contact">
+    <Field label={t('timeline.contact')}>
       {matterContacts.length > 0 ? (
         <div className="contact-priority" role="list">
-          <div className="details-label">Matter contacts</div>
+          <div className="details-label">{t('timeline.matterContacts')}</div>
           {matterContacts.map((contact) => (
             <button
               key={contact.contactId}
@@ -61,9 +64,9 @@ export function EventContactField({
           label: contact.name,
           hint: contact.organisationName ?? contact.email ?? undefined
         }))}
-        placeholder="Search other contacts"
-        emptyLabel="No matching contact"
-        createLabel={query.trim() ? `Create new contact “${query.trim()}”` : undefined}
+        placeholder={t('timeline.searchOther')}
+        emptyLabel={t('contacts.noMatchingContact')}
+        createLabel={trimmed ? t('timeline.createContact', { name: trimmed }) : undefined}
         onSelect={(id) => {
           const selected = others.find((contact) => contact.id === id)
           onSelect(id, selected?.name ?? query)

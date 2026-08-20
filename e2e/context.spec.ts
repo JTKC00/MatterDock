@@ -14,7 +14,8 @@ async function launch(userData: string): Promise<ElectronApplication> {
       ...process.env,
       NODE_ENV: 'production',
       MATTERDOCK_USER_DATA: userData,
-      MATTERDOCK_DISABLE_SEED: '1'
+      MATTERDOCK_DISABLE_SEED: '1',
+      MATTERDOCK_LOCALE: 'en'
     }
   })
 }

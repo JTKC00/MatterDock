@@ -21,6 +21,11 @@ body {
   overflow: hidden;
 }
 
+html[lang='zh-HK'] body {
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
 button,
 input,
 select,
@@ -811,6 +816,7 @@ a {
   border-radius: 12px;
   box-shadow: var(--shadow);
   padding: 22px 22px 18px;
+  overflow-wrap: anywhere;
 }
 
 .dialog-wide {
@@ -1037,4 +1043,8 @@ a {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;
+}
+
+.settings-actions .select {
+  min-width: 16rem;
 }

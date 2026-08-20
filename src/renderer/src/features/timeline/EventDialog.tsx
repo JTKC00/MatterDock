@@ -1,14 +1,24 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { EVENT_TYPE_LABELS, type EventDirection, type EventType, type MatterContact, type TimelineEvent } from '@shared/types'
+import type { EventDirection, EventType, MatterContact, TimelineEvent } from '@shared/types'
 import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Input, Textarea } from '@/components/ui/Field'
+import { useT } from '@/i18n/LocaleProvider'
 import { api, UserFacingError } from '@/lib/api'
 import { fromRequiredDatetimeLocal, InvalidDatetimeError, toDatetimeLocal } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
 import { EventContactField } from './EventContactField'
 import { defaultDirection, directionFieldLabel, usesDirection } from './labels'
+
+const EVENT_DIALOG_CAP: Record<EventType, string> = {
+  note: 'Note',
+  phone: 'Call',
+  email: 'Email',
+  whatsapp: 'Whatsapp',
+  meeting: 'Meeting',
+  letter: 'Letter'
+}
 
 export function EventDialog({
   open,
@@ -50,6 +60,7 @@ function EventForm({
   event?: TimelineEvent | null
   onClose: () => void
 }) {
+  const t = useT()
   const toast = useToast()
   const queryClient = useQueryClient()
   const labels = directionFieldLabel(type)
@@ -65,6 +76,7 @@ function EventForm({
   const [ccAddresses, setCcAddresses] = useState(event?.email?.ccAddresses ?? '')
   const [subject, setSubject] = useState(event?.email?.subject ?? '')
   const [error, setError] = useState<string | null>(null)
+  const cap = EVENT_DIALOG_CAP[type]
 
   const save = useMutation({
     mutationFn: () => {
@@ -85,14 +97,14 @@ function EventForm({
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries()
-      toast.push(event ? 'Activity updated.' : 'Activity added.')
+      toast.push(event ? t('timeline.activityUpdated') : t('timeline.activityAdded'))
       onClose()
     },
     onError: (cause) => {
       const message =
         cause instanceof UserFacingError || cause instanceof InvalidDatetimeError
           ? cause.message
-          : 'Activity could not be saved. Your changes have not been lost. Please try again.'
+          : t('timeline.saveFailed')
       setError(message)
       toast.push(message, 'error')
     }
@@ -104,12 +116,12 @@ function EventForm({
       onOpenChange={(next) => {
         if (!next) onClose()
       }}
-      title={event ? `Edit ${EVENT_TYPE_LABELS[type].toLowerCase()}` : `Add ${EVENT_TYPE_LABELS[type].toLowerCase()}`}
+      title={event ? t(`timeline.edit${cap}`) : t(`timeline.add${cap}`)}
       actions={
         <>
           <DialogCloseButton />
           <Button variant="primary" onClick={() => save.mutate()} disabled={save.isPending}>
-            Save
+            {t('common.save')}
           </Button>
         </>
       }
@@ -117,7 +129,7 @@ function EventForm({
       {error ? <p className="field-error">{error}</p> : null}
       {usesDirection(type) ? (
         <fieldset className="direction-fieldset">
-          <legend className="field-label">Direction</legend>
+          <legend className="field-label">{t('timeline.direction')}</legend>
           <label className="radio-row">
             <input
               type="radio"
@@ -139,11 +151,11 @@ function EventForm({
         </fieldset>
       ) : null}
       {type === 'meeting' || type === 'letter' ? (
-        <Field label={type === 'meeting' ? 'Title' : 'Subject / title'} htmlFor="event-title">
+        <Field label={type === 'meeting' ? t('common.title') : t('timeline.subjectTitle')} htmlFor="event-title">
           <Input id="event-title" value={title} onChange={(event) => setTitle(event.target.value)} />
         </Field>
       ) : null}
-      <Field label="Date & time" htmlFor="event-when">
+      <Field label={t('timeline.dateTime')} htmlFor="event-when">
         <Input
           id="event-when"
           type="datetime-local"
@@ -165,29 +177,29 @@ function EventForm({
       />
       {type === 'email' ? (
         <>
-          <Field label="From" htmlFor="email-from">
+          <Field label={t('timeline.from')} htmlFor="email-from">
             <Input id="email-from" value={fromAddress} onChange={(event) => setFromAddress(event.target.value)} />
           </Field>
-          <Field label="To" htmlFor="email-to">
+          <Field label={t('timeline.to')} htmlFor="email-to">
             <Input id="email-to" value={toAddresses} onChange={(event) => setToAddresses(event.target.value)} />
           </Field>
-          <Field label="CC" htmlFor="email-cc">
+          <Field label={t('timeline.cc')} htmlFor="email-cc">
             <Input id="email-cc" value={ccAddresses} onChange={(event) => setCcAddresses(event.target.value)} />
           </Field>
-          <Field label="Subject" htmlFor="email-subject">
+          <Field label={t('timeline.subject')} htmlFor="email-subject">
             <Input id="email-subject" value={subject} onChange={(event) => setSubject(event.target.value)} />
           </Field>
         </>
       ) : null}
       <Field
-        label={type === 'email' ? 'Body' : type === 'note' ? 'Note' : 'Notes'}
+        label={type === 'email' ? t('timeline.emailBody') : type === 'note' ? t('timeline.note') : t('common.notes')}
         htmlFor="event-body"
       >
         <Textarea
           id="event-body"
           value={body}
           onChange={(event) => setBody(event.target.value)}
-          placeholder={type === 'email' ? 'Paste email here…' : undefined}
+          placeholder={type === 'email' ? t('timeline.pasteEmail') : undefined}
         />
       </Field>
     </Dialog>

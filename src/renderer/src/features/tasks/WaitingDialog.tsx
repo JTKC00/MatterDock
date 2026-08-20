@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { EventContactField } from '@/features/timeline/EventContactField'
+import { useT } from '@/i18n/LocaleProvider'
 import { api, UserFacingError } from '@/lib/api'
 import {
   fromOptionalDatetimeLocal,
@@ -54,6 +55,7 @@ function WaitingForm({
   defaultNext: boolean
   onClose: () => void
 }) {
+  const t = useT()
   const toast = useToast()
   const queryClient = useQueryClient()
   const [title, setTitle] = useState(item?.title ?? '')
@@ -90,14 +92,14 @@ function WaitingForm({
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries()
-      toast.push(item ? 'Waiting updated.' : 'Waiting added.')
+      toast.push(item ? t('work.waitingUpdated') : t('work.waitingAdded'))
       onClose()
     },
     onError: (cause) => {
       const message =
         cause instanceof UserFacingError || cause instanceof InvalidDatetimeError
           ? cause.message
-          : 'That item could not be saved. Your changes have not been lost. Please try again.'
+          : t('work.saveFailed')
       setError(message)
       toast.push(message, 'error')
     }
@@ -109,12 +111,12 @@ function WaitingForm({
       onOpenChange={(next) => {
         if (!next) onClose()
       }}
-      title={item ? 'Edit waiting item' : 'New waiting item'}
+      title={item ? t('work.editWaiting') : t('work.newWaiting')}
       actions={
         <>
           <DialogCloseButton />
           <Button variant="primary" onClick={() => save.mutate()} disabled={save.isPending || title.trim().length === 0}>
-            Save
+            {t('common.save')}
           </Button>
         </>
       }
@@ -132,11 +134,11 @@ function WaitingForm({
           setSelectedName(id ? name : '')
         }}
       />
-      <p className="muted">You can also type a name or organisation if there is no contact.</p>
-      <Field label="What are you waiting for?" htmlFor="waiting-title">
+      <p className="muted">{t('work.waitingHint')}</p>
+      <Field label={t('work.waitingWhat')} htmlFor="waiting-title">
         <Input id="waiting-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} />
       </Field>
-      <Field label="Waiting since" htmlFor="waiting-since">
+      <Field label={t('work.waitingSince')} htmlFor="waiting-since">
         <Input
           id="waiting-since"
           type="datetime-local"
@@ -144,19 +146,19 @@ function WaitingForm({
           onChange={(event) => setWaitingSince(event.target.value)}
         />
       </Field>
-      <Field label="Follow up" htmlFor="waiting-follow">
+      <Field label={t('work.followUp')} htmlFor="waiting-follow">
         <Input id="waiting-follow" type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
       </Field>
-      <Field label="Notes" htmlFor="waiting-notes">
+      <Field label={t('work.notes')} htmlFor="waiting-notes">
         <Textarea id="waiting-notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
       </Field>
       {showNextCheckbox ? (
         <label className="radio-row">
           <input type="checkbox" checked={setAsNext} onChange={(event) => setSetAsNext(event.target.checked)} />
-          Set as Next Action
+          {t('work.setNext')}
         </label>
       ) : !item ? (
-        <p className="muted">This matter already has a Next Action. You can change it after creating this item.</p>
+        <p className="muted">{t('work.alreadyHasNext')}</p>
       ) : null}
     </Dialog>
   )

@@ -39,7 +39,8 @@ import type {
   BackupCreateResult,
   BackupInspectResult,
   BackupRestoreResult,
-  DataExportResult
+  DataExportResult,
+  SupportedLocale
 } from './types'
 
 export type MatterDockApi = {
@@ -125,6 +126,10 @@ export type MatterDockApi = {
     exportData: () => Promise<IpcResult<DataExportResult>>
     revealExport: () => Promise<IpcResult<{ revealed: boolean }>>
   }
+  settings: {
+    getLocale: () => Promise<IpcResult<{ locale: SupportedLocale }>>
+    setLocale: (locale: string) => Promise<IpcResult<{ locale: SupportedLocale }>>
+  }
 }
 
 export const IPC_CHANNELS = {
@@ -189,5 +194,7 @@ export const IPC_CHANNELS = {
   backupRestore: 'backup:restore',
   backupReveal: 'backup:reveal',
   dataExportCreate: 'dataExport:create',
-  dataExportReveal: 'dataExport:reveal'
+  dataExportReveal: 'dataExport:reveal',
+  settingsGetLocale: 'settings:getLocale',
+  settingsSetLocale: 'settings:setLocale'
 } as const

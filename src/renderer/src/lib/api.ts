@@ -1,18 +1,21 @@
 import type { IpcResult } from '@shared/types'
+import { t, tx } from '@/i18n/runtime'
 
 export class UserFacingError extends Error {
-  constructor(message: string) {
+  readonly code?: string
+  constructor(message: string, code?: string) {
     super(message)
     this.name = 'UserFacingError'
+    this.code = code
   }
 }
 
 export async function unwrap<T>(promise: Promise<IpcResult<T>>): Promise<T> {
   if (!window.matterdock) {
-    throw new UserFacingError('MatterDock could not connect to local data. Please restart the app.')
+    throw new UserFacingError(t('errors.disconnected'))
   }
   const result = await promise
-  if (!result.ok) throw new UserFacingError(result.error)
+  if (!result.ok) throw new UserFacingError(tx(result.code, result.error), result.code)
   return result.data
 }
 
@@ -120,5 +123,10 @@ export const api = {
     revealBackup: () => unwrap(window.matterdock.backup.revealBackup()),
     exportData: () => unwrap(window.matterdock.backup.exportData()),
     revealExport: () => unwrap(window.matterdock.backup.revealExport())
+  },
+  settings: {
+    getLocale: () => unwrap(window.matterdock.settings.getLocale()),
+    setLocale: (locale: Parameters<Window['matterdock']['settings']['setLocale']>[0]) =>
+      unwrap(window.matterdock.settings.setLocale(locale))
   }
 }

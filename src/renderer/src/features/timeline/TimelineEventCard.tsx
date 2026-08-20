@@ -1,6 +1,7 @@
 import { FileText, Mail, MessageCircle, NotebookPen, Phone, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { EventType, TimelineEvent } from '@shared/types'
+import { useT } from '@/i18n/LocaleProvider'
 import { formatTime } from '@/lib/dates'
 import { eventHeading, previewText } from './labels'
 
@@ -22,6 +23,7 @@ export function TimelineEventCard({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const t = useT()
   const [expanded, setExpanded] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const Icon = icons[event.type]
@@ -44,7 +46,7 @@ export function TimelineEventCard({
         <button
           type="button"
           className="icon-btn timeline-more-btn"
-          aria-label="Activity actions"
+          aria-label={t('timeline.activityActions')}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((value) => !value)}
@@ -63,7 +65,7 @@ export function TimelineEventCard({
               onEdit()
             }}
           >
-            Edit
+            {t('common.edit')}
           </button>
           <button
             type="button"
@@ -74,7 +76,7 @@ export function TimelineEventCard({
               onDelete()
             }}
           >
-            Delete
+            {t('common.delete')}
           </button>
         </div>
       ) : null}
@@ -91,25 +93,25 @@ export function TimelineEventCard({
           <dl className="timeline-email-meta">
             {event.email.fromAddress ? (
               <>
-                <dt>From</dt>
+                <dt>{t('timeline.from')}</dt>
                 <dd>{event.email.fromAddress}</dd>
               </>
             ) : null}
             {event.email.toAddresses ? (
               <>
-                <dt>To</dt>
+                <dt>{t('timeline.to')}</dt>
                 <dd>{event.email.toAddresses}</dd>
               </>
             ) : null}
             {event.email.ccAddresses ? (
               <>
-                <dt>CC</dt>
+                <dt>{t('timeline.cc')}</dt>
                 <dd>{event.email.ccAddresses}</dd>
               </>
             ) : null}
           </dl>
         ) : null}
-        {showToggle ? <span className="timeline-more">{expanded ? 'Show less' : 'Show more'}</span> : null}
+        {showToggle ? <span className="timeline-more">{expanded ? t('timeline.showLess') : t('timeline.showMore')}</span> : null}
       </button>
     </article>
   )

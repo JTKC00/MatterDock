@@ -1,5 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type { ReactNode } from 'react'
+import { t } from '@/i18n/runtime'
 import { Button } from './Button'
 
 export function Dialog({
@@ -42,10 +43,10 @@ export function Dialog({
   )
 }
 
-export function DialogCloseButton({ children = 'Cancel' }: { children?: ReactNode }) {
+export function DialogCloseButton({ children }: { children?: ReactNode }) {
   return (
     <DialogPrimitive.Close asChild>
-      <Button variant="ghost">{children}</Button>
+      <Button variant="ghost">{children ?? t('common.cancel')}</Button>
     </DialogPrimitive.Close>
   )
 }

@@ -24,6 +24,7 @@ import type {
   UpdateWorkItemInput
 } from '@shared/types'
 import { BACKUP_FILE_EXTENSION } from '@shared/backup'
+import { isSupportedLocale, translate, type SupportedLocale } from '@shared/i18n'
 import { buildMatterContext } from './context/build'
 import { createDocumentService } from './documents/service'
 import { DatabaseStore, contacts, events, listTags, matters, organisations, search, tasks } from './db/store'
@@ -39,7 +40,7 @@ function wrap<T>(fn: () => T): IpcResult<T> {
     } else {
       console.error(`[matterdock] ${error.code}: ${error.message}`)
     }
-    return { ok: false, error: message }
+    return { ok: false, error: message, code: error instanceof AppError ? error.code : undefined }
   }
 }
 
@@ -53,13 +54,19 @@ async function wrapAsync<T>(fn: () => Promise<T> | T): Promise<IpcResult<T>> {
     } else {
       console.error(`[matterdock] ${error.code}: ${error.message}`)
     }
-    return { ok: false, error: message }
+    return { ok: false, error: message, code: error instanceof AppError ? error.code : undefined }
   }
 }
 
 export function registerIpc(
   store: DatabaseStore,
-  options: { documentsRoot: string; userData: string; appVersion: string }
+  options: {
+    documentsRoot: string
+    userData: string
+    appVersion: string
+    getLocale: () => SupportedLocale
+    setLocale: (locale: SupportedLocale) => void
+  }
 ): void {
   const docs = createDocumentService(store, options.documentsRoot)
   const backup = new BackupWorkspace({
@@ -264,16 +271,17 @@ export function registerIpc(
     wrapAsync(async () => {
       const window = BrowserWindow.fromWebContents(event.sender)
       const defaultPath = `MatterDock-${todayStamp()}.${BACKUP_FILE_EXTENSION}`
+      const locale = options.getLocale()
       const result = window
         ? await dialog.showSaveDialog(window, {
-            title: 'Create MatterDock Backup',
+            title: translate(locale, 'native.backupSaveTitle'),
             defaultPath,
-            filters: [{ name: 'MatterDock Backup', extensions: [BACKUP_FILE_EXTENSION] }]
+            filters: [{ name: translate(locale, 'native.backupFilter'), extensions: [BACKUP_FILE_EXTENSION] }]
           })
         : await dialog.showSaveDialog({
-            title: 'Create MatterDock Backup',
+            title: translate(locale, 'native.backupSaveTitle'),
             defaultPath,
-            filters: [{ name: 'MatterDock Backup', extensions: [BACKUP_FILE_EXTENSION] }]
+            filters: [{ name: translate(locale, 'native.backupFilter'), extensions: [BACKUP_FILE_EXTENSION] }]
           })
       if (result.canceled || !result.filePath) return { created: false as const }
       await backup.create(result.filePath)
@@ -284,16 +292,17 @@ export function registerIpc(
   ipcMain.handle(IPC_CHANNELS.backupInspect, (event) =>
     wrapAsync(async () => {
       const window = BrowserWindow.fromWebContents(event.sender)
+      const locale = options.getLocale()
       const result = window
         ? await dialog.showOpenDialog(window, {
-            title: 'Restore MatterDock Backup',
+            title: translate(locale, 'native.backupOpenTitle'),
             properties: ['openFile'],
-            filters: [{ name: 'MatterDock Backup', extensions: [BACKUP_FILE_EXTENSION] }]
+            filters: [{ name: translate(locale, 'native.backupFilter'), extensions: [BACKUP_FILE_EXTENSION] }]
           })
         : await dialog.showOpenDialog({
-            title: 'Restore MatterDock Backup',
+            title: translate(locale, 'native.backupOpenTitle'),
             properties: ['openFile'],
-            filters: [{ name: 'MatterDock Backup', extensions: [BACKUP_FILE_EXTENSION] }]
+            filters: [{ name: translate(locale, 'native.backupFilter'), extensions: [BACKUP_FILE_EXTENSION] }]
           })
       if (result.canceled || !result.filePaths[0]) return { canceled: true as const }
       return backup.inspect(result.filePaths[0])
@@ -319,13 +328,14 @@ export function registerIpc(
   ipcMain.handle(IPC_CHANNELS.dataExportCreate, (event) =>
     wrapAsync(async () => {
       const window = BrowserWindow.fromWebContents(event.sender)
+      const locale = options.getLocale()
       const result = window
         ? await dialog.showOpenDialog(window, {
-            title: 'Choose a folder for the data export',
+            title: translate(locale, 'native.exportFolderTitle'),
             properties: ['openDirectory', 'createDirectory']
           })
         : await dialog.showOpenDialog({
-            title: 'Choose a folder for the data export',
+            title: translate(locale, 'native.exportFolderTitle'),
             properties: ['openDirectory', 'createDirectory']
           })
       if (result.canceled || !result.filePaths[0]) return { created: false as const }
@@ -340,6 +350,15 @@ export function registerIpc(
       if (!path || !existsSync(path)) return { revealed: false }
       shell.showItemInFolder(path)
       return { revealed: true }
+    })
+  )
+
+  ipcMain.handle(IPC_CHANNELS.settingsGetLocale, () => wrap(() => ({ locale: options.getLocale() })))
+  ipcMain.handle(IPC_CHANNELS.settingsSetLocale, (_event, value: string) =>
+    wrap(() => {
+      const locale = isSupportedLocale(value) ? value : 'en'
+      options.setLocale(locale)
+      return { locale }
     })
   )
 }

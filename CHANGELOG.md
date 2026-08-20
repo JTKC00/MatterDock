@@ -5,6 +5,30 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] — 2026-08-20
+
+Traditional Chinese & Internationalisation.
+
+### Added
+
+- English and Traditional Chinese (Hong Kong) interface languages
+- automatic first-run locale detection
+- persistent interface-language preference
+- live language switching
+- centralised internationalisation resources
+- locale-aware date formatting
+
+### Changed
+
+- user-facing interface strings now use the i18n system
+- main-process dialogs use the selected interface language
+
+### Compatibility
+
+- user-entered MatterDock data is never translated
+- backup schemas and data-export schemas remain language-independent
+- interface language is stored as a local application preference, not in Matter backups
+
 ## [0.6.2] — 2026-08-20
 
 Backup Finalization Safety.

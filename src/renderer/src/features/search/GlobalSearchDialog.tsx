@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { SearchHit } from '@shared/types'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
+import { useT } from '@/i18n/LocaleProvider'
 import { api } from '@/lib/api'
 import { SearchResultRow } from './SearchResults'
 
@@ -13,6 +14,7 @@ export function GlobalSearchDialog({
   open: boolean
   onClose: () => void
 }) {
+  const t = useT()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [debounced, setDebounced] = useState('')
@@ -40,9 +42,9 @@ export function GlobalSearchDialog({
     return (recent.data ?? []).slice(0, 8).map((matter) => ({
       id: matter.id,
       type: 'matter' as const,
-      label: 'Matter',
+      label: t('search.hitMatter'),
       title: matter.title,
-      subtitle: matter.organisationName ?? 'Recent matter',
+      subtitle: matter.organisationName ?? t('search.recentMatter'),
       snippet: null,
       href: `/matters/${matter.id}`,
       matterId: matter.id,
@@ -50,7 +52,7 @@ export function GlobalSearchDialog({
       archived: matter.status === 'archived',
       score: 0
     }))
-  }, [debounced, recent.data, results.data])
+  }, [debounced, recent.data, results.data, t])
 
   const selected = hits.length === 0 ? 0 : Math.min(active, hits.length - 1)
 
@@ -65,15 +67,15 @@ export function GlobalSearchDialog({
       onOpenChange={(next) => {
         if (!next) onClose()
       }}
-      title="Search MatterDock"
+      title={t('search.dialogTitle')}
       actions={<DialogCloseButton />}
     >
       <input
         className="input"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search matters, contacts, activity and documents…"
-        aria-label="Search MatterDock"
+        placeholder={t('search.placeholder')}
+        aria-label={t('search.aria')}
         autoFocus
         onKeyDown={(event) => {
           if (event.key === 'ArrowDown') {
@@ -92,7 +94,7 @@ export function GlobalSearchDialog({
       />
       <div className="search-overlay-results">
         {debounced.length === 0 && hits.length === 0 ? (
-          <p className="muted">Start typing to search MatterDock.</p>
+          <p className="muted">{t('search.start')}</p>
         ) : null}
         {hits.map((hit, index) => (
           <SearchResultRow key={`${hit.type}-${hit.id}`} hit={hit} active={index === selected} onSelect={go} />

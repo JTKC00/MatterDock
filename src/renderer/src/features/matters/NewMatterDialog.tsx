@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MATTER_STATUSES, STATUS_LABELS, type MatterStatus } from '@shared/types'
+import { MATTER_STATUSES, type MatterStatus } from '@shared/types'
 import { useAppActions } from '@/app/AppContext'
 import { Button } from '@/components/ui/Button'
 import { Combobox } from '@/components/ui/Combobox'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Input, Select } from '@/components/ui/Field'
+import { useT } from '@/i18n/LocaleProvider'
 import { api, UserFacingError } from '@/lib/api'
 import { useToast } from '@/lib/toast'
 
@@ -17,6 +18,7 @@ export function NewMatterDialog() {
 }
 
 function NewMatterForm({ onClose }: { onClose: () => void }) {
+  const t = useT()
   const toast = useToast()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -48,7 +50,7 @@ function NewMatterForm({ onClose }: { onClose: () => void }) {
       }),
     onSuccess: async (matter) => {
       await queryClient.invalidateQueries()
-      toast.push('Matter created.')
+      toast.push(t('matters.created'))
       onClose()
       navigate(`/matters/${matter.id}`)
     },
@@ -56,7 +58,7 @@ function NewMatterForm({ onClose }: { onClose: () => void }) {
       const message =
         cause instanceof UserFacingError
           ? cause.message
-          : 'Matter could not be saved. Your changes have not been lost. Please try again.'
+          : t('matters.saveFailed')
       setError(message)
       toast.push(message, 'error')
     }
@@ -68,8 +70,8 @@ function NewMatterForm({ onClose }: { onClose: () => void }) {
       onOpenChange={(open) => {
         if (!open) onClose()
       }}
-      title="New matter"
-      description="A title is enough. You can add the rest as the matter develops."
+      title={t('matters.newTitle')}
+      description={t('matters.newDescription')}
       actions={
         <>
           <DialogCloseButton />
@@ -78,21 +80,21 @@ function NewMatterForm({ onClose }: { onClose: () => void }) {
             onClick={() => create.mutate()}
             disabled={create.isPending || title.trim().length === 0}
           >
-            Create matter
+            {t('matters.createMatter')}
           </Button>
         </>
       }
     >
-      <Field label="Title" htmlFor="matter-title" error={error ?? undefined}>
+      <Field label={t('common.title')} htmlFor="matter-title" error={error ?? undefined}>
         <Input
           id="matter-title"
           autoFocus
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="What is this matter about?"
+          placeholder={t('matters.titlePlaceholder')}
         />
       </Field>
-      <Field label="Organisation" htmlFor="matter-org">
+      <Field label={t('common.organisation')} htmlFor="matter-org">
         <Combobox
           query={orgQuery}
           onQueryChange={(value) => {
@@ -107,9 +109,9 @@ function NewMatterForm({ onClose }: { onClose: () => void }) {
               .map((alias) => alias.alias)
               .join(' · ')
           }))}
-          placeholder="Search or create an organisation"
-          emptyLabel="No matching organisation"
-          createLabel={orgQuery.trim() ? `Create organisation “${orgQuery.trim()}”` : undefined}
+          placeholder={t('matters.orgPlaceholder')}
+          emptyLabel={t('matters.noOrgMatch')}
+          createLabel={orgQuery.trim() ? t('matters.createOrg', { name: orgQuery.trim() }) : undefined}
           onSelect={(id) => {
             const selected = organisations.data?.find((org) => org.id === id)
             setOrgId(id)
@@ -121,29 +123,29 @@ function NewMatterForm({ onClose }: { onClose: () => void }) {
           }}
         />
       </Field>
-      <Field label="Reference" htmlFor="matter-reference">
+      <Field label={t('common.reference')} htmlFor="matter-reference">
         <Input
           id="matter-reference"
           value={reference}
           onChange={(event) => setReference(event.target.value)}
-          placeholder="Optional file or case reference"
+          placeholder={t('matters.referencePlaceholder')}
         />
       </Field>
-      <Field label="Status" htmlFor="matter-status">
+      <Field label={t('common.status')} htmlFor="matter-status">
         <Select id="matter-status" value={status} onChange={(event) => setStatus(event.target.value as MatterStatus)}>
           {MATTER_STATUSES.filter((item) => item !== 'archived').map((item) => (
             <option key={item} value={item}>
-              {STATUS_LABELS[item]}
+              {t(`status.${item}`)}
             </option>
           ))}
         </Select>
       </Field>
-      <Field label="Tags" htmlFor="matter-tags">
+      <Field label={t('common.tags')} htmlFor="matter-tags">
         <Input
           id="matter-tags"
           value={tagInput}
           onChange={(event) => setTagInput(event.target.value)}
-          placeholder="HR, Government"
+          placeholder={t('matters.tagsPlaceholder')}
         />
       </Field>
     </Dialog>

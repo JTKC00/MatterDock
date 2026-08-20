@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useT } from '@/i18n/LocaleProvider'
 import { api } from '@/lib/api'
 import { SearchResults } from './SearchResults'
 
 export function SearchPage() {
+  const t = useT()
   const [query, setQuery] = useState('')
   const [debounced, setDebounced] = useState('')
 
@@ -22,8 +24,8 @@ export function SearchPage() {
     <div className="page">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Search</h1>
-          <p className="page-subtitle">Find a matter, person, activity or document you already recorded.</p>
+          <h1 className="page-title">{t('search.title')}</h1>
+          <p className="page-subtitle">{t('search.subtitle')}</p>
         </div>
       </header>
       <div className="toolbar">
@@ -31,21 +33,21 @@ export function SearchPage() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search matters, contacts, activity and documents…"
-            aria-label="Search MatterDock"
+            placeholder={t('search.placeholder')}
+            aria-label={t('search.aria')}
             autoFocus
           />
         </div>
       </div>
       <div className="scroll">
         {debounced.length === 0 ? (
-          <p className="muted">Start typing to search MatterDock.</p>
+          <p className="muted">{t('search.start')}</p>
         ) : results.isLoading ? (
-          <p className="muted">Searching…</p>
+          <p className="muted">{t('search.searching')}</p>
         ) : results.data ? (
           <SearchResults result={results.data} />
         ) : (
-          <p className="muted">Search could not be completed.</p>
+          <p className="muted">{t('search.failed')}</p>
         )}
       </div>
     </div>

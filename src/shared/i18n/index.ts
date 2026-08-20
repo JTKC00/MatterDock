@@ -1,0 +1,7 @@
+export type { SupportedLocale, TranslateVars } from './types'
+export { SUPPORTED_LOCALES } from './types'
+export { detectFromTag, isSupportedLocale, parseSavedLocale } from './detect'
+export { interpolate, messageKeys, translate } from './translate'
+export { translateError } from './errors'
+export { en } from './locales/en'
+export { zhHK } from './locales/zh-HK'

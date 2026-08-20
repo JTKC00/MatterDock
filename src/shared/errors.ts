@@ -76,5 +76,6 @@ export const USER_ERRORS = {
     'MatterDock could not safely recover an interrupted restore. Your workspace has not been opened for editing.',
   exportFailed: 'The data export could not be created. Your MatterDock data was not changed.',
   backupPreviousPreserved:
-    'The new backup could not be created. Your previous backup was preserved in a recovery location.'
+    'The new backup could not be created. Your previous backup was preserved in a recovery location.',
+  waitingForRequired: 'Say who or what you are waiting for.'
 } as const

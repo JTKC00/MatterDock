@@ -1,32 +1,40 @@
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+import { getActiveLocale, t } from '@/i18n/runtime'
 
 function startOfDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+}
+
+function localeTag(): string {
+  return getActiveLocale() === 'zh-HK' ? 'zh-HK' : 'en-GB'
+}
+
+export function formatDisplayDate(date: Date): string {
+  return new Intl.DateTimeFormat(localeTag(), { day: 'numeric', month: 'short', year: 'numeric' }).format(date)
 }
 
 export function formatRelativeDate(iso: string, now = new Date()): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return ''
   const deltaDays = Math.round((startOfDay(date) - startOfDay(now)) / 86_400_000)
-  if (deltaDays === 0) return 'Updated today'
-  if (deltaDays === -1) return 'Updated yesterday'
-  if (deltaDays > -7 && deltaDays < 0) return `Updated ${Math.abs(deltaDays)} days ago`
-  return `Updated ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
+  if (deltaDays === 0) return t('matters.updatedToday')
+  if (deltaDays === -1) return t('matters.updatedYesterday')
+  if (deltaDays > -7 && deltaDays < 0) return t('matters.updatedDaysAgo', { days: Math.abs(deltaDays) })
+  return t('matters.updatedOn', { date: formatDisplayDate(date) })
 }
 
 export function formatDateTime(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return ''
-  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
+  return formatDisplayDate(date)
 }
 
 export function formatDayHeading(iso: string, now = new Date()): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return ''
   const deltaDays = Math.round((startOfDay(date) - startOfDay(now)) / 86_400_000)
-  if (deltaDays === 0) return 'Today'
-  if (deltaDays === -1) return 'Yesterday'
-  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
+  if (deltaDays === 0) return t('dates.today')
+  if (deltaDays === -1) return t('dates.yesterday')
+  return formatDisplayDate(date)
 }
 
 export function formatTime(iso: string): string {
@@ -45,7 +53,7 @@ export function toDatetimeLocal(iso: string): string {
 }
 
 export class InvalidDatetimeError extends Error {
-  constructor(message = 'Enter a valid date and time.') {
+  constructor(message = t('errors.invalidDatetime')) {
     super(message)
     this.name = 'InvalidDatetimeError'
   }
@@ -60,7 +68,7 @@ export function fromOptionalDatetimeLocal(value: string | null | undefined): str
 
 export function fromRequiredDatetimeLocal(value: string | null | undefined): string {
   if (value == null || value.trim().length === 0) {
-    throw new InvalidDatetimeError('Date and time are required.')
+    throw new InvalidDatetimeError(t('errors.datetimeRequired'))
   }
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) throw new InvalidDatetimeError()

@@ -4,12 +4,14 @@ import type { MatterDocument, PickedFile } from '@shared/types'
 import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Textarea } from '@/components/ui/Field'
+import { useT } from '@/i18n/LocaleProvider'
 import { api, UserFacingError } from '@/lib/api'
 import { useToast } from '@/lib/toast'
 import { AddDocumentDialog } from './AddDocumentDialog'
 import { DocumentRow } from './DocumentRow'
 
 export function MatterDocuments({ matterId }: { matterId: string }) {
+  const t = useT()
   const toast = useToast()
   const queryClient = useQueryClient()
   const docs = useQuery({ queryKey: ['documents', matterId], queryFn: () => api.documents.listForMatter(matterId) })
@@ -24,29 +26,29 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
 
   const open = useMutation({
     mutationFn: (id: string) => api.documents.open(id),
-    onError: (error) => toast.push(message(error), 'error')
+    onError: (error) => toast.push(messageFrom(error, t('documents.actionFailed')), 'error')
   })
   const reveal = useMutation({
     mutationFn: (id: string) => api.documents.reveal(id),
-    onError: (error) => toast.push(message(error), 'error')
+    onError: (error) => toast.push(messageFrom(error, t('documents.actionFailed')), 'error')
   })
   const remove = useMutation({
     mutationFn: (id: string) => api.documents.remove(id),
     onSuccess: async () => {
       await invalidate()
-      toast.push('Document removed from the matter.')
+      toast.push(t('documents.removed'))
       setRemoving(null)
     },
-    onError: (error) => toast.push(message(error), 'error')
+    onError: (error) => toast.push(messageFrom(error, t('documents.actionFailed')), 'error')
   })
   const saveNotes = useMutation({
     mutationFn: ({ id, notes }: { id: string; notes: string }) => api.documents.update(id, { notes }),
     onSuccess: async () => {
       await invalidate()
-      toast.push('Document notes saved.')
+      toast.push(t('documents.notesSaved'))
       setEditing(null)
     },
-    onError: (error) => toast.push(message(error), 'error')
+    onError: (error) => toast.push(messageFrom(error, t('documents.actionFailed')), 'error')
   })
 
   async function addDocument() {
@@ -55,7 +57,7 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
       const next = await api.documents.pick()
       if (next) setPicked(next)
     } catch (error) {
-      toast.push(message(error), 'error')
+      toast.push(messageFrom(error, t('documents.actionFailed')), 'error')
     } finally {
       setPicking(false)
     }
@@ -67,9 +69,9 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
       if (!next) return
       await api.documents.relink(id, { path: next.path })
       await invalidate()
-      toast.push('Document location updated.')
+      toast.push(t('documents.locationUpdated'))
     } catch (error) {
-      toast.push(message(error), 'error')
+      toast.push(messageFrom(error, t('documents.actionFailed')), 'error')
     }
   }
 
@@ -77,21 +79,21 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
     if (!doc.resolvedPath) return
     try {
       await navigator.clipboard.writeText(doc.resolvedPath)
-      toast.push('Path copied.')
+      toast.push(t('documents.pathCopied'))
     } catch {
-      toast.push('The path could not be copied.', 'error')
+      toast.push(t('documents.pathCopyFailed'), 'error')
     }
   }
 
   return (
     <section className="open-items">
       <div className="timeline-heading">
-        <h2 className="section-label">Documents</h2>
+        <h2 className="section-label">{t('documents.title')}</h2>
         <Button onClick={() => void addDocument()} disabled={picking}>
-          + Add Document
+          + {t('documents.add')}
         </Button>
       </div>
-      {(docs.data?.length ?? 0) === 0 ? <p className="muted">No documents attached.</p> : null}
+      {(docs.data?.length ?? 0) === 0 ? <p className="muted">{t('documents.emptyAttached')}</p> : null}
       {docs.data?.map((document) => (
         <DocumentRow
           key={document.id}
@@ -112,7 +114,7 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
         onOpenChange={(next) => {
           if (!next) setEditing(null)
         }}
-        title="Edit document notes"
+        title={t('documents.editNotesTitle')}
         actions={
           <>
             <DialogCloseButton />
@@ -121,12 +123,12 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
               onClick={() => editing && saveNotes.mutate({ id: editing.id, notes: editing.notes ?? '' })}
               disabled={saveNotes.isPending}
             >
-              Save
+              {t('common.save')}
             </Button>
           </>
         }
       >
-        <Field label="Notes" htmlFor="edit-document-notes">
+        <Field label={t('common.notes')} htmlFor="edit-document-notes">
           <Textarea
             id="edit-document-notes"
             value={editing?.notes ?? ''}
@@ -140,17 +142,15 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
         onOpenChange={(next) => {
           if (!next) setRemoving(null)
         }}
-        title="Remove this document?"
+        title={t('documents.removeTitle')}
         description={
-          removing?.storageMode === 'copy'
-            ? 'The MatterDock workspace copy will be deleted. The original file will not be changed.'
-            : 'This removes the reference from the matter. The original file will not be changed.'
+          removing?.storageMode === 'copy' ? t('documents.removeCopyBody') : t('documents.removeRefBody')
         }
         actions={
           <>
             <DialogCloseButton />
             <Button variant="danger" onClick={() => removing && remove.mutate(removing.id)} disabled={remove.isPending}>
-              Remove
+              {t('common.remove')}
             </Button>
           </>
         }
@@ -161,6 +161,6 @@ export function MatterDocuments({ matterId }: { matterId: string }) {
   )
 }
 
-function message(error: unknown): string {
-  return error instanceof UserFacingError ? error.message : 'That document action could not be completed.'
+function messageFrom(error: unknown, fallback: string): string {
+  return error instanceof UserFacingError ? error.message : fallback
 }

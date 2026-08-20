@@ -1,17 +1,19 @@
 import { NavLink } from 'react-router-dom'
 import { Building2, Clock3, Contact, Inbox, Search, Settings, SunMedium } from 'lucide-react'
-
-const items = [
-  { to: '/today', label: 'Today', icon: SunMedium },
-  { to: '/matters', label: 'Matters', icon: Inbox },
-  { to: '/waiting', label: 'Waiting', icon: Clock3 },
-  { to: '/search', label: 'Search', icon: Search },
-  { to: '/organisations', label: 'Organisations', icon: Building2 },
-  { to: '/contacts', label: 'Contacts', icon: Contact },
-  { to: '/settings', label: 'Settings', icon: Settings }
-]
+import { useT } from '@/i18n/LocaleProvider'
 
 export function Sidebar() {
+  const t = useT()
+  const items = [
+    { to: '/today', label: t('nav.today'), icon: SunMedium },
+    { to: '/matters', label: t('nav.matters'), icon: Inbox },
+    { to: '/waiting', label: t('nav.waiting'), icon: Clock3 },
+    { to: '/search', label: t('nav.search'), icon: Search },
+    { to: '/organisations', label: t('nav.organisations'), icon: Building2 },
+    { to: '/contacts', label: t('nav.contacts'), icon: Contact },
+    { to: '/settings', label: t('nav.settings'), icon: Settings }
+  ]
+
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -22,11 +24,11 @@ export function Sidebar() {
           </svg>
         </div>
         <div>
-          <div className="brand-name">MatterDock</div>
-          <div className="brand-byline">by Snugzap</div>
+          <div className="brand-name">{t('brand.name')}</div>
+          <div className="brand-byline">{t('brand.byline')}</div>
         </div>
       </div>
-      <nav className="nav" aria-label="Main">
+      <nav className="nav" aria-label={t('nav.matters')}>
         {items.map((item) => {
           const Icon = item.icon
           return (
@@ -41,7 +43,7 @@ export function Sidebar() {
           )
         })}
       </nav>
-      <div className="sidebar-foot">Your data stays on this computer. MatterDock works offline.</div>
+      <div className="sidebar-foot">{t('brand.offline')}</div>
     </aside>
   )
 }

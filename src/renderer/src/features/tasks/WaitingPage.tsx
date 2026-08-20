@@ -1,31 +1,34 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import type { WorkItem } from '@shared/types'
+import { useT } from '@/i18n/LocaleProvider'
 import { api } from '@/lib/api'
 import { formatDateTime } from '@/lib/dates'
 import { dueLabel } from './dueLabels'
 
 export function WaitingPage() {
+  const t = useT()
   const board = useQuery({ queryKey: ['waiting-board'], queryFn: () => api.tasks.listWaiting() })
 
   return (
     <div className="page">
       <header className="page-header">
         <div>
-          <h1 className="page-title">Waiting</h1>
-          <p className="page-subtitle">Things you have already done, now waiting on someone else.</p>
+          <h1 className="page-title">{t('waitingPage.title')}</h1>
+          <p className="page-subtitle">{t('waitingPage.subtitle')}</p>
         </div>
       </header>
       <div className="scroll">
-        <Section title="Follow-up due" items={board.data?.followUpDue ?? []} empty="No follow-ups due." />
-        <Section title="Upcoming" items={board.data?.upcoming ?? []} empty="No upcoming follow-ups." />
-        <Section title="No follow-up date" items={board.data?.noFollowUp ?? []} empty="Every waiting item has a follow-up date, or none are open." />
+        <Section title={t('waitingPage.followUpDue')} items={board.data?.followUpDue ?? []} empty={t('waitingPage.emptyDue')} />
+        <Section title={t('waitingPage.upcoming')} items={board.data?.upcoming ?? []} empty={t('waitingPage.emptyUpcoming')} />
+        <Section title={t('waitingPage.noFollowUp')} items={board.data?.noFollowUp ?? []} empty={t('waitingPage.emptyNone')} />
       </div>
     </div>
   )
 }
 
 function Section({ title, items, empty }: { title: string; items: WorkItem[]; empty: string }) {
+  const t = useT()
   return (
     <section style={{ marginBottom: 28 }}>
       <h2 className="section-label">{title}</h2>
@@ -34,11 +37,11 @@ function Section({ title, items, empty }: { title: string; items: WorkItem[]; em
         <Link key={item.id} to={`/matters/${item.matterId}`} className="entity-row">
           <div className="entity-title">{item.matterTitle}</div>
           <div className="entity-meta">
-            Waiting for {item.waitingForDisplay ?? 'someone'}
+            {t('waitingPage.waitingFor', { name: item.waitingForDisplay ?? t('common.someone') })}
             <div>{item.title}</div>
           </div>
           <div className="muted">
-            {item.waitingSince ? `Waiting since ${formatDateTime(item.waitingSince)}` : null}
+            {item.waitingSince ? t('waitingPage.waitingSince', { date: formatDateTime(item.waitingSince) }) : null}
             {item.dueAt ? ` · ${dueLabel(item.dueAt, new Date(), true)}` : ''}
           </div>
         </Link>

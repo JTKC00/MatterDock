@@ -22,7 +22,7 @@ Organisation → Contacts → Matters → Timeline / Tasks / Documents
 - **Waiting** — you have acted, and are waiting on someone else
 - **Next Action** — the single most important thing to do next
 
-This repository currently ships through **Phase 7**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents, Global Search, Prepare Context, Backup / Restore, and Data Portability.
+This repository currently ships through **Phase 8**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents, Global Search, Prepare Context, Backup / Restore, Data Portability, and English / Traditional Chinese (Hong Kong) interface languages.
 
 ## Requirements
 
@@ -74,6 +74,7 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 - **Organisations** — list, create, edit, detail, alias management
 - **Contacts** — list, create, edit, detail, link to organisation and matter
 - **Tags** — create on the fly, attach to a matter
+- **Language** — English and 繁體中文（香港）, with live switching and a local preference outside backups
 - Local SQLite persistence (survives quit and relaunch)
 - `Ctrl+N` — New Matter
 - `Ctrl+K` — Search

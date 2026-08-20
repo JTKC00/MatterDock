@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { MATTER_PRIORITIES, PRIORITY_LABELS, type MatterPriority, type WorkItem } from '@shared/types'
+import { MATTER_PRIORITIES, type MatterPriority, type WorkItem } from '@shared/types'
 import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
+import { useT } from '@/i18n/LocaleProvider'
 import { api, UserFacingError } from '@/lib/api'
 import { fromOptionalDatetimeLocal, InvalidDatetimeError, toDatetimeLocal } from '@/lib/dates'
 import { useToast } from '@/lib/toast'
@@ -38,6 +39,7 @@ function ActionForm({
   defaultNext: boolean
   onClose: () => void
 }) {
+  const t = useT()
   const toast = useToast()
   const queryClient = useQueryClient()
   const [title, setTitle] = useState(item?.title ?? '')
@@ -69,14 +71,14 @@ function ActionForm({
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries()
-      toast.push(item ? 'Action updated.' : 'Action added.')
+      toast.push(item ? t('work.actionUpdated') : t('work.actionAdded'))
       onClose()
     },
     onError: (cause) => {
       const message =
         cause instanceof UserFacingError || cause instanceof InvalidDatetimeError
           ? cause.message
-          : 'That item could not be saved. Your changes have not been lost. Please try again.'
+          : t('work.saveFailed')
       setError(message)
       toast.push(message, 'error')
     }
@@ -88,42 +90,42 @@ function ActionForm({
       onOpenChange={(next) => {
         if (!next) onClose()
       }}
-      title={item ? 'Edit action' : 'New action'}
+      title={item ? t('work.editAction') : t('work.newAction')}
       actions={
         <>
           <DialogCloseButton />
           <Button variant="primary" onClick={() => save.mutate()} disabled={save.isPending || title.trim().length === 0}>
-            Save
+            {t('common.save')}
           </Button>
         </>
       }
     >
       {error ? <p className="field-error">{error}</p> : null}
-      <Field label="Title" htmlFor="action-title">
+      <Field label={t('common.title')} htmlFor="action-title">
         <Input id="action-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} />
       </Field>
-      <Field label="Due" htmlFor="action-due">
+      <Field label={t('work.due')} htmlFor="action-due">
         <Input id="action-due" type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
       </Field>
-      <Field label="Priority" htmlFor="action-priority">
+      <Field label={t('common.priority')} htmlFor="action-priority">
         <Select id="action-priority" value={priority} onChange={(event) => setPriority(event.target.value as MatterPriority)}>
           {MATTER_PRIORITIES.map((value) => (
             <option key={value} value={value}>
-              {PRIORITY_LABELS[value]}
+              {t(`priority.${value}`)}
             </option>
           ))}
         </Select>
       </Field>
-      <Field label="Notes" htmlFor="action-notes">
+      <Field label={t('work.notes')} htmlFor="action-notes">
         <Textarea id="action-notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
       </Field>
       {showNextCheckbox ? (
         <label className="radio-row">
           <input type="checkbox" checked={setAsNext} onChange={(event) => setSetAsNext(event.target.checked)} />
-          Set as Next Action
+          {t('work.setNext')}
         </label>
       ) : !item ? (
-        <p className="muted">This matter already has a Next Action. You can change it after creating this item.</p>
+        <p className="muted">{t('work.alreadyHasNext')}</p>
       ) : null}
     </Dialog>
   )

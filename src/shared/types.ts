@@ -380,6 +380,7 @@ export type SearchHit = {
   archived: boolean
   score: number
   fileUnavailable?: boolean
+  kind?: string
 }
 
 export type SearchGroup = {
@@ -448,6 +449,8 @@ export type {
   DataExportResult
 } from './backup'
 
+export type { SupportedLocale } from './i18n'
+
 export type IpcOk<T> = { ok: true; data: T }
-export type IpcErr = { ok: false; error: string }
+export type IpcErr = { ok: false; error: string; code?: string }
 export type IpcResult<T> = IpcOk<T> | IpcErr

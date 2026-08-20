@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import type { SupportedLocale } from '@shared/i18n'
 import { AppProvider } from './app/AppContext'
 import { AppShell } from './app/layout/AppShell'
 import { SettingsPage } from './features/settings/SettingsPage'
@@ -9,9 +11,30 @@ import { ContactDetailPage, ContactListPage } from './features/contacts/ContactP
 import { MatterDetailPage } from './features/matters/MatterDetailPage'
 import { MatterListPage } from './features/matters/MatterListPage'
 import { OrganisationDetailPage, OrganisationListPage } from './features/organisations/OrganisationPages'
+import { LocaleProvider } from './i18n/LocaleProvider'
+import { setActiveLocale } from './i18n/runtime'
+import { api } from './lib/api'
 
 export function App() {
+  const [locale, setLocale] = useState<SupportedLocale | null>(null)
+
+  useEffect(() => {
+    void api.settings
+      .getLocale()
+      .then((result) => {
+        setActiveLocale(result.locale)
+        setLocale(result.locale)
+      })
+      .catch(() => {
+        setActiveLocale('en')
+        setLocale('en')
+      })
+  }, [])
+
+  if (!locale) return null
+
   return (
+    <LocaleProvider locale={locale} onLocaleChange={setLocale}>
     <AppProvider>
       <Routes>
         <Route element={<AppShell />}>
@@ -30,5 +53,6 @@ export function App() {
         </Route>
       </Routes>
     </AppProvider>
+    </LocaleProvider>
   )
 }

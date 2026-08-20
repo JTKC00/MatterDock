@@ -149,7 +149,7 @@ export function updateTask(db: Database, id: string, input: UpdateWorkItemInput)
             parsed.waitingForText === undefined ? existing.waitingForText : parsed.waitingForText
           )
     if (existing.type === 'waiting' && !nextContactId && !nextText) {
-      throw new AppError('Say who or what you are waiting for.', 'VALIDATION')
+      throw new AppError(USER_ERRORS.waitingForRequired, 'WAITING_FOR_REQUIRED')
     }
     db.run(
       `UPDATE tasks

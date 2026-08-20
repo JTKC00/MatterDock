@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { MatterDocument } from '@shared/types'
 import { Button } from '@/components/ui/Button'
+import { useT } from '@/i18n/LocaleProvider'
 import { extensionLabel, formatBytes } from './format'
 
 export function DocumentRow({
@@ -20,6 +21,7 @@ export function DocumentRow({
   onRelink: () => void
   onRemove: () => void
 }) {
+  const t = useT()
   const [menuOpen, setMenuOpen] = useState(false)
   const missing = !document.available
 
@@ -30,7 +32,7 @@ export function DocumentRow({
           <div className="work-kicker">
             {extensionLabel(document.fileExtension)}
             {' · '}
-            {document.storageMode === 'copy' ? 'MatterDock copy' : 'Reference original'}
+            {document.storageMode === 'copy' ? t('documents.copy') : t('documents.reference')}
           </div>
           <div className="entity-title">{document.displayName}</div>
           <div className="work-meta">
@@ -43,9 +45,7 @@ export function DocumentRow({
           </div>
           {missing ? (
             <p className="field-error" style={{ marginTop: 8 }}>
-              {document.availability === 'missing_copy'
-                ? 'Managed copy missing'
-                : 'File unavailable. The original file could not be found at its saved location.'}
+              {document.availability === 'missing_copy' ? t('documents.missingCopy') : t('documents.fileUnavailable')}
             </p>
           ) : null}
           {document.notes ? <p className="quiet" style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>{document.notes}</p> : null}
@@ -53,14 +53,14 @@ export function DocumentRow({
         <div className="work-card-actions">
           {missing && document.availability === 'missing_reference' ? (
             <Button variant="secondary" onClick={onRelink}>
-              Locate File…
+              {t('documents.relink')}
             </Button>
           ) : (
             <Button variant="secondary" onClick={onOpen} disabled={missing}>
-              Open
+              {t('documents.open')}
             </Button>
           )}
-          <button type="button" className="icon-btn timeline-more-btn" aria-label="Document actions" onClick={() => setMenuOpen((value) => !value)}>
+          <button type="button" className="icon-btn timeline-more-btn" aria-label={t('documents.actions')} onClick={() => setMenuOpen((value) => !value)}>
             •••
           </button>
         </div>
@@ -68,24 +68,24 @@ export function DocumentRow({
       {menuOpen ? (
         <div className="combobox-menu work-menu" role="menu">
           <button type="button" className="combobox-item" role="menuitem" onClick={() => { setMenuOpen(false); onOpen() }} disabled={missing}>
-            Open
+            {t('documents.open')}
           </button>
           <button type="button" className="combobox-item" role="menuitem" onClick={() => { setMenuOpen(false); onReveal() }} disabled={missing}>
-            Show in Folder
+            {t('documents.reveal')}
           </button>
           <button type="button" className="combobox-item" role="menuitem" onClick={() => { setMenuOpen(false); onCopyPath() }} disabled={!document.resolvedPath}>
-            Copy Path
+            {t('documents.copyPath')}
           </button>
           {document.availability === 'missing_reference' ? (
             <button type="button" className="combobox-item" role="menuitem" onClick={() => { setMenuOpen(false); onRelink() }}>
-              Locate File…
+              {t('documents.relink')}
             </button>
           ) : null}
           <button type="button" className="combobox-item" role="menuitem" onClick={() => { setMenuOpen(false); onEditNotes() }}>
-            Edit Notes
+            {t('documents.editNotes')}
           </button>
           <button type="button" className="combobox-item" role="menuitem" onClick={() => { setMenuOpen(false); onRemove() }}>
-            Remove from Matter
+            {t('documents.removeFromMatter')}
           </button>
         </div>
       ) : null}

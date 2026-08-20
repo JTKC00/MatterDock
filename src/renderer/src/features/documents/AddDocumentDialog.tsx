@@ -4,6 +4,7 @@ import type { DocumentStorageMode, PickedFile } from '@shared/types'
 import { Button } from '@/components/ui/Button'
 import { Dialog, DialogCloseButton } from '@/components/ui/Dialog'
 import { Field, Textarea } from '@/components/ui/Field'
+import { useT } from '@/i18n/LocaleProvider'
 import { api, UserFacingError } from '@/lib/api'
 import { useToast } from '@/lib/toast'
 import { formatBytes } from './format'
@@ -32,6 +33,7 @@ function AddDocumentForm({
   picked: PickedFile
   onClose: () => void
 }) {
+  const t = useT()
   const toast = useToast()
   const queryClient = useQueryClient()
   const [mode, setMode] = useState<DocumentStorageMode>('reference')
@@ -45,12 +47,11 @@ function AddDocumentForm({
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries()
-      toast.push(mode === 'copy' ? 'Document copied into MatterDock.' : 'Document reference added.')
+      toast.push(mode === 'copy' ? t('documents.copiedInto') : t('documents.referenceAdded'))
       onClose()
     },
     onError: (cause) => {
-      const message =
-        cause instanceof UserFacingError ? cause.message : 'The document could not be saved. The original file was not changed.'
+      const message = cause instanceof UserFacingError ? cause.message : t('documents.saveFailed')
       setError(message)
       toast.push(message, 'error')
     }
@@ -62,12 +63,12 @@ function AddDocumentForm({
       onOpenChange={(next) => {
         if (!next) onClose()
       }}
-      title="Add document"
+      title={t('documents.addTitle')}
       actions={
         <>
           <DialogCloseButton />
           <Button variant="primary" onClick={() => save.mutate()} disabled={save.isPending}>
-            Add document
+            {t('documents.add')}
           </Button>
         </>
       }
@@ -79,23 +80,23 @@ function AddDocumentForm({
         {picked.path}
       </p>
       <fieldset className="direction-fieldset">
-        <legend className="field-label">How should MatterDock keep this file?</legend>
+        <legend className="field-label">{t('documents.keepHow')}</legend>
         <label className="radio-row">
           <input type="radio" name="storage-mode" checked={mode === 'reference'} onChange={() => setMode('reference')} />
           <span>
-            <strong>Reference original</strong>
-            <span className="muted"> — Keep the file where it is.</span>
+            <strong>{t('documents.referenceOriginal')}</strong>
+            <span className="muted"> — {t('documents.keepWhere')}</span>
           </span>
         </label>
         <label className="radio-row">
           <input type="radio" name="storage-mode" checked={mode === 'copy'} onChange={() => setMode('copy')} />
           <span>
-            <strong>Copy into MatterDock</strong>
-            <span className="muted"> — Keep a managed copy inside this workspace.</span>
+            <strong>{t('documents.copyIntoMatterDock')}</strong>
+            <span className="muted"> — {t('documents.keepCopyHelp')}</span>
           </span>
         </label>
       </fieldset>
-      <Field label="Notes" htmlFor="document-notes">
+      <Field label={t('common.notes')} htmlFor="document-notes">
         <Textarea id="document-notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
       </Field>
     </Dialog>
