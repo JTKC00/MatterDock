@@ -1,10 +1,16 @@
 export class AppError extends Error {
   readonly code: string
+  readonly recoveryPath?: string
 
-  constructor(message: string, code = 'APP_ERROR', options?: { cause?: unknown }) {
-    super(message, options)
+  constructor(
+    message: string,
+    code = 'APP_ERROR',
+    options?: { cause?: unknown; recoveryPath?: string }
+  ) {
+    super(message, options?.cause !== undefined ? { cause: options.cause } : undefined)
     this.name = 'AppError'
     this.code = code
+    this.recoveryPath = options?.recoveryPath
   }
 }
 
@@ -68,5 +74,7 @@ export const USER_ERRORS = {
     'Restore failed and MatterDock could not automatically recover the previous workspace. A recovery copy remains available.',
   restoreInterruptedFatal:
     'MatterDock could not safely recover an interrupted restore. Your workspace has not been opened for editing.',
-  exportFailed: 'The data export could not be created. Your MatterDock data was not changed.'
+  exportFailed: 'The data export could not be created. Your MatterDock data was not changed.',
+  backupPreviousPreserved:
+    'The new backup could not be created. Your previous backup was preserved in a recovery location.'
 } as const

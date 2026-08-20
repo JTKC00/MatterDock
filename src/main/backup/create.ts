@@ -1,14 +1,15 @@
 import {
-  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   renameSync,
   rmSync,
   statSync,
+  copyFileSync,
   writeFileSync
 } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { randomUUID } from 'node:crypto'
+import { basename, dirname, join } from 'node:path'
 import { AppError, USER_ERRORS } from '@shared/errors'
 import { BACKUP_SCHEMA_VERSION } from '@shared/backup'
 import type { DatabaseStore } from '../db/store'
@@ -22,6 +23,9 @@ import { validateExtractedBackup } from './validate'
 
 export type CreateBackupHooks = {
   afterZipWrite?: (archivePath: string) => void
+  failCandidateRename?: () => void
+  failOldRestore?: () => void
+  failCleanup?: () => void
 }
 
 export type CreateBackupInput = {
@@ -33,16 +37,23 @@ export type CreateBackupInput = {
   hooks?: CreateBackupHooks
 }
 
+type FinalizationResult =
+  | { status: 'committed' }
+  | { status: 'failed-restored-old' }
+  | { status: 'failed-old-preserved'; recoveryPath: string }
+  | { status: 'failed-no-previous' }
+
 export async function createBackupBundle(input: CreateBackupInput): Promise<BackupManifestV1> {
   const destinationPath = input.destinationPath
   const parent = dirname(destinationPath)
   if (!existsSync(parent)) {
     throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_DESTINATION')
   }
-  const owned = mkdtempSync(join(parent, '.matterdock-backup-'))
-  const staging = join(owned, 'contents')
-  const tempArchive = join(owned, 'archive.tmp')
-  const verifyDir = join(owned, 'verify')
+  const token = randomUUID()
+  const staging = mkdtempSync(join(parent, '.matterdock-backup-'))
+  const candidatePath = join(parent, `.matterdock-owned-${token}.new`)
+  const previousHoldPath = join(parent, `.matterdock-owned-${token}.previous`)
+  let preserveRecoveryPath: string | null = null
   try {
     return await input.store.withExclusive('backup', async () => {
       input.store.persist()
@@ -98,35 +109,121 @@ export async function createBackupBundle(input: CreateBackupInput): Promise<Back
           archivePath: file.path
         }))
       ]
-      await writeZip(tempArchive, zipFiles)
-      input.hooks?.afterZipWrite?.(tempArchive)
-      await extractBackupZip(tempArchive, verifyDir)
+      await writeZip(candidatePath, zipFiles)
+      input.hooks?.afterZipWrite?.(candidatePath)
+      const verifyDir = join(staging, 'verify')
+      await extractBackupZip(candidatePath, verifyDir)
       await validateExtractedBackup(verifyDir)
-      replaceFileKeepPrevious(tempArchive, destinationPath, join(owned, 'previous'))
-      return manifest
+
+      const result = finalizeBackupReplacement({
+        candidatePath,
+        destinationPath,
+        previousHoldPath,
+        hooks: input.hooks
+      })
+
+      if (result.status === 'committed') {
+        try {
+          input.hooks?.failCleanup?.()
+          removeIfExists(previousHoldPath)
+          removeIfExists(candidatePath)
+        } catch (error) {
+          console.warn('[matterdock] backup housekeeping failed after commit', error)
+        }
+        return manifest
+      }
+
+      if (result.status === 'failed-restored-old') {
+        removeIfExists(candidatePath)
+        throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_REPLACE_FAILED')
+      }
+
+      if (result.status === 'failed-old-preserved') {
+        preserveRecoveryPath = result.recoveryPath
+        throw new AppError(USER_ERRORS.backupPreviousPreserved, 'BACKUP_PREVIOUS_PRESERVED', {
+          recoveryPath: result.recoveryPath
+        })
+      }
+
+      removeIfExists(candidatePath)
+      throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_FAILED')
     })
   } catch (error) {
     if (error instanceof AppError) throw error
     throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_FAILED', { cause: error })
   } finally {
-    rmSync(owned, { recursive: true, force: true })
+    try {
+      rmSync(staging, { recursive: true, force: true })
+    } catch (error) {
+      console.warn('[matterdock] backup staging cleanup failed', error)
+    }
+    if (candidatePath !== preserveRecoveryPath) {
+      try {
+        removeIfExists(candidatePath)
+      } catch (error) {
+        console.warn('[matterdock] leftover backup candidate cleanup failed', error)
+      }
+    }
   }
 }
 
-function replaceFileKeepPrevious(source: string, destination: string, previousHold: string): void {
-  if (!existsSync(destination)) {
-    renameSync(source, destination)
-    return
-  }
-  renameSync(destination, previousHold)
-  try {
-    renameSync(source, destination)
-  } catch (error) {
+export function finalizeBackupReplacement(input: {
+  candidatePath: string
+  destinationPath: string
+  previousHoldPath: string
+  hooks?: CreateBackupHooks
+}): FinalizationResult {
+  const { candidatePath, destinationPath, previousHoldPath, hooks } = input
+
+  if (!existsSync(destinationPath)) {
     try {
-      if (!existsSync(destination) && existsSync(previousHold)) renameSync(previousHold, destination)
-    } catch (restoreError) {
-      console.error('[matterdock] could not restore previous backup', restoreError)
+      hooks?.failCandidateRename?.()
+      renameSync(candidatePath, destinationPath)
+      return { status: 'committed' }
+    } catch {
+      return { status: 'failed-no-previous' }
     }
-    throw error
   }
+
+  renameSync(destinationPath, previousHoldPath)
+  try {
+    hooks?.failCandidateRename?.()
+    renameSync(candidatePath, destinationPath)
+    return { status: 'committed' }
+  } catch {
+    try {
+      hooks?.failOldRestore?.()
+      if (!existsSync(destinationPath) && existsSync(previousHoldPath)) {
+        renameSync(previousHoldPath, destinationPath)
+      }
+      return { status: 'failed-restored-old' }
+    } catch {
+      const recoveryPath = preservePreviousBackup(destinationPath, previousHoldPath)
+      return { status: 'failed-old-preserved', recoveryPath }
+    }
+  }
+}
+
+function preservePreviousBackup(destinationPath: string, previousHoldPath: string): string {
+  const parent = dirname(destinationPath)
+  const recoveryDir = join(parent, `.matterdock-backup-recovery-${randomUUID()}`)
+  const recoveryFile = join(recoveryDir, basename(destinationPath))
+  mkdirSync(recoveryDir, { recursive: true })
+  if (existsSync(previousHoldPath)) {
+    try {
+      renameSync(previousHoldPath, recoveryFile)
+      return recoveryFile
+    } catch {
+      return previousHoldPath
+    }
+  }
+  if (existsSync(destinationPath)) {
+    copyFileSync(destinationPath, recoveryFile)
+    return recoveryFile
+  }
+  throw new AppError(USER_ERRORS.backupFailed, 'BACKUP_PREVIOUS_LOST')
+}
+
+function removeIfExists(path: string): void {
+  rmSync(path, { force: true })
 }

@@ -5,6 +5,18 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.6.2] — 2026-08-20
+
+Backup Finalization Safety.
+
+### Fixed
+
+- Existing valid backups are preserved if replacement finalization fails
+- Double failures during backup replacement no longer allow the previous backup to be deleted by temporary cleanup
+- Backup cleanup failures after commit no longer turn a successful backup into a reported failure
+- Backup replacement staging preserves recoverable copies until finalization is safely complete
+- Backup finalization tests now cover replacement failure and rollback failure
+
 ## [0.6.1] — 2026-08-20
 
 Restore Transaction & Filesystem Safety.
