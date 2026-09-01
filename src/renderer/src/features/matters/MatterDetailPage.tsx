@@ -29,6 +29,7 @@ export function MatterDetailPage() {
   const toast = useToast()
   const queryClient = useQueryClient()
   const [prepareOpen, setPrepareOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const matter = useQuery({
     queryKey: ['matter', matterId],
     queryFn: () => api.matters.get(matterId),
@@ -37,6 +38,25 @@ export function MatterDetailPage() {
 
   const invalidate = async () => {
     await queryClient.invalidateQueries()
+  }
+
+  const invalidateAfterPermanentDelete = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['matters'] }),
+      queryClient.invalidateQueries({ queryKey: ['today'] }),
+      queryClient.invalidateQueries({ queryKey: ['waiting-board'] }),
+      queryClient.invalidateQueries({ queryKey: ['search'] }),
+      queryClient.invalidateQueries({ queryKey: ['tags'] }),
+      queryClient.invalidateQueries({ queryKey: ['organisations'] }),
+      queryClient.invalidateQueries({ queryKey: ['organisation'] }),
+      queryClient.invalidateQueries({ queryKey: ['contacts'] }),
+      queryClient.invalidateQueries({ queryKey: ['contact'] })
+    ])
+    queryClient.removeQueries({ queryKey: ['matter', matterId] })
+    queryClient.removeQueries({ queryKey: ['tasks', matterId] })
+    queryClient.removeQueries({ queryKey: ['events', matterId] })
+    queryClient.removeQueries({ queryKey: ['documents', matterId] })
+    queryClient.removeQueries({ queryKey: ['context-preview', matterId] })
   }
 
   const update = useMutation({
@@ -65,6 +85,17 @@ export function MatterDetailPage() {
       toast.push(t('matters.restored'))
     },
     onError: (error) => toast.push(messageFrom(error, t('matters.restoreFailed')), 'error')
+  })
+
+  const deletePermanently = useMutation({
+    mutationFn: () => api.matters.deletePermanently(matterId),
+    onSuccess: async () => {
+      await invalidateAfterPermanentDelete()
+      setDeleteOpen(false)
+      toast.push(t('matters.deleteSuccess'))
+      navigate('/matters', { replace: true })
+    },
+    onError: (error) => toast.push(messageFrom(error, t('matters.deleteFailed')), 'error')
   })
 
   if (matter.isError) {
@@ -170,7 +201,14 @@ export function MatterDetailPage() {
           </div>
           <div className="details-block">
             {item.status === 'archived' ? (
-              <Button onClick={() => restore.mutate()}>{t('matters.restoreMatter')}</Button>
+              <>
+                <Button onClick={() => restore.mutate()} disabled={restore.isPending}>
+                  {t('matters.restoreMatter')}
+                </Button>
+                <Button variant="danger" onClick={() => setDeleteOpen(true)} disabled={deletePermanently.isPending}>
+                  {t('matters.deletePermanently')}
+                </Button>
+              </>
             ) : (
               <Button variant="ghost" onClick={() => archive.mutate()}>
                 {t('matters.archiveMatter')}
@@ -181,6 +219,42 @@ export function MatterDetailPage() {
       </div>
       {prepareOpen ? (
         <PrepareContextDialog open matterId={item.id} onClose={() => setPrepareOpen(false)} />
+      ) : null}
+      {deleteOpen ? (
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            if (!deletePermanently.isPending) setDeleteOpen(open)
+          }}
+          title={t('matters.deleteTitle', { title: item.title })}
+          description={t('matters.deleteDescription')}
+          actions={
+            <>
+              <DialogCloseButton disabled={deletePermanently.isPending} />
+              <Button
+                variant="danger"
+                onClick={() => deletePermanently.mutate()}
+                disabled={deletePermanently.isPending}
+              >
+                {deletePermanently.isPending ? t('matters.deleting') : t('matters.deletePermanently')}
+              </Button>
+            </>
+          }
+        >
+          <p>{t('matters.deleteRemovesLabel')}</p>
+          <ul>
+            <li>{t('matters.deleteRemovesMatter')}</li>
+            <li>{t('matters.deleteRemovesWork')}</li>
+            <li>{t('matters.deleteRemovesTimeline')}</li>
+            <li>{t('matters.deleteRemovesDocuments')}</li>
+            <li>{t('matters.deleteRemovesCopies')}</li>
+          </ul>
+          <p>{t('matters.deleteKeepsLabel')}</p>
+          <ul>
+            <li>{t('matters.deleteKeepsOriginals')}</li>
+            <li>{t('matters.deleteKeepsShared')}</li>
+          </ul>
+        </Dialog>
       ) : null}
     </div>
   )

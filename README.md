@@ -68,7 +68,7 @@ Windows CI accepts `WINDOWS_CSC_LINK` and `WINDOWS_CSC_KEY_PASSWORD` repository 
 ## What works now
 
 - Desktop shell with sidebar navigation
-- **Matters** — list, create, detail, inline edit, archive / restore
+- **Matters** — list, create, detail, inline edit, archive / restore, and permanent deletion of archived Matters
 - **Timeline** — notes, phone calls, emails, WhatsApp, meetings and letters on the Matter
 - **Actions, Waiting and Next Action** — one clear next step per Matter
 - **Today** — overdue, due today, and who you are waiting on
@@ -143,6 +143,11 @@ Renderer never runs SQL. The main process owns the database.
 - A matter can be created with only a **title**
 - One matter can have many contacts; a contact can belong to many matters
 - Archive hides a matter from the default list; it is not a prominent delete
+- Permanent deletion is available only from an archived Matter and is irreversible. It removes the Matter-owned rows, work, timeline activity, and document metadata from the current workspace.
+- MatterDock-managed document copies are quarantined and removed safely after the database deletion commits; referenced original files remain unchanged in their original locations.
+- Organisation, Contact, and Tag records are preserved. Existing unrelated Matters and their records are preserved as well.
+- Backups are historical snapshots: restoring a backup made before a permanent deletion can intentionally bring that historical Matter back. Backups are not rewritten by permanent deletion.
+- Trash and soft-delete remain future work.
 - An organisation cannot be deleted while matters still point at it
 - A contact cannot be deleted while it is still linked to a matter
 - Unlinking a contact removes the relationship only

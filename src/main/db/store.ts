@@ -81,6 +81,9 @@ export class DatabaseStore {
     this.assertWritable()
     const db = this.requireDb()
     const snapshot = db.export()
+    // sql.js export resets connection pragmas, including foreign_keys.
+    // Restore FK enforcement before starting the mutation transaction.
+    db.run('PRAGMA foreign_keys = ON')
     try {
       const result = withTransaction(db, () => fn(db))
       try {
@@ -120,6 +123,9 @@ export class DatabaseStore {
   private persistNow(): void {
     if (!this.db) return
     this.persistFn(this.db, this.filePath)
+    // Custom persistence functions may call db.export(), which resets this
+    // connection-level pragma just like the built-in persistence function.
+    this.db.run('PRAGMA foreign_keys = ON')
   }
 
   private restoreSnapshot(snapshot: Uint8Array): void {

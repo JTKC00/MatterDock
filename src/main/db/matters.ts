@@ -237,6 +237,17 @@ export function restoreMatter(db: Database, id: string): MatterDetail {
   return updateMatter(db, id, { status: statusBeforeArchive(existing) })
 }
 
+/**
+ * Delete one Matter row and let the current foreign-key schema remove its
+ * Matter-owned records. Filesystem coordination belongs in a main-process
+ * service, not in this repository primitive.
+ */
+export function deleteMatterRecord(db: Database, id: string): void {
+  const existing = get<{ id: string }>(db, 'SELECT id FROM matters WHERE id = ?', [id])
+  if (!existing) throw new AppError(USER_ERRORS.matterNotFound, 'MATTER_NOT_FOUND')
+  db.run('DELETE FROM matters WHERE id = ?', [id])
+}
+
 const RESTORABLE_STATUSES: Array<Exclude<MatterStatus, 'archived'>> = [
   'new',
   'in_progress',

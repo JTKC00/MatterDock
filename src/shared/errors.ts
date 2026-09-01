@@ -60,6 +60,10 @@ export const USER_ERRORS = {
   cannotRelinkCopy: 'MatterDock copies cannot be relinked to another source file.',
   contextNotBuilt: 'This matter context could not be prepared.',
   contextSaveFailed: 'The context file could not be saved. No MatterDock data was changed.',
+  matterDeleteFailed:
+    'Matter could not be permanently deleted. Your Matter and managed files have been kept safe. Please try again.',
+  matterDeleteRecoveryFailed:
+    'Matter could not be safely deleted. Your Matter remains available, but some managed files need recovery before trying again.',
   workspaceBusy: 'MatterDock is busy with a backup or restore. Please try again in a moment.',
   backupFailed: 'The backup could not be created. Your MatterDock data was not changed.',
   backupManagedMissing:

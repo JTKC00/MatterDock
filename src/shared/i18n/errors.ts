@@ -66,6 +66,8 @@ const CODE_KEYS: Record<string, string> = {
   ALREADY_CLOSED: 'errors.alreadyClosed',
   NEXT_ACTION_CLOSED: 'errors.nextActionClosed',
   DOCUMENT_REMOVE_FAILED: 'errors.documentRemoveFailed',
+  MATTER_DELETE_FAILED: 'errors.matterDeleteFailed',
+  MATTER_DELETE_RECOVERY_FAILED: 'errors.matterDeleteRecoveryFailed',
   FILE_COPY_FAILED: 'errors.fileCopyFailed',
   FILE_OPEN_FAILED: 'errors.fileOpenFailed',
   FILE_REVEAL_FAILED: 'errors.fileRevealFailed',

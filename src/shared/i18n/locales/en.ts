@@ -159,7 +159,22 @@ export const en = {
     noMatchingContact: 'No matching contact',
     createContact: 'Create new contact “{name}”',
     noContactsYet: 'No contacts yet',
-    unlinkAria: 'Unlink {name}'
+    unlinkAria: 'Unlink {name}',
+    deletePermanently: 'Delete permanently',
+    deleteTitle: 'Permanently delete “{title}”?',
+    deleteDescription: 'This action cannot be undone.',
+    deleteRemovesLabel: 'This will permanently remove:',
+    deleteRemovesMatter: 'The Matter and its contact and tag links',
+    deleteRemovesWork: 'Actions, waiting items and the Next Action',
+    deleteRemovesTimeline: 'Timeline activity',
+    deleteRemovesDocuments: 'MatterDock document metadata',
+    deleteRemovesCopies: 'MatterDock-managed document copies',
+    deleteKeepsLabel: 'This will not delete:',
+    deleteKeepsOriginals: 'Referenced original files (they remain unchanged in their original location)',
+    deleteKeepsShared: 'Organisation, Contact and Tag records',
+    deleting: 'Deleting permanently…',
+    deleteSuccess: 'Matter permanently deleted.',
+    deleteFailed: 'Matter could not be permanently deleted. Your Matter and files have been kept safe. Please try again.'
   },
   work: {
     nextAction: 'Next Action',
@@ -625,6 +640,10 @@ export const en = {
     fileOpenFailed: 'The file could not be opened.',
     fileRevealFailed: 'The file location could not be shown.',
     documentRemoveFailed: 'The document could not be removed.',
+    matterDeleteFailed:
+      'Matter could not be permanently deleted. Your Matter and managed files have been kept safe. Please try again.',
+    matterDeleteRecoveryFailed:
+      'Matter could not be safely deleted. Your Matter remains available, but some managed files need recovery before trying again.',
     unsafeDocumentPath: 'That file is outside the MatterDock workspace and cannot be changed.',
     cannotRelinkCopy: 'MatterDock copies cannot be relinked to another source file.',
     contextSaveFailed: 'The context file could not be saved. No MatterDock data was changed.',

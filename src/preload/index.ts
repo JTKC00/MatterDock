@@ -9,6 +9,7 @@ const api: MatterDockApi = {
     update: (id, input) => ipcRenderer.invoke(IPC_CHANNELS.mattersUpdate, id, input),
     archive: (id) => ipcRenderer.invoke(IPC_CHANNELS.mattersArchive, id),
     restore: (id) => ipcRenderer.invoke(IPC_CHANNELS.mattersRestore, id),
+    deletePermanently: (id) => ipcRenderer.invoke(IPC_CHANNELS.mattersDeletePermanently, id),
     setTags: (id, tagNames) => ipcRenderer.invoke(IPC_CHANNELS.mattersSetTags, id, tagNames),
     linkContact: (input) => ipcRenderer.invoke(IPC_CHANNELS.mattersLinkContact, input),
     unlinkContact: (matterId, contactId) =>

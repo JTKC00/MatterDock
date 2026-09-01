@@ -68,9 +68,15 @@ export async function openDatabase(filePath: string): Promise<Database> {
 }
 
 export function persistDatabase(db: Database, filePath: string): void {
-  mkdirSync(dirname(filePath), { recursive: true })
-  const exported = db.export()
-  const tempPath = `${filePath}.tmp`
-  writeFileSync(tempPath, Buffer.from(exported))
-  renameSync(tempPath, filePath)
+  try {
+    mkdirSync(dirname(filePath), { recursive: true })
+    const exported = db.export()
+    const tempPath = `${filePath}.tmp`
+    writeFileSync(tempPath, Buffer.from(exported))
+    renameSync(tempPath, filePath)
+  } finally {
+    // sql.js export resets connection-level pragmas. Keep the live database
+    // enforcing the schema's ON DELETE CASCADE rules after persistence.
+    db.run('PRAGMA foreign_keys = ON')
+  }
 }
