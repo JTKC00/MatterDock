@@ -7,7 +7,6 @@ export type ComboboxOption = {
 }
 
 export function Combobox({
-  value,
   query,
   onQueryChange,
   options,
@@ -90,7 +89,6 @@ export function Combobox({
           }
         }}
       />
-      {value ? <span className="sr-only">Selected {value}</span> : null}
       {open ? (
         <div className="combobox-menu" id={listId} role="listbox">
           {items.length === 0 ? (
