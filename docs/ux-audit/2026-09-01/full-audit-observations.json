@@ -3,8 +3,8 @@
     {
       "id": "audit-en-organisation",
       "label": "English organisation detail",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-organisation.png",
-      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/organisations/<redacted-id>",
+      "screenshot": "docs/ux-audit/2026-09-01/audit-en-organisation.png",
+      "url": "file:///redacted/renderer/index.html#/organisations/<redacted-id>",
       "lang": "en",
       "headings": [
         "Test Organisation",
@@ -145,8 +145,8 @@
     {
       "id": "audit-en-contact",
       "label": "English contact detail",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-contact.png",
-      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/contacts/<redacted-id>",
+      "screenshot": "docs/ux-audit/2026-09-01/audit-en-contact.png",
+      "url": "file:///redacted/renderer/index.html#/contacts/<redacted-id>",
       "lang": "en",
       "headings": [
         "Test Contact",
@@ -257,8 +257,8 @@
     {
       "id": "audit-en-matter-initial",
       "label": "English matter detail before linking",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-matter-initial.png",
-      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/matters/<redacted-id>",
+      "screenshot": "docs/ux-audit/2026-09-01/audit-en-matter-initial.png",
+      "url": "file:///redacted/renderer/index.html#/matters/<redacted-id>",
       "lang": "en",
       "headings": [
         "Sample Matter",
@@ -510,8 +510,8 @@
     {
       "id": "audit-en-delete-confirmations",
       "label": "English deletion confirmations",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-delete-confirmations.png",
-      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/matters/<redacted-id>",
+      "screenshot": "docs/ux-audit/2026-09-01/audit-en-delete-confirmations.png",
+      "url": "file:///redacted/renderer/index.html#/matters/<redacted-id>",
       "lang": "en",
       "headings": [
         "Sample Matter",
@@ -524,7 +524,7 @@
         "Today",
         "Details"
       ],
-      "body": "MatterDock\nby Snugzap\nToday\nMatters\nWaiting\nSearch\nOrganisations\nContacts\nSettings\nYour data stays on this computer. MatterDock works offline.\nMatters\nIn Progress\nSample Matter\nTest Organisation\nPrepare Context\nNEXT ACTION\nSample action\n\nDue 2 Sept 2026 · High\n\nComplete\nOPEN ITEMS\n+ Action\n+ Waiting\nActions\nSample action\nDue 2 Sept 2026\nHigh\nNEXT ACTION\nComplete\n•••\nWaiting\nWaiting for Test Contact\nSample waiting item\nFollow up 4 Sept 2026\nSince 1 Sept 2026\nResolve\n•••\nDOCUMENTS\n+ Add Document\nPDF · MatterDock copy\nsample-document.pdf\n8 B\nC:\\workspace\\temp\\matterdock-ux-full-en-M8N6AN\\documents\\<redacted-id>\\sample-document.pdf\n\nSample document note\n\nOpen\n•••\nTIMELINE\nAdd Activity\nToday\nEmail received\n13:13\n•••\nSample request\n\nSample message\n\nNote\n13:13\n•••\n\nSample note\n\nDETAILS\nStatus\nNew\nIn Progress\nWaiting\nScheduled\nCompleted\nArchived\nPriority\nLow\nNormal\nHigh\nUrgent\nOrganisation\nSelected <redacted-id>\nReference\nContacts\nTest Contact\nCase Officer · Test Organisation\n×\n+ Add Contact\nTags\nGovernment\nPriority\nAdd\nCreated\n1 Sept 2026\nUpdated\n1 Sept 2026\nArchive\nContact linked.\nAction added.\nWaiting added.\nActivity added.\nActivity added.\nDocument copied into MatterDock.",
+      "body": "MatterDock\nby Snugzap\nToday\nMatters\nWaiting\nSearch\nOrganisations\nContacts\nSettings\nYour data stays on this computer. MatterDock works offline.\nMatters\nIn Progress\nSample Matter\nTest Organisation\nPrepare Context\nNEXT ACTION\nSample action\n\nDue 2 Sept 2026 · High\n\nComplete\nOPEN ITEMS\n+ Action\n+ Waiting\nActions\nSample action\nDue 2 Sept 2026\nHigh\nNEXT ACTION\nComplete\n•••\nWaiting\nWaiting for Test Contact\nSample waiting item\nFollow up 4 Sept 2026\nSince 1 Sept 2026\nResolve\n•••\nDOCUMENTS\n+ Add Document\nPDF · MatterDock copy\nsample-document.pdf\n8 B\n[local path redacted]\\sample-document.pdf\n\nSample document note\n\nOpen\n•••\nTIMELINE\nAdd Activity\nToday\nEmail received\n13:13\n•••\nSample request\n\nSample message\n\nNote\n13:13\n•••\n\nSample note\n\nDETAILS\nStatus\nNew\nIn Progress\nWaiting\nScheduled\nCompleted\nArchived\nPriority\nLow\nNormal\nHigh\nUrgent\nOrganisation\nSelected <redacted-id>\nReference\nContacts\nTest Contact\nCase Officer · Test Organisation\n×\n+ Add Contact\nTags\nGovernment\nPriority\nAdd\nCreated\n1 Sept 2026\nUpdated\n1 Sept 2026\nArchive\nContact linked.\nAction added.\nWaiting added.\nActivity added.\nActivity added.\nDocument copied into MatterDock.",
       "viewport": {
         "width": 1344,
         "height": 841,
@@ -880,8 +880,8 @@
     {
       "id": "audit-en-after-archive",
       "label": "English list after archive",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-after-archive.png",
-      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/matters",
+      "screenshot": "docs/ux-audit/2026-09-01/audit-en-after-archive.png",
+      "url": "file:///redacted/renderer/index.html#/matters",
       "lang": "en",
       "headings": [
         "Matters",
@@ -1019,7 +1019,7 @@
     {
       "id": "audit-en-document-narrow-metrics",
       "label": "Sanitized long document path at narrow viewport",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-document-narrow-metrics.png",
+      "screenshot": "docs/ux-audit/2026-09-01/audit-en-document-narrow-metrics.png",
       "lang": "en",
       "viewport": {
         "width": 980,
@@ -1041,7 +1041,7 @@
     {
       "id": "audit-en-toast-stack-narrow",
       "label": "Sanitized toast stack over new matter dialog",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-toast-stack-narrow.png",
+      "screenshot": "docs/ux-audit/2026-09-01/audit-en-toast-stack-narrow.png",
       "lang": "en",
       "viewport": {
         "width": 980,
@@ -1055,7 +1055,7 @@
     {
       "id": "audit-en-empty-today",
       "label": "Sanitized English empty Today page",
-      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\en-empty-today.png",
+      "screenshot": "docs/ux-audit/2026-09-01/en-empty-today.png",
       "lang": "en",
       "viewport": {
         "width": 1344,

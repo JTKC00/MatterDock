@@ -67,18 +67,27 @@ export function TodayPage() {
         <h2 className="section-label" style={{ marginTop: 24 }}>
           {t('today.recentMatters')}
         </h2>
-        {data?.recentMatters.map((matter) => (
-          <Link key={matter.id} to={`/matters/${matter.id}`} className="entity-row">
-            <div className="entity-row-top">
-              <div>
-                <div className="entity-title">{matter.title}</div>
-                <div className="entity-meta">{matter.organisationName ?? t('today.noOrganisation')}</div>
+        {(data?.recentMatters.length ?? 0) === 0 ? (
+          <div className="today-empty">
+            <p className="muted">{t('today.noRecentMatters')}</p>
+            <Link to="/matters" className="back-link">
+              {t('today.viewMatters')}
+            </Link>
+          </div>
+        ) : (
+          data?.recentMatters.map((matter) => (
+            <Link key={matter.id} to={`/matters/${matter.id}`} className="entity-row">
+              <div className="entity-row-top">
+                <div>
+                  <div className="entity-title">{matter.title}</div>
+                  <div className="entity-meta">{matter.organisationName ?? t('today.noOrganisation')}</div>
+                </div>
+                <StatusBadge status={matter.status} />
               </div>
-              <StatusBadge status={matter.status} />
-            </div>
-            <div className="muted">{formatRelativeDate(matter.updatedAt)}</div>
-          </Link>
-        ))}
+              <div className="muted">{formatRelativeDate(matter.updatedAt)}</div>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   )

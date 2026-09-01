@@ -7,6 +7,7 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     offline: '你的資料只會留在這部電腦。MatterDock 可離線使用。'
   },
   nav: {
+    primary: '主要導覽',
     today: '今日',
     matters: '事項',
     waiting: '等待中',
@@ -44,7 +45,8 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     optional: '選填',
     showInFolder: '在資料夾中顯示',
     copy: '複製',
-    someone: '對方'
+    someone: '對方',
+    dismissNotification: '關閉通知'
   },
   status: {
     new: '新建',
@@ -79,7 +81,9 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     notWaiting: '你現時沒有等待任何人。',
     waitingFor: '等待 {name} · {title}',
     recentMatters: '最近事項',
-    noOrganisation: '沒有機構'
+    noOrganisation: '沒有機構',
+    noRecentMatters: '暫時沒有最近事項。',
+    viewMatters: '查看事項'
   },
   due: {
     overdue: '已過期',
@@ -403,6 +407,8 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     aliasRemoveFailed: '未能移除該別名。',
     removed: '機構已刪除。',
     deleteFailed: '未能刪除此機構。',
+    deleteTitle: '刪除此機構？',
+    deleteBody: '這會永久刪除機構。如機構仍連結到事項，系統會阻止刪除。',
     notFoundTitle: '未能開啟機構',
     notFoundBody: '找不到此機構。',
     opening: '正在開啟機構…',
@@ -444,6 +450,8 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     emptyHint: '隨着工作新增聯絡人。他們可以獨立存在，也可以隸屬機構。',
     deleted: '聯絡人已刪除。',
     deleteFailed: '未能刪除此聯絡人。',
+    deleteTitle: '刪除此聯絡人？',
+    deleteBody: '這會永久刪除聯絡人。如聯絡人仍連結到事項，請先取消連結。',
     notFoundTitle: '未能開啟聯絡人',
     notFoundBody: '找不到此聯絡人。',
     opening: '正在開啟聯絡人…',

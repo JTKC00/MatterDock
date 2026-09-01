@@ -34,7 +34,7 @@ export function DocumentRow({
             {' · '}
             {document.storageMode === 'copy' ? t('documents.copy') : t('documents.reference')}
           </div>
-          <div className="entity-title">{document.displayName}</div>
+          <div className="entity-title" title={document.displayName}>{document.displayName}</div>
           <div className="work-meta">
             {document.fileSize != null ? <span>{formatBytes(document.fileSize)}</span> : null}
             {document.resolvedPath ? (

@@ -88,6 +88,7 @@ export function OrganisationDetailPage() {
   const queryClient = useQueryClient()
   const [alias, setAlias] = useState('')
   const [editing, setEditing] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const organisation = useQuery({
     queryKey: ['organisation', organisationId],
     queryFn: () => api.organisations.get(organisationId),
@@ -156,7 +157,7 @@ export function OrganisationDetailPage() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button onClick={() => setEditing(true)}>{t('common.edit')}</Button>
-          <Button variant="ghost" onClick={() => remove.mutate()}>
+          <Button variant="ghost" onClick={() => setDeleteOpen(true)} disabled={remove.isPending}>
             {t('common.delete')}
           </Button>
         </div>
@@ -236,6 +237,22 @@ export function OrganisationDetailPage() {
         initialName={item.name}
         initialNotes={item.notes ?? ''}
       />
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={t('organisations.deleteTitle')}
+        description={t('organisations.deleteBody')}
+        actions={
+          <>
+            <DialogCloseButton />
+            <Button variant="danger" onClick={() => remove.mutate()} disabled={remove.isPending}>
+              {t('common.delete')}
+            </Button>
+          </>
+        }
+      >
+        <strong>{item.name}</strong>
+      </Dialog>
     </div>
   )
 }
