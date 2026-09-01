@@ -5,6 +5,27 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Safe Permanent Matter Deletion.
+
+### Added
+
+- archived-Matter-only permanent deletion with an explicit irreversible confirmation in English and Traditional Chinese (Hong Kong)
+- safe quarantine, rollback, and startup-recovery coordination for MatterDock-managed document copies
+- regression coverage for cascade deletion, shared-record preservation, reference-original preservation, and failure paths
+
+### Safety
+
+- referenced original files are never deleted, moved, renamed, quarantined, truncated, or otherwise modified
+- Organisation, Contact, Tag, unrelated Matter, and historical backup records remain preserved
+- restoring an older backup may intentionally restore a Matter that was permanently deleted from the current workspace
+
+### Compatibility
+
+- no schema migration was required; the existing foreign-key cascade contract remains the deletion boundary
+- Trash, soft-delete, bulk deletion, backup rewriting, auto-update, Portable builds, and other unrelated scope remain unchanged
+
 ## [0.8.0] — 2026-09-01
 
 Windows Release & Distribution Hardening.

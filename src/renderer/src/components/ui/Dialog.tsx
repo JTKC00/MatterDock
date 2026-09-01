@@ -43,10 +43,12 @@ export function Dialog({
   )
 }
 
-export function DialogCloseButton({ children }: { children?: ReactNode }) {
+export function DialogCloseButton({ children, disabled = false }: { children?: ReactNode; disabled?: boolean }) {
   return (
     <DialogPrimitive.Close asChild>
-      <Button variant="ghost">{children ?? t('common.cancel')}</Button>
+      <Button variant="ghost" disabled={disabled}>
+        {children ?? t('common.cancel')}
+      </Button>
     </DialogPrimitive.Close>
   )
 }

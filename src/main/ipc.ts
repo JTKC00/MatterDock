@@ -27,6 +27,7 @@ import { BACKUP_FILE_EXTENSION } from '@shared/backup'
 import { isSupportedLocale, translate, type SupportedLocale } from '@shared/i18n'
 import { buildMatterContext } from './context/build'
 import { createDocumentService } from './documents/service'
+import { createMatterDeletionService } from './matters/service'
 import { DatabaseStore, contacts, events, listTags, matters, organisations, search, tasks } from './db/store'
 import { BackupWorkspace } from './backup/workspace'
 
@@ -69,6 +70,7 @@ export function registerIpc(
   }
 ): void {
   const docs = createDocumentService(store, options.documentsRoot)
+  const matterDeletion = createMatterDeletionService(store, options.documentsRoot)
   const backup = new BackupWorkspace({
     store,
     userData: options.userData,
@@ -92,6 +94,9 @@ export function registerIpc(
   )
   ipcMain.handle(IPC_CHANNELS.mattersRestore, (_event, id: string) =>
     wrap(() => store.mutate((db) => matters.restoreMatter(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.mattersDeletePermanently, (_event, id: string) =>
+    wrap(() => matterDeletion.deletePermanently(id))
   )
   ipcMain.handle(IPC_CHANNELS.mattersSetTags, (_event, id: string, tagNames: string[]) =>
     wrap(() => store.mutate((db) => matters.setMatterTags(db, id, tagNames)))
