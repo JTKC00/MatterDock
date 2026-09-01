@@ -8,7 +8,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 async function launch(userData: string): Promise<ElectronApplication> {
   return electron.launch({
-    args: [root],
+    args: ['--disable-gpu', '--no-sandbox', root],
     cwd: root,
     env: {
       ...process.env,

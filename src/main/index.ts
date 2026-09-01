@@ -1,6 +1,5 @@
 import { app, BrowserWindow, dialog, session, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
 import { AppError, USER_ERRORS } from '@shared/errors'
 import { translate, type SupportedLocale } from '@shared/i18n'
 import { reconcileInterruptedRestore, recoveryRoot } from './backup/recovery'
@@ -9,14 +8,19 @@ import { reconcileDocumentQuarantinesFromStore } from './documents/recovery'
 import { databasePath, DatabaseStore } from './db/store'
 import { registerIpc } from './ipc'
 import { readPreferences, writePreferences } from './prefs'
+import { applicationResourcePaths, assertApplicationResources, type ApplicationResourcePaths } from './resources'
+
+const APPLICATION_ID = 'com.snugzap.matterdock'
 
 app.setName('MatterDock')
+if (process.platform === 'win32') app.setAppUserModelId(APPLICATION_ID)
 
 if (process.env.MATTERDOCK_USER_DATA) {
   app.setPath('userData', process.env.MATTERDOCK_USER_DATA)
 }
 
 const store = new DatabaseStore(databasePath(app.getPath('userData')))
+const resources: ApplicationResourcePaths = applicationResourcePaths(__dirname, process.resourcesPath)
 let isQuitting = false
 
 function createWindow(): BrowserWindow {
@@ -30,7 +34,7 @@ function createWindow(): BrowserWindow {
     title: 'MatterDock',
     autoHideMenuBar: true,
     webPreferences: {
-      preload: join(__dirname, '../preload/index.cjs'),
+      preload: resources.preload,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -45,7 +49,7 @@ function createWindow(): BrowserWindow {
   if (process.env.ELECTRON_RENDERER_URL) {
     void window.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
-    void window.loadFile(join(__dirname, '../renderer/index.html'))
+    void window.loadFile(resources.renderer)
   }
 
   return window
@@ -67,6 +71,17 @@ void app.whenReady().then(async () => {
   const docsRoot = documentsRoot(userData)
   let currentLocale: SupportedLocale = readPreferences(userData, app.getLocale()).locale
   try {
+    assertApplicationResources(resources, { requireSqlWasm: app.isPackaged })
+    await store.initialize({
+      packaged: app.isPackaged,
+      sqlWasmPath: app.isPackaged ? resources.sqlWasm : undefined
+    })
+  } catch (error) {
+    console.error('[matterdock] application startup failed', error)
+    await presentFatalStartup(currentLocale, error)
+    return
+  }
+  try {
     await reconcileInterruptedRestore({
       userData,
       dbPath: store.path(),
@@ -77,7 +92,6 @@ void app.whenReady().then(async () => {
     await presentFatalRecovery(userData, currentLocale)
     return
   }
-  await store.initialize()
   try {
     reconcileDocumentQuarantinesFromStore(store, docsRoot)
   } catch (error) {
@@ -104,6 +118,21 @@ void app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+async function presentFatalStartup(locale: SupportedLocale, error: unknown): Promise<void> {
+  const detail = error instanceof Error ? error.message : String(error)
+  await dialog.showMessageBox({
+    type: 'error',
+    title: translate(locale, 'native.startupTitle'),
+    message: translate(locale, 'native.startupMessage'),
+    detail: translate(locale, 'native.startupDetail', { detail }),
+    buttons: [translate(locale, 'native.fatalQuit')],
+    defaultId: 0,
+    cancelId: 0,
+    noLink: true
+  })
+  app.quit()
+}
 
 async function presentFatalRecovery(userData: string, locale: SupportedLocale): Promise<void> {
   const recovery = recoveryRoot(userData)

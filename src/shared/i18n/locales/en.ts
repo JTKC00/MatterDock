@@ -560,6 +560,9 @@ export const en = {
     fatalDetail: 'Your workspace has not been opened for editing. A recovery copy may still be available.',
     fatalQuit: 'Quit',
     fatalShow: 'Show Recovery Folder',
+    startupTitle: 'MatterDock could not start',
+    startupMessage: 'MatterDock is missing a required application resource.',
+    startupDetail: 'Please reinstall MatterDock. Technical detail: {detail}',
     contextFilter: 'Context'
   },
   errors: {

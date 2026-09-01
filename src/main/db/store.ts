@@ -28,11 +28,11 @@ export class DatabaseStore {
     private readonly persistFn: PersistFn = persistDatabase
   ) {}
 
-  async initialize(options?: { seed?: boolean }): Promise<void> {
-    this.SQL = await loadSqlJs()
+  async initialize(options?: { seed?: boolean; packaged?: boolean; sqlWasmPath?: string }): Promise<void> {
+    this.SQL = await loadSqlJs({ packaged: options?.packaged, wasmPath: options?.sqlWasmPath })
     this.db = await openDatabase(this.filePath)
     migrate(this.db)
-    if (options?.seed !== false) seedIfEmpty(this.db)
+    if (options?.seed !== false) seedIfEmpty(this.db, { packaged: options?.packaged })
     this.persistNow()
   }
 

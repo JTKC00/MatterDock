@@ -9,7 +9,7 @@ jobs:
   quality:
     name: Quality gate
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,3 +26,23 @@ jobs:
         env:
           CI: true
           MATTERDOCK_DISABLE_SEED: '1'
+      - name: Build unpacked Windows release
+        run: npm run package:win:dir
+      - name: Packaged Electron smoke
+        run: npx playwright test e2e/packaged.spec.ts
+        env:
+          CI: true
+      - name: Build Windows NSIS installer release
+        run: npm run package:win
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+      - name: Validate Windows release artifacts
+        run: npm run verify:release
+      - name: Upload Windows release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: matterdock-windows-${{ github.sha }}
+          path: release/MatterDock-*-Setup.exe
+          if-no-files-found: error
+          retention-days: 14

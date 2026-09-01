@@ -5,6 +5,36 @@ All notable changes to MatterDock are recorded here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] — 2026-09-01
+
+Windows Release & Distribution Hardening.
+
+### Added
+
+- electron-builder packaging for a per-user x64 NSIS installer
+- a release validation path for the unpacked Windows app
+- deterministic release scripts and artifact validation
+- packaged-app smoke coverage for startup, localisation, persistence, and data location
+- packaged-resource checks for the preload, renderer, and sql.js WASM runtime
+
+### Changed
+
+- Windows product metadata now identifies MatterDock by Snugzap with application ID `com.snugzap.matterdock`
+- MatterDock data remains in Electron's per-user `%APPDATA%\MatterDock` location, outside the installation directory
+- NSIS uninstall metadata explicitly preserves user data for reinstall and update workflows
+- development seed data is explicitly disabled in packaged applications
+
+### Distribution
+
+- Windows distribution is permanently installer-only: MatterDock produces and publishes x64 NSIS installers; Portable builds are not produced or published.
+- Broad publication remains gated on signing the Windows installer with the Snugzap Authenticode certificate.
+
+### Compatibility
+
+- v0.7.x MatterDock databases open without a schema migration
+- existing backup and restore formats remain unchanged and are covered by the existing round-trip tests
+- no auto-update, telemetry, cloud sync, authentication, AI, or new product features were added
+
 ## [0.7.0] — 2026-08-20
 
 Traditional Chinese & Internationalisation.

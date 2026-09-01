@@ -22,7 +22,7 @@ Organisation → Contacts → Matters → Timeline / Tasks / Documents
 - **Waiting** — you have acted, and are waiting on someone else
 - **Next Action** — the single most important thing to do next
 
-This repository currently ships through **Phase 8**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents, Global Search, Prepare Context, Backup / Restore, Data Portability, and English / Traditional Chinese (Hong Kong) interface languages.
+This repository currently ships through **Phase 9**: Matter Core, Timeline, Actions / Waiting / Next Action, Documents, Global Search, Prepare Context, Backup / Restore, Data Portability, English / Traditional Chinese (Hong Kong) interface languages, and hardened Windows distribution.
 
 ## Requirements
 
@@ -49,13 +49,21 @@ If `npm run dev` shows `403 Restricted` / `outside of Vite serving allow list`, 
 |---|---|
 | `npm run dev` | Start the desktop app in development |
 | `npm run build` | Production build to `out/` |
+| `npm run package:win:dir` | Build an unpacked x64 Windows application to `release/win-unpacked/` |
+| `npm run test:e2e:packaged` | Build the unpacked Windows application and run its packaged-app smoke test |
+| `npm run package:win` | Build the x64 NSIS installer only to `release/` |
+| `npm run verify:release` | Validate the unpacked app, packaged WASM resource, and release artifacts |
+| `npm run release:win` | Run the release checks, packaged smoke test, and Windows release build |
 | `npx electron .` | Launch the production build |
 | `npm run typecheck` | TypeScript (main + renderer) |
 | `npm run lint` | ESLint |
 | `npm test` | Unit tests (Vitest) |
 | `npm run test:e2e` | Build, then Playwright Electron persistence test |
 
-CI on `main` and pull requests runs typecheck, lint, unit tests, build and the Electron e2e on `windows-latest`.
+CI on `main` and pull requests runs typecheck, lint, unit tests, build, the Electron e2e, the packaged-app smoke test, and the Windows release build on `windows-latest`.
+
+MatterDock distributes Windows releases as x64 NSIS installers only. Portable builds are not produced or published.
+Windows CI accepts `WINDOWS_CSC_LINK` and `WINDOWS_CSC_KEY_PASSWORD` repository secrets for Authenticode signing; a build without those secrets is unsigned and is not ready for broad public distribution.
 
 ## What works now
 
@@ -84,10 +92,12 @@ CI on `main` and pull requests runs typecheck, lint, unit tests, build and the E
 
 All core data stays on this computer.
 
-- **Development:** `%APPDATA%\MatterDock\matterdock.sqlite` when launched normally, or `MATTERDOCK_USER_DATA` if set
+- **Installed Windows builds:** `%APPDATA%\MatterDock\matterdock.sqlite` by Electron convention, outside the application installation directory
+- **Development:** the same default path when launched normally, or `MATTERDOCK_USER_DATA` if set
+- The NSIS uninstaller is configured not to delete MatterDock user data. Updates, reinstallations, and normal uninstall/reinstall cycles therefore leave the database, managed document copies, backups, recovery data, and local settings available for the next installation.
 - **No account, no cloud, no telemetry, no AI API**
 
-Demo seed data is loaded only when `NODE_ENV=development` and the database is empty. Production databases are not seeded.
+Demo seed data is loaded only for an unpackaged development run when the database is empty. Packaged applications never seed, even if a seed environment variable is present. Release artifacts contain no user database.
 
 Override the data directory:
 
@@ -124,6 +134,7 @@ src/
 - **State:** TanStack Query over IPC
 - **Validation:** Zod
 - **Database:** SQLite via sql.js (WASM), versioned migrations, atomic file persist
+- **Windows distribution:** electron-builder, x64 NSIS installer only; Portable builds are not produced or published; no auto-update service
 
 Renderer never runs SQL. The main process owns the database.
 

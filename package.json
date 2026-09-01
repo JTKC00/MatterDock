@@ -1,21 +1,72 @@
 {
   "name": "matterdock",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Local-first workspace for matters, follow-ups and documents.",
   "author": "Snugzap",
   "license": "UNLICENSED",
   "main": "./out/main/index.js",
   "type": "module",
+  "build": {
+    "appId": "com.snugzap.matterdock",
+    "productName": "MatterDock",
+    "executableName": "MatterDock",
+    "copyright": "Copyright © 2026 Snugzap",
+    "publish": null,
+    "artifactName": "MatterDock-${version}-${arch}.${ext}",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/sql.js/dist/sql-wasm.wasm",
+        "to": "sql-wasm.wasm"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "selectPerMachineByDefault": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MatterDock",
+      "menuCategory": "MatterDock",
+      "deleteAppDataOnUninstall": false,
+      "differentialPackage": false,
+      "runAfterFinish": true,
+      "uninstallDisplayName": "MatterDock",
+      "artifactName": "MatterDock-${version}-Setup.${ext}"
+    }
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "package:win:dir": "node scripts/clean-release.mjs && npm run build && electron-builder --win dir --x64 --publish never",
+    "package:win": "node scripts/clean-release.mjs && npm run build && electron-builder --win nsis --x64 --publish never",
+    "verify:release": "node scripts/verify-release.mjs",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "npm run build && playwright test",
+    "test:e2e:packaged": "npm run package:win:dir && npx playwright test e2e/packaged.spec.ts",
+    "release:win": "npm run typecheck && npm run lint && npm test && npm run test:e2e && npm run test:e2e:packaged && npm run package:win && npm run verify:release",
     "start": "electron-vite preview"
   },
   "dependencies": {
@@ -43,6 +94,7 @@
     "@types/yazl": "^3.3.1",
     "@vitejs/plugin-react": "^4.7.0",
     "electron": "^37.10.3",
+    "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
     "eslint": "^10.8.1",
     "eslint-plugin-react-hooks": "^7.1.1",
