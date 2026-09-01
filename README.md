@@ -62,7 +62,7 @@ If `npm run dev` shows `403 Restricted` / `outside of Vite serving allow list`, 
 
 CI on `main` and pull requests runs typecheck, lint, unit tests, build, the Electron e2e, the packaged-app smoke test, and the Windows release build on `windows-latest`.
 
-The v0.8.0 public Windows deliverable is the NSIS installer only. Portable publication is intentionally held pending code-signing and antivirus review.
+MatterDock distributes Windows releases as x64 NSIS installers only. Portable builds are not produced or published.
 Windows CI accepts `WINDOWS_CSC_LINK` and `WINDOWS_CSC_KEY_PASSWORD` repository secrets for Authenticode signing; a build without those secrets is unsigned and is not ready for broad public distribution.
 
 ## What works now
@@ -134,7 +134,7 @@ src/
 - **State:** TanStack Query over IPC
 - **Validation:** Zod
 - **Database:** SQLite via sql.js (WASM), versioned migrations, atomic file persist
-- **Windows distribution:** electron-builder, x64 NSIS installer only; portable publication held; no auto-update service
+- **Windows distribution:** electron-builder, x64 NSIS installer only; Portable builds are not produced or published; no auto-update service
 
 Renderer never runs SQL. The main process owns the database.
 

@@ -53,7 +53,7 @@ const portableArtifacts = walk(releaseRoot).filter((path) =>
 )
 if (portableArtifacts.length > 0) {
   throw new Error(
-    `Release validation failed. Portable artifacts are intentionally disabled for v${version}:\n${portableArtifacts
+    `Release validation failed. Portable artifacts are not permitted in installer-only releases:\n${portableArtifacts
       .map((path) => `- ${relative(releaseRoot, path)}`)
       .join('\n')}`
   )

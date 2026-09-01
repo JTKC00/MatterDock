@@ -24,9 +24,9 @@ Windows Release & Distribution Hardening.
 - NSIS uninstall metadata explicitly preserves user data for reinstall and update workflows
 - development seed data is explicitly disabled in packaged applications
 
-### Held back
+### Distribution
 
-- Portable Windows publication is intentionally held for v0.8.0 after antivirus quarantine of the unsigned NSIS portable wrapper. Only the NSIS installer is a public release artifact.
+- Windows distribution is permanently installer-only: MatterDock produces and publishes x64 NSIS installers; Portable builds are not produced or published.
 - Broad publication remains gated on signing the Windows installer with the Snugzap Authenticode certificate.
 
 ### Compatibility
