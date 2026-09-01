@@ -1,0 +1,1129 @@
+{
+  "observations": [
+    {
+      "id": "audit-en-organisation",
+      "label": "English organisation detail",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-organisation.png",
+      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/organisations/<redacted-id>",
+      "lang": "en",
+      "headings": [
+        "Test Organisation",
+        "Aliases",
+        "Contacts",
+        "Active matters",
+        "Completed / previous matters"
+      ],
+      "body": "MatterDock\nby Snugzap\nToday\nMatters\nWaiting\nSearch\nOrganisations\nContacts\nSettings\nYour data stays on this computer. MatterDock works offline.\nOrganisations\nTest Organisation\n\n0 active matters\n\nEdit\nDelete\nALIASES\nAdd Alias\nLands\n×\nCONTACTS\n\nNo contacts from this organisation.\n\nACTIVE MATTERS\n\nNo active matters.\n\nCOMPLETED / PREVIOUS MATTERS\n\nNo completed or archived matters.\n\nOrganisation created.\nAlias added.",
+      "viewport": {
+        "width": 1344,
+        "height": 841,
+        "scrollWidth": 1344,
+        "clientWidth": 1344,
+        "scrollHeight": 841,
+        "clientHeight": 841
+      },
+      "active": {
+        "tag": "button",
+        "id": "",
+        "aria": null,
+        "text": "Add Alias"
+      },
+      "overflow": [],
+      "controls": [
+        {
+          "tag": "a",
+          "text": "Today",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Matters",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Waiting",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Search",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Organisations",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Contacts",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Settings",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "button",
+          "text": "Organisations",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Edit",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Delete",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": "New alias",
+          "title": null,
+          "placeholder": "Add alias, e.g. 中電",
+          "type": null,
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Add Alias",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "submit",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "×",
+          "aria": "Remove Lands",
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "audit-en-contact",
+      "label": "English contact detail",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-contact.png",
+      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/contacts/<redacted-id>",
+      "lang": "en",
+      "headings": [
+        "Test Contact",
+        "Related matters"
+      ],
+      "body": "MatterDock\nby Snugzap\nToday\nMatters\nWaiting\nSearch\nOrganisations\nContacts\nSettings\nYour data stays on this computer. MatterDock works offline.\nContacts\nTest Contact\n\nTest Organisation\n\nEdit\nDelete\nJob title\nCase Officer\nPhone\n0000 0000\nEmail\ncontact@example.invalid\nNotes\nTest contact notes\nRELATED MATTERS\n\nNot linked to any matters yet.\n\nOrganisation created.\nAlias added.\nContact created.",
+      "viewport": {
+        "width": 1344,
+        "height": 841,
+        "scrollWidth": 1344,
+        "clientWidth": 1344,
+        "scrollHeight": 841,
+        "clientHeight": 841
+      },
+      "active": {
+        "tag": "body",
+        "id": "",
+        "aria": null,
+        "text": "MatterDockby SnugzapTodayMattersWaitingSearchOrganisationsContactsSettingsYour data stays on this co"
+      },
+      "overflow": [],
+      "controls": [
+        {
+          "tag": "a",
+          "text": "Today",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Matters",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Waiting",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Search",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Organisations",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Contacts",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Settings",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "button",
+          "text": "Contacts",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Edit",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Delete",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "audit-en-matter-initial",
+      "label": "English matter detail before linking",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-matter-initial.png",
+      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/matters/<redacted-id>",
+      "lang": "en",
+      "headings": [
+        "Sample Matter",
+        "Next Action",
+        "Open Items",
+        "Actions",
+        "Waiting",
+        "Documents",
+        "Timeline",
+        "Details"
+      ],
+      "body": "MatterDock\nby Snugzap\nToday\nMatters\nWaiting\nSearch\nOrganisations\nContacts\nSettings\nYour data stays on this computer. MatterDock works offline.\nMatters\nIn Progress\nSample Matter\nTest Organisation\nPrepare Context\nNEXT ACTION\n\nNo next action set\n\nSet next action\nOPEN ITEMS\n+ Action\n+ Waiting\nActions\n\nNo open actions.\n\nWaiting\n\nNot waiting on anyone.\n\nDOCUMENTS\n+ Add Document\n\nNo documents attached.\n\nTIMELINE\nAdd Activity\n\nNo activity yet.\n\nAdd a note, call, email or other activity to start building this matter’s history.\n\n+ Add Activity\nDETAILS\nStatus\nNew\nIn Progress\nWaiting\nScheduled\nCompleted\nArchived\nPriority\nLow\nNormal\nHigh\nUrgent\nOrganisation\nSelected <redacted-id>\nReference\nContacts\nNo contacts yet\n+ Add Contact\nTags\nGovernment\nPriority\nAdd\nCreated\n1 Sept 2026\nUpdated\n1 Sept 2026\nArchive\nOrganisation created.\nAlias added.\nContact created.\nMatter created.",
+      "viewport": {
+        "width": 1344,
+        "height": 841,
+        "scrollWidth": 1344,
+        "clientWidth": 1344,
+        "scrollHeight": 841,
+        "clientHeight": 841
+      },
+      "active": {
+        "tag": "body",
+        "id": "",
+        "aria": null,
+        "text": "MatterDockby SnugzapTodayMattersWaitingSearchOrganisationsContactsSettingsYour data stays on this co"
+      },
+      "overflow": [],
+      "controls": [
+        {
+          "tag": "a",
+          "text": "Today",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Matters",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Waiting",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Search",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Organisations",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Contacts",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Settings",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "button",
+          "text": "Matters",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Prepare Context",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Set next action",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Action",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Waiting",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Add Document",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Add Activity",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Add Activity",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "select",
+          "text": "NewIn ProgressWaitingScheduledCompletedArchived",
+          "aria": "Status",
+          "title": null,
+          "placeholder": null,
+          "type": null,
+          "value": "in_progress"
+        },
+        {
+          "tag": "select",
+          "text": "LowNormalHighUrgent",
+          "aria": "Priority",
+          "title": null,
+          "placeholder": null,
+          "type": null,
+          "value": "normal"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": null,
+          "title": null,
+          "placeholder": "Search organisations",
+          "type": null,
+          "value": "Test Organisation"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": "Reference",
+          "title": null,
+          "placeholder": "None",
+          "type": null,
+          "value": "TEST-2026-001"
+        },
+        {
+          "tag": "button",
+          "text": "+ Add Contact",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Government",
+          "aria": null,
+          "title": "Remove tag",
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Priority",
+          "aria": null,
+          "title": "Remove tag",
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": "Add tag",
+          "title": null,
+          "placeholder": "Add tag",
+          "type": null,
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Add",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "submit",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Archive",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "audit-en-delete-confirmations",
+      "label": "English deletion confirmations",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-delete-confirmations.png",
+      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/matters/<redacted-id>",
+      "lang": "en",
+      "headings": [
+        "Sample Matter",
+        "Next Action",
+        "Open Items",
+        "Actions",
+        "Waiting",
+        "Documents",
+        "Timeline",
+        "Today",
+        "Details"
+      ],
+      "body": "MatterDock\nby Snugzap\nToday\nMatters\nWaiting\nSearch\nOrganisations\nContacts\nSettings\nYour data stays on this computer. MatterDock works offline.\nMatters\nIn Progress\nSample Matter\nTest Organisation\nPrepare Context\nNEXT ACTION\nSample action\n\nDue 2 Sept 2026 · High\n\nComplete\nOPEN ITEMS\n+ Action\n+ Waiting\nActions\nSample action\nDue 2 Sept 2026\nHigh\nNEXT ACTION\nComplete\n•••\nWaiting\nWaiting for Test Contact\nSample waiting item\nFollow up 4 Sept 2026\nSince 1 Sept 2026\nResolve\n•••\nDOCUMENTS\n+ Add Document\nPDF · MatterDock copy\nsample-document.pdf\n8 B\nC:\\workspace\\temp\\matterdock-ux-full-en-M8N6AN\\documents\\<redacted-id>\\sample-document.pdf\n\nSample document note\n\nOpen\n•••\nTIMELINE\nAdd Activity\nToday\nEmail received\n13:13\n•••\nSample request\n\nSample message\n\nNote\n13:13\n•••\n\nSample note\n\nDETAILS\nStatus\nNew\nIn Progress\nWaiting\nScheduled\nCompleted\nArchived\nPriority\nLow\nNormal\nHigh\nUrgent\nOrganisation\nSelected <redacted-id>\nReference\nContacts\nTest Contact\nCase Officer · Test Organisation\n×\n+ Add Contact\nTags\nGovernment\nPriority\nAdd\nCreated\n1 Sept 2026\nUpdated\n1 Sept 2026\nArchive\nContact linked.\nAction added.\nWaiting added.\nActivity added.\nActivity added.\nDocument copied into MatterDock.",
+      "viewport": {
+        "width": 1344,
+        "height": 841,
+        "scrollWidth": 1344,
+        "clientWidth": 1344,
+        "scrollHeight": 841,
+        "clientHeight": 841
+      },
+      "active": {
+        "tag": "body",
+        "id": "",
+        "aria": null,
+        "text": "MatterDockby SnugzapTodayMattersWaitingSearchOrganisationsContactsSettingsYour data stays on this co"
+      },
+      "overflow": [],
+      "controls": [
+        {
+          "tag": "a",
+          "text": "Today",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Matters",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Waiting",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Search",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Organisations",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Contacts",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Settings",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "button",
+          "text": "Matters",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Prepare Context",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Complete",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Action",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Waiting",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Complete",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "•••",
+          "aria": "Item actions",
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Resolve",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "•••",
+          "aria": "Item actions",
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Add Document",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Open",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "•••",
+          "aria": "Document actions",
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Add Activity",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Email received13:13",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "•••",
+          "aria": "Activity actions",
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Sample requestSample message",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Note13:13",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "•••",
+          "aria": "Activity actions",
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Sample note",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "select",
+          "text": "NewIn ProgressWaitingScheduledCompletedArchived",
+          "aria": "Status",
+          "title": null,
+          "placeholder": null,
+          "type": null,
+          "value": "in_progress"
+        },
+        {
+          "tag": "select",
+          "text": "LowNormalHighUrgent",
+          "aria": "Priority",
+          "title": null,
+          "placeholder": null,
+          "type": null,
+          "value": "normal"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": null,
+          "title": null,
+          "placeholder": "Search organisations",
+          "type": null,
+          "value": "Test Organisation"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": "Reference",
+          "title": null,
+          "placeholder": "None",
+          "type": null,
+          "value": "TEST-2026-001"
+        },
+        {
+          "tag": "a",
+          "text": "Test Contact",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "button",
+          "text": "×",
+          "aria": "Unlink Test Contact",
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "+ Add Contact",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Government",
+          "aria": null,
+          "title": "Remove tag",
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Priority",
+          "aria": null,
+          "title": "Remove tag",
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": "Add tag",
+          "title": null,
+          "placeholder": "Add tag",
+          "type": null,
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Add",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "submit",
+          "value": ""
+        },
+        {
+          "tag": "button",
+          "text": "Archive",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "audit-en-after-archive",
+      "label": "English list after archive",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-after-archive.png",
+      "url": "file:///C:/~/Development/MatterDock/out/renderer/index.html#/matters",
+      "lang": "en",
+      "headings": [
+        "Matters",
+        "No matters yet"
+      ],
+      "body": "MatterDock\nby Snugzap\nToday\nMatters\nWaiting\nSearch\nOrganisations\nContacts\nSettings\nYour data stays on this computer. MatterDock works offline.\nMatters\n\n0 matters\n\nNew Matter\nStatus\nAll\nNew\nIn Progress\nWaiting\nScheduled\nCompleted\nArchived\nTag\nAll\nGovernment\nPriority\nSort\nUpdated\nCreated\nTitle\nPriority\nNo matters yet\n\nCreate a matter in a few seconds. A title is enough to get it on the list.\n\nNew Matter\nDocument copied into MatterDock.\nMatter archived.",
+      "viewport": {
+        "width": 1344,
+        "height": 841,
+        "scrollWidth": 1344,
+        "clientWidth": 1344,
+        "scrollHeight": 841,
+        "clientHeight": 841
+      },
+      "active": {
+        "tag": "body",
+        "id": "",
+        "aria": null,
+        "text": "MatterDockby SnugzapTodayMattersWaitingSearchOrganisationsContactsSettingsYour data stays on this co"
+      },
+      "overflow": [],
+      "controls": [
+        {
+          "tag": "a",
+          "text": "Today",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Matters",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Waiting",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Search",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Organisations",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Contacts",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "a",
+          "text": "Settings",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null
+        },
+        {
+          "tag": "button",
+          "text": "New Matter",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "aria": "Search matters",
+          "title": null,
+          "placeholder": "Search matters...",
+          "type": null,
+          "value": ""
+        },
+        {
+          "tag": "select",
+          "text": "AllNewIn ProgressWaitingScheduledCompletedArchived",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null,
+          "value": "active"
+        },
+        {
+          "tag": "select",
+          "text": "AllGovernmentPriority",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null,
+          "value": ""
+        },
+        {
+          "tag": "select",
+          "text": "UpdatedCreatedTitlePriority",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": null,
+          "value": "updated"
+        },
+        {
+          "tag": "button",
+          "text": "New Matter",
+          "aria": null,
+          "title": null,
+          "placeholder": null,
+          "type": "button",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "audit-en-document-narrow-metrics",
+      "label": "Sanitized long document path at narrow viewport",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-document-narrow-metrics.png",
+      "lang": "en",
+      "viewport": {
+        "width": 980,
+        "height": 680
+      },
+      "dom": {
+        "matterMain": {
+          "clientWidth": 437,
+          "scrollWidth": 551,
+          "scrollTop": 272
+        },
+        "docPath": {
+          "clientWidth": 420,
+          "scrollWidth": 1194,
+          "whiteSpace": "nowrap"
+        }
+      }
+    },
+    {
+      "id": "audit-en-toast-stack-narrow",
+      "label": "Sanitized toast stack over new matter dialog",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\audit-en-toast-stack-narrow.png",
+      "lang": "en",
+      "viewport": {
+        "width": 980,
+        "height": 680
+      },
+      "dom": {
+        "toastCount": 6,
+        "toastDialogOverlaps": 5
+      }
+    },
+    {
+      "id": "audit-en-empty-today",
+      "label": "Sanitized English empty Today page",
+      "screenshot": "C:\\~\\Development\\MatterDock\\output\\playwright\\ux-audit\\en-empty-today.png",
+      "lang": "en",
+      "viewport": {
+        "width": 1344,
+        "height": 841
+      },
+      "emptySection": "Recent matters has heading but no empty-state message"
+    }
+  ],
+  "deleteGap": {
+    "buttons": [
+      "Matters",
+      "Prepare Context",
+      "Complete",
+      "+ Action",
+      "+ Waiting",
+      "Complete",
+      "•••",
+      "Resolve",
+      "•••",
+      "+ Add Document",
+      "Open",
+      "•••",
+      "Add Activity",
+      "Email received13:13",
+      "•••",
+      "Sample requestSample message",
+      "Note13:13",
+      "•••",
+      "Sample note",
+      "×",
+      "+ Add Contact",
+      "Government",
+      "Priority",
+      "Add",
+      "Archive"
+    ],
+    "matterApiKeys": [
+      "list",
+      "get",
+      "create",
+      "update",
+      "archive",
+      "restore",
+      "setTags",
+      "linkContact",
+      "unlinkContact"
+    ],
+    "hasDeleteText": false
+  },
+  "redaction": {
+    "applied": true,
+    "values": [
+      "synthetic test names",
+      "synthetic contact details",
+      "email addresses replaced with example.invalid",
+      "local user paths",
+      "record UUIDs"
+    ]
+  },
+  "scope": {
+    "languages": [
+      "en",
+      "zh-HK"
+    ],
+    "viewports": [
+      "1344x841",
+      "980x680"
+    ],
+    "fixture": "synthetic test data only"
+  }
+}
