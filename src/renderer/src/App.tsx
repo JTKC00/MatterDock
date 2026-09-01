@@ -14,6 +14,7 @@ import { OrganisationDetailPage, OrganisationListPage } from './features/organis
 import { LocaleProvider } from './i18n/LocaleProvider'
 import { setActiveLocale } from './i18n/runtime'
 import { api } from './lib/api'
+import { ToastProvider } from './lib/toast'
 
 export function App() {
   const [locale, setLocale] = useState<SupportedLocale | null>(null)
@@ -35,24 +36,26 @@ export function App() {
 
   return (
     <LocaleProvider locale={locale} onLocaleChange={setLocale}>
-    <AppProvider>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route path="/" element={<Navigate to="/matters" replace />} />
-          <Route path="/today" element={<TodayPage />} />
-          <Route path="/matters" element={<MatterListPage />} />
-          <Route path="/matters/:matterId" element={<MatterDetailPage />} />
-          <Route path="/waiting" element={<WaitingPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/organisations" element={<OrganisationListPage />} />
-          <Route path="/organisations/:organisationId" element={<OrganisationDetailPage />} />
-          <Route path="/contacts" element={<ContactListPage />} />
-          <Route path="/contacts/:contactId" element={<ContactDetailPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<Navigate to="/matters" replace />} />
-        </Route>
-      </Routes>
-    </AppProvider>
+      <ToastProvider>
+        <AppProvider>
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route path="/" element={<Navigate to="/matters" replace />} />
+              <Route path="/today" element={<TodayPage />} />
+              <Route path="/matters" element={<MatterListPage />} />
+              <Route path="/matters/:matterId" element={<MatterDetailPage />} />
+              <Route path="/waiting" element={<WaitingPage />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/organisations" element={<OrganisationListPage />} />
+              <Route path="/organisations/:organisationId" element={<OrganisationDetailPage />} />
+              <Route path="/contacts" element={<ContactListPage />} />
+              <Route path="/contacts/:contactId" element={<ContactDetailPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/matters" replace />} />
+            </Route>
+          </Routes>
+        </AppProvider>
+      </ToastProvider>
     </LocaleProvider>
   )
 }

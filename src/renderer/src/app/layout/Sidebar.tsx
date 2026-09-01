@@ -28,7 +28,7 @@ export function Sidebar() {
           <div className="brand-byline">{t('brand.byline')}</div>
         </div>
       </div>
-      <nav className="nav" aria-label={t('nav.matters')}>
+      <nav className="nav" aria-label={t('nav.primary')}>
         {items.map((item) => {
           const Icon = item.icon
           return (

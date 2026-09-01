@@ -83,6 +83,7 @@ export function ContactDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const contact = useQuery({
     queryKey: ['contact', contactId],
     queryFn: () => api.contacts.get(contactId),
@@ -128,7 +129,7 @@ export function ContactDetailPage() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button onClick={() => setEditing(true)}>{t('common.edit')}</Button>
-          <Button variant="ghost" onClick={() => remove.mutate()}>
+          <Button variant="ghost" onClick={() => setDeleteOpen(true)} disabled={remove.isPending}>
             {t('common.delete')}
           </Button>
         </div>
@@ -182,6 +183,22 @@ export function ContactDetailPage() {
           notes: item.notes ?? ''
         }}
       />
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={t('contacts.deleteTitle')}
+        description={t('contacts.deleteBody')}
+        actions={
+          <>
+            <DialogCloseButton />
+            <Button variant="danger" onClick={() => remove.mutate()} disabled={remove.isPending}>
+              {t('common.delete')}
+            </Button>
+          </>
+        }
+      >
+        <strong>{item.name}</strong>
+      </Dialog>
     </div>
   )
 }

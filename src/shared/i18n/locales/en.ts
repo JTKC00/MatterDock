@@ -5,6 +5,7 @@ export const en = {
     offline: 'Your data stays on this computer. MatterDock works offline.'
   },
   nav: {
+    primary: 'Primary navigation',
     today: 'Today',
     matters: 'Matters',
     waiting: 'Waiting',
@@ -42,7 +43,8 @@ export const en = {
     optional: 'Optional',
     showInFolder: 'Show in Folder',
     copy: 'Copy',
-    someone: 'someone'
+    someone: 'someone',
+    dismissNotification: 'Dismiss notification'
   },
   status: {
     new: 'New',
@@ -77,7 +79,9 @@ export const en = {
     notWaiting: 'You are not waiting on anyone.',
     waitingFor: 'Waiting for {name} · {title}',
     recentMatters: 'Recent matters',
-    noOrganisation: 'No organisation'
+    noOrganisation: 'No organisation',
+    noRecentMatters: 'No recent matters yet.',
+    viewMatters: 'View matters'
   },
   due: {
     overdue: 'Overdue',
@@ -402,6 +406,8 @@ export const en = {
     aliasRemoveFailed: 'That alias could not be removed.',
     removed: 'Organisation removed.',
     deleteFailed: 'This organisation could not be deleted.',
+    deleteTitle: 'Delete this organisation?',
+    deleteBody: 'This permanently deletes the organisation. Linked matters will prevent deletion.',
     notFoundTitle: 'Organisation could not be opened',
     notFoundBody: 'This organisation could not be found.',
     opening: 'Opening organisation…',
@@ -443,6 +449,8 @@ export const en = {
     emptyHint: 'Add people as they appear. They can stay independent or belong to an organisation.',
     deleted: 'Contact deleted.',
     deleteFailed: 'This contact could not be deleted.',
+    deleteTitle: 'Delete this contact?',
+    deleteBody: 'This permanently deletes the contact. Unlink it from existing matters first if deletion is blocked.',
     notFoundTitle: 'Contact could not be opened',
     notFoundBody: 'This contact could not be found.',
     opening: 'Opening contact…',

@@ -3,7 +3,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import { App } from './App'
-import { ToastProvider } from './lib/toast'
 import './styles/app.css'
 
 const queryClient = new QueryClient({
@@ -22,11 +21,9 @@ if (!root) throw new Error('MatterDock could not start because the root element 
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <HashRouter>
-          <App />
-        </HashRouter>
-      </ToastProvider>
+      <HashRouter>
+        <App />
+      </HashRouter>
     </QueryClientProvider>
   </StrictMode>
 )

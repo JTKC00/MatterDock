@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import { NewMatterDialog } from '@/features/matters/NewMatterDialog'
 import { GlobalSearchDialog } from '@/features/search/GlobalSearchDialog'
 import { useAppActions } from '../AppContext'
@@ -8,6 +8,8 @@ import { Sidebar } from './Sidebar'
 export function AppShell() {
   const { openNewMatter } = useAppActions()
   const [searchOpen, setSearchOpen] = useState(false)
+  const location = useLocation()
+  const mainRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -24,10 +26,14 @@ export function AppShell() {
     return () => window.removeEventListener('keydown', onKey)
   }, [openNewMatter])
 
+  useEffect(() => {
+    mainRef.current?.focus({ preventScroll: true })
+  }, [location.pathname])
+
   return (
     <div className="app-shell">
       <Sidebar />
-      <main className="main">
+      <main ref={mainRef} className="main" tabIndex={-1}>
         <Outlet />
       </main>
       <NewMatterDialog />
