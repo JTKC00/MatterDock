@@ -3,7 +3,7 @@ out
 dist
 release
 coverage
-output
+output/
 .playwright-mcp
 test-results
 playwright-report
