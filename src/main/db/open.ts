@@ -9,7 +9,12 @@ const require = createRequire(import.meta.url)
 
 let sqlPromise: Promise<SqlJsStatic> | null = null
 
-function wasmCandidates(): string[] {
+export type SqlJsLoadOptions = {
+  packaged?: boolean
+  wasmPath?: string
+}
+
+function wasmCandidates(options?: SqlJsLoadOptions): string[] {
   const here = dirname(fileURLToPath(import.meta.url))
   const resolved = (() => {
     try {
@@ -19,7 +24,12 @@ function wasmCandidates(): string[] {
     }
   })()
 
+  if (options?.packaged) {
+    return [options.wasmPath ?? join(process.resourcesPath, 'sql-wasm.wasm')]
+  }
+
   return [
+    options?.wasmPath,
     process.env.MATTERDOCK_SQL_WASM,
     process.resourcesPath ? join(process.resourcesPath, 'sql-wasm.wasm') : null,
     resolved ? join(resolved, 'sql-wasm.wasm') : null,
@@ -29,10 +39,10 @@ function wasmCandidates(): string[] {
   ].filter((value): value is string => Boolean(value))
 }
 
-export async function loadSqlJs(): Promise<SqlJsStatic> {
+export async function loadSqlJs(options?: SqlJsLoadOptions): Promise<SqlJsStatic> {
   if (!sqlPromise) {
     sqlPromise = (async () => {
-      const path = wasmCandidates().find((candidate) => existsSync(candidate))
+      const path = wasmCandidates(options).find((candidate) => existsSync(candidate))
       if (!path) {
         throw new AppError(USER_ERRORS.database, 'SQL_WASM_MISSING')
       }

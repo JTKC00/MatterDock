@@ -3,14 +3,19 @@ import { get } from './sql'
 import { createMatter } from './matters'
 import { addAlias, createOrganisation } from './organisations'
 
-export function shouldSeed(): boolean {
+export type SeedOptions = {
+  packaged?: boolean
+}
+
+export function shouldSeed(options?: SeedOptions): boolean {
+  if (options?.packaged) return false
   if (process.env.MATTERDOCK_DISABLE_SEED === '1') return false
   if (process.env.MATTERDOCK_SEED === '1') return true
   return process.env.NODE_ENV === 'development'
 }
 
-export function seedIfEmpty(db: Database): boolean {
-  if (!shouldSeed()) return false
+export function seedIfEmpty(db: Database, options?: SeedOptions): boolean {
+  if (!shouldSeed(options)) return false
   const existing = get<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM matters')
   if ((existing?.count ?? 0) > 0) return false
 

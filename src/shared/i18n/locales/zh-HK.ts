@@ -559,6 +559,9 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     fatalDetail: '為保障資料安全，工作空間尚未開啟供編輯。復原副本可能仍然可用。',
     fatalQuit: '退出',
     fatalShow: '顯示復原資料夾',
+    startupTitle: 'MatterDock 無法啟動',
+    startupMessage: 'MatterDock 缺少必要的應用程式資源。',
+    startupDetail: '請重新安裝 MatterDock。技術資料：{detail}',
     contextFilter: '內容'
   },
   errors: {
