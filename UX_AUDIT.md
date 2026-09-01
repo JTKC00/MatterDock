@@ -8,7 +8,13 @@
 - 以 production build 啟動 Electron，使用獨立的 `MATTERDOCK_USER_DATA` 暫存目錄及 `MATTERDOCK_DISABLE_SEED=1`；測試完成後刪除暫存資料。
 - 以英文 `en` 和繁體中文（香港）`zh-HK` 走訪空白狀態及代表性資料：機構、聯絡人、Matter、標籤、下一步行動、等待中、時間線活動、文件、搜尋、別名、備份／還原／匯出及語言切換。
 - 以約 `1344×841` 及最小支援尺寸 `980×680` 檢查長文字、對話框、鍵盤焦點、窄視窗及中英文排版。
-- 互動證據及已匿名化的 DOM 快照集中在 [`output/playwright/ux-audit/`](output/playwright/ux-audit/)；快照在 [`full-audit-observations.json`](output/playwright/ux-audit/full-audit-observations.json)。
+- 互動證據及已匿名化的 DOM 快照集中在 [`docs/ux-audit/2026-09-01/`](docs/ux-audit/2026-09-01/)；快照在 [`full-audit-observations.json`](docs/ux-audit/2026-09-01/full-audit-observations.json)。
+
+### 基線同步說明
+
+- 原始互動證據是在 `b361254b` 基線上擷取；其後 Windows release hardening PR #1 合併為 `5a85ff5`。
+- `b361254b..5a85ff5` 沒有修改 `src/renderer/**`；相關變更集中在 Windows packaging、main-process release safety、E2E 啟動參數及 release 相關 i18n 文案，因此本報告所列的 renderer UI/UX findings 沒有被該次 merge 改寫。
+- 本 audit 分支已同步 `5a85ff5`；同步後以現行 source 重新核對 findings，並以目前完整 GitHub CI 作為驗證基線。
 
 ## 優先級摘要
 
@@ -41,7 +47,7 @@
 
 **使用者影響**：誤建、重複案件、測試資料及需要清理的敏感紀錄不能按產品流程刪除；使用者也可能把「封存」誤解成「刪除」。
 
-**證據**：[`audit-en-matter-initial.png`](output/playwright/ux-audit/audit-en-matter-initial.png)、[`audit-en-after-archive.png`](output/playwright/ux-audit/audit-en-after-archive.png)、[`MatterDetailPage.tsx#L171-L178`](src/renderer/src/features/matters/MatterDetailPage.tsx#L171)、[`ipc.ts#L46-L56`](src/shared/ipc.ts#L46)。
+**證據**：[`audit-en-matter-initial.png`](docs/ux-audit/2026-09-01/audit-en-matter-initial.png)、[`audit-en-after-archive.png`](docs/ux-audit/2026-09-01/audit-en-after-archive.png)、[`MatterDetailPage.tsx#L171-L178`](src/renderer/src/features/matters/MatterDetailPage.tsx#L171)、[`ipc.ts#L46-L56`](src/shared/ipc.ts#L46)。
 
 **建議／產品決策**：二選一並寫入產品政策：
 
@@ -66,7 +72,7 @@
 
 **使用者影響**：誤點即可刪除資料，且使用者在不同資料類型之間不能建立一致的操作預期。
 
-**證據**：[`audit-en-organisation.png`](output/playwright/ux-audit/audit-en-organisation.png)、[`audit-en-contact.png`](output/playwright/ux-audit/audit-en-contact.png)、[`audit-en-delete-confirmations.png`](output/playwright/ux-audit/audit-en-delete-confirmations.png)、[`ContactPages.tsx#L129-L134`](src/renderer/src/features/contacts/ContactPages.tsx#L129)、[`OrganisationPages.tsx#L157-L162`](src/renderer/src/features/organisations/OrganisationPages.tsx#L157)、[`MatterTimeline.tsx#L121-L138`](src/renderer/src/features/timeline/MatterTimeline.tsx#L121)。
+**證據**：[`audit-en-organisation.png`](docs/ux-audit/2026-09-01/audit-en-organisation.png)、[`audit-en-contact.png`](docs/ux-audit/2026-09-01/audit-en-contact.png)、[`audit-en-delete-confirmations.png`](docs/ux-audit/2026-09-01/audit-en-delete-confirmations.png)、[`ContactPages.tsx#L129-L134`](src/renderer/src/features/contacts/ContactPages.tsx#L129)、[`OrganisationPages.tsx#L157-L162`](src/renderer/src/features/organisations/OrganisationPages.tsx#L157)、[`MatterTimeline.tsx#L121-L138`](src/renderer/src/features/timeline/MatterTimeline.tsx#L121)。
 
 **建議**：統一使用確認 dialog；對有關聯 Matter 的刪除，先顯示關聯數量及解除／重新指派要求；可加入短時間 Undo Toast。
 
@@ -85,7 +91,7 @@
 
 **使用者影響**：快速工作流會製造噪音；在低高度視窗中通知遮住表單內容及背景操作。
 
-**證據**：[`audit-en-toast-stack-narrow.png`](output/playwright/ux-audit/audit-en-toast-stack-narrow.png)、[`toast.tsx#L11-L33`](src/renderer/src/lib/toast.tsx#L11)、[`app.css#L908-L926`](src/renderer/src/styles/app.css#L908)。
+**證據**：[`audit-en-toast-stack-narrow.png`](docs/ux-audit/2026-09-01/audit-en-toast-stack-narrow.png)、[`toast.tsx#L11-L33`](src/renderer/src/lib/toast.tsx#L11)、[`app.css#L908-L926`](src/renderer/src/styles/app.css#L908)。
 
 **建議**：最多顯示 3 個、相同成功訊息合併、加入 dismiss、modal 開啟時重新定位或暫停顯示；錯誤訊息可保留較長時間。
 
@@ -104,7 +110,7 @@
 
 **使用者影響**：文件區內容被右側截斷；使用者需要左右捲動才能查看完整資訊，亦可能誤以為頁面版面壞掉。
 
-**證據**：[`audit-en-document-narrow-metrics.png`](output/playwright/ux-audit/audit-en-document-narrow-metrics.png)、[`DocumentRow.tsx#L37-L45`](src/renderer/src/features/documents/DocumentRow.tsx#L37)、[`app.css#L974-L979`](src/renderer/src/styles/app.css#L974)。
+**證據**：[`audit-en-document-narrow-metrics.png`](docs/ux-audit/2026-09-01/audit-en-document-narrow-metrics.png)、[`DocumentRow.tsx#L37-L45`](src/renderer/src/features/documents/DocumentRow.tsx#L37)、[`app.css#L974-L979`](src/renderer/src/styles/app.css#L974)。
 
 **建議**：以檔名作主要顯示、完整路徑只放 tooltip／複製路徑；或對 path 使用 `min-width:0`、`max-width:100%`、`overflow-wrap:anywhere`，並檢查 flex/grid 子項的最小寬度。
 
@@ -175,7 +181,7 @@
 
 **使用者影響**：首次使用者不能確定這是「沒有最近事項」、資料尚未載入，還是畫面遺漏。
 
-**證據**：[`en-empty-today.png`](output/playwright/ux-audit/en-empty-today.png)。
+**證據**：[`en-empty-today.png`](docs/ux-audit/2026-09-01/en-empty-today.png)。
 
 **建議**：加入 `No recent matters yet`，並提供建立 Matter 或前往 Matters 的入口；中文同步提供對應翻譯。
 
@@ -199,7 +205,8 @@
 
 - `npm run lint`：通過。
 - `npm run typecheck`：通過。
-- `npm test`：30 個 test files、193 個 tests 通過。
+- `npm test`：32 個 test files、197 個 tests 通過。
 - `npm run build`：通過。
-- 原有 `npm run test:e2e` 在目前環境因 Electron GPU 啟動問題全部回報 `Target crashed`；錯誤對應 Electron process `exit_code=-1073741515`。以 `--disable-gpu --disable-gpu-sandbox --no-sandbox --no-zygote` 及 `ELECTRON_DISABLE_SANDBOX=1` 的測試啟動方式可正常完成本次巡檢，因此標記為測試環境限制，不列為產品 UX 問題。
-- 本次沒有修改 `src/`、API 或 schema；工作區新增的檔案只包含這份報告及 `output/playwright/ux-audit/` 的測試截圖／DOM 快照。
+- `npm run test:e2e`：在 PR #1 合併後的現行 CI 通過；PR #1 已把 Electron E2E 啟動參數統一加入 `--disable-gpu` 與 `--no-sandbox`。原始 audit 擷取環境曾出現 `Target crashed` / `exit_code=-1073741515`，這只保留作歷史測試環境紀錄，不再視為目前驗證限制。
+- 現行完整 Windows CI 亦涵蓋 unpacked build、packaged Electron smoke、x64 NSIS installer build、release artifact validation 及 installer artifact upload。
+- 本次沒有修改 `src/`、API 或 schema；audit evidence 固定存放於 `docs/ux-audit/2026-09-01/`，避免把一般 Playwright 生成目錄當成長期文件位置。
