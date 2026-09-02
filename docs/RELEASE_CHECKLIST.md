@@ -16,7 +16,7 @@ Use this checklist for the x64 Windows installer candidate. The release candidat
 - [ ] `npm run release:hash`
 - [ ] GitHub CI Quality gate is green
 
-The packaged checks cover startup without demo seed data, persistence across relaunch, version visibility, Move to Trash, Restore, and permanent deletion from Trash. The release validator checks the unpacked x64 app, `sql.js` WASM, embedded app identity, absence of user database/journal/WAL/SHM files, absence of update metadata, and absence of Portable artifacts.
+The packaged checks cover startup without demo seed data, persistence across relaunch, version visibility, Move to Trash, Restore, and permanent deletion from Trash. The release validation path checks the approved MatterDock branding source, unpacked x64 app, `sql.js` WASM, embedded app identity, absence of user database/journal/WAL/SHM files, absence of update metadata, and absence of Portable artifacts.
 
 ## Dependency security
 
@@ -31,12 +31,23 @@ The packaged checks cover startup without demo seed data, persistence across rel
 
 Release classification: **Dependency security gate cleared for this slice; signing and the remaining release checks are separate gates.**
 
+## Windows branding
+
+- [x] Approved MatterDock `M + Dock` icon master is stored at `build/icon.svg`
+- [x] electron-builder Windows application icon explicitly uses `build/icon.svg`
+- [x] Release validation fails if the approved icon source is missing, empty, external-resource-dependent, or no longer configured
+- [x] NSIS installer and uninstaller inherit the branded application icon
+
 ## Manual Windows acceptance
 
 Status for this candidate: **NOT RUN — requires physical Windows interactive acceptance**.
 
 - [ ] Install `MatterDock-0.9.0-Setup.exe` on a clean Windows x64 machine
 - [ ] Launch from the installer and verify MatterDock / Snugzap identity
+- [ ] Verify MatterDock icon on the installed EXE, taskbar / Alt-Tab, and app window identity
+- [ ] Verify the Desktop shortcut uses the MatterDock icon
+- [ ] Verify the Start Menu shortcut uses the MatterDock icon
+- [ ] Verify installer and uninstaller branding use the MatterDock icon rather than the default Electron icon
 - [ ] Check English and zh-HK interface language
 - [ ] Create and edit a Matter
 - [ ] Verify Timeline

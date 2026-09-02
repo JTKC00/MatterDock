@@ -29,6 +29,7 @@
       }
     ],
     "win": {
+      "icon": "build/icon.svg",
       "target": [
         {
           "target": "nsis",
@@ -59,7 +60,7 @@
     "install:electron": "npx --no-install install-electron --no",
     "package:win:dir": "npm run install:electron && node scripts/clean-release.mjs && npm run build && electron-builder --win dir --x64 --publish never",
     "package:win": "npm run install:electron && node scripts/clean-release.mjs && npm run build && electron-builder --win nsis --x64 --publish never",
-    "verify:release": "node scripts/verify-release.mjs",
+    "verify:release": "node scripts/verify-branding.mjs && node scripts/verify-release.mjs",
     "release:hash": "node scripts/release-hash.mjs",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
