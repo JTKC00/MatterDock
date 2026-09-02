@@ -18,6 +18,18 @@ Use this checklist for the x64 Windows installer candidate. The release candidat
 
 The packaged checks cover startup without demo seed data, persistence across relaunch, version visibility, Move to Trash, Restore, and permanent deletion from Trash. The release validator checks the unpacked x64 app, `sql.js` WASM, embedded app identity, absence of user database/journal/WAL/SHM files, absence of update metadata, and absence of Portable artifacts.
 
+## Dependency security
+
+- [ ] Review `npm audit` findings before public Beta
+- Current exact-head GitHub CI reports **9 high severity vulnerabilities** from the dependency tree.
+- These findings have not yet been classified as runtime/shipped, dev/build-only, or transitive dependencies.
+- Do not infer that MatterDock itself has nine exploitable runtime vulnerabilities without completing triage.
+- Do not claim security clearance until triage is complete.
+- `builder-util-runtime 9.5.1` is one known affected dependency in the current build toolchain.
+- Dependency modernization will be handled in a separate follow-up slice; do not use `npm audit fix --force` in this PR.
+
+Release classification: **Internal RC: can continue. Public Beta: dependency security triage required.**
+
 ## Manual Windows acceptance
 
 Status for this candidate: **NOT RUN — requires physical Windows interactive acceptance**.

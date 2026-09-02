@@ -28,7 +28,7 @@ This repository currently ships through **Phase 9**: Matter Core, Timeline, Acti
 
 - Windows 10/11
 - Node.js 22+ (developed on Node 24)
-- npm 11+
+- npm 10+ (validated in GitHub CI with npm 10.9.8)
 
 Rust / Visual Studio C++ Build Tools are **not** required for this release. The desktop shell is Electron because this machine did not have a Tauri toolchain (Rust + MSVC).
 
