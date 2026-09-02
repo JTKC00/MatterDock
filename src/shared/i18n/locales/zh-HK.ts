@@ -14,6 +14,7 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     search: '搜尋',
     organisations: '機構',
     contacts: '聯絡人',
+    trash: '垃圾桶',
     settings: '設定'
   },
   common: {
@@ -176,7 +177,31 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     deleteKeepsShared: '機構、聯絡人及標籤記錄',
     deleting: '正在永久刪除…',
     deleteSuccess: '事項已永久刪除。',
-    deleteFailed: '事項未能永久刪除。你的事項及檔案已安全保留，請再試一次。'
+    deleteFailed: '事項未能永久刪除。你的事項及檔案已安全保留，請再試一次。',
+    moveToTrash: '移至垃圾桶',
+    moveToTrashTitle: '將「{title}」移至垃圾桶？',
+    moveToTrashDescription: '你可以稍後從垃圾桶復原此事項。文件及檔案不會被刪除。',
+    moveToTrashSuccess: '事項已移至垃圾桶。',
+    moveToTrashFailed: '未能將事項移至垃圾桶，請再試一次。',
+    movingToTrash: '正在移至垃圾桶…'
+  },
+  trash: {
+    title: '垃圾桶',
+    subtitle: '垃圾桶內的事項會留在這部電腦，直至你復原或永久刪除。',
+    searchPlaceholder: '搜尋垃圾桶...',
+    searchAria: '搜尋垃圾桶',
+    countOne: '垃圾桶有 1 個事項',
+    countMany: '垃圾桶有 {count} 個事項',
+    emptyTitle: '垃圾桶是空的',
+    emptyBody: '移至垃圾桶的事項會顯示在這裡。你可以復原或永久刪除。',
+    loadErrorTitle: '未能載入垃圾桶',
+    loadErrorBody: 'MatterDock 無法讀取本機資料庫，請再試一次。',
+    restore: '復原',
+    restoring: '正在復原…',
+    restoreSuccess: '事項已復原。',
+    restoreFailed: '未能復原事項，請再試一次。',
+    movedOn: '已於 {date} 移至垃圾桶',
+    noOrganisation: '沒有機構'
   },
   work: {
     nextAction: '下一步行動',
@@ -637,6 +662,7 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
     documentRemoveFailed: '未能移除文件。',
     matterDeleteFailed: '事項未能永久刪除。你的事項及受管理檔案已安全保留，請再試一次。',
     matterDeleteRecoveryFailed: '事項未能安全刪除。事項仍然存在，但部分受管理檔案需要復原後才可再試。',
+    matterDeleteRequiresTrash: '必須先將事項移至垃圾桶，才可永久刪除。',
     unsafeDocumentPath: '該檔案不在 MatterDock 工作空間內，無法更改。',
     cannotRelinkCopy: 'MatterDock 副本不能重新連結到另一個原始檔案。',
     contextSaveFailed: '未能儲存內容檔案。MatterDock 資料並未更改。',

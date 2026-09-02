@@ -32,7 +32,7 @@ export function listContacts(db: Database, search?: string): ContactSummary[] {
     ? all<ContactListRow>(
         db,
         `SELECT c.*, o.name AS organisation_name,
-                (SELECT COUNT(*) FROM matter_contacts mc WHERE mc.contact_id = c.id) AS matter_count
+                (SELECT COUNT(*) FROM matter_contacts mc INNER JOIN matters m ON m.id = mc.matter_id WHERE mc.contact_id = c.id AND m.trashed_at IS NULL) AS matter_count
          FROM contacts c
          LEFT JOIN organisations o ON o.id = c.organisation_id
          WHERE c.name LIKE ? ESCAPE '\\'
@@ -45,7 +45,7 @@ export function listContacts(db: Database, search?: string): ContactSummary[] {
     : all<ContactListRow>(
         db,
         `SELECT c.*, o.name AS organisation_name,
-                (SELECT COUNT(*) FROM matter_contacts mc WHERE mc.contact_id = c.id) AS matter_count
+                (SELECT COUNT(*) FROM matter_contacts mc INNER JOIN matters m ON m.id = mc.matter_id WHERE mc.contact_id = c.id AND m.trashed_at IS NULL) AS matter_count
          FROM contacts c
          LEFT JOIN organisations o ON o.id = c.organisation_id
          ORDER BY c.name COLLATE NOCASE`
@@ -66,7 +66,7 @@ export function getContact(db: Database, id: string): ContactDetail {
   const row = get<ContactListRow>(
     db,
     `SELECT c.*, o.name AS organisation_name,
-            (SELECT COUNT(*) FROM matter_contacts mc WHERE mc.contact_id = c.id) AS matter_count
+            (SELECT COUNT(*) FROM matter_contacts mc INNER JOIN matters m ON m.id = mc.matter_id WHERE mc.contact_id = c.id AND m.trashed_at IS NULL) AS matter_count
      FROM contacts c
      LEFT JOIN organisations o ON o.id = c.organisation_id
      WHERE c.id = ?`,
@@ -83,6 +83,7 @@ export function getContact(db: Database, id: string): ContactDetail {
      INNER JOIN matters m ON m.id = mc.matter_id
      LEFT JOIN organisations o ON o.id = m.organisation_id
      WHERE mc.contact_id = ?
+       AND m.trashed_at IS NULL
      ORDER BY m.updated_at DESC`,
     [id]
   )

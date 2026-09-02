@@ -7,24 +7,29 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Safe Permanent Matter Deletion.
+Matter Trash Lifecycle.
 
 ### Added
 
-- archived-Matter-only permanent deletion with an explicit irreversible confirmation in English and Traditional Chinese (Hong Kong)
-- safe quarantine, rollback, and startup-recovery coordination for MatterDock-managed document copies
-- regression coverage for cascade deletion, shared-record preservation, reference-original preservation, and failure paths
+- reversible Matter Trash lifecycle: Active / Completed / Archived Matter → Move to Trash → Restore or Delete permanently
+- migration v6 nullable `matters.trashed_at` lifecycle timestamp (not a workflow status)
+- `/trash` workspace page and sidebar entry in English and Traditional Chinese (Hong Kong)
+- Move to Trash on live Matter detail, Restore and Delete permanently from Trash
+- live-query isolation so trashed Matters disappear from lists, Today, Waiting, Search, Organisation, Contact, and Tag surfaces
+- main-process permanent deletion restricted to trashed Matters, reusing the PR #6 quarantine cascade
 
 ### Safety
 
-- referenced original files are never deleted, moved, renamed, quarantined, truncated, or otherwise modified
+- Move to Trash and Restore never delete, move, rename, quarantine, or rewrite files
+- Restore returns the exact prior workflow and archive state
+- referenced original files remain untouched during Trash and permanent deletion
 - Organisation, Contact, Tag, unrelated Matter, and historical backup records remain preserved
-- restoring an older backup may intentionally restore a Matter that was permanently deleted from the current workspace
+- restoring an older backup restores the Trash state captured in that snapshot
 
 ### Compatibility
 
-- no schema migration was required; the existing foreign-key cascade contract remains the deletion boundary
-- Trash, soft-delete, bulk deletion, backup rewriting, auto-update, Portable builds, and other unrelated scope remain unchanged
+- existing Matters migrate as live (`trashed_at` is null) with workflow status and archive history unchanged
+- automatic purge, Empty Trash, bulk restore/delete, Trash quotas, secure erase, auto-update, Portable builds, and other unrelated scope remain unchanged
 
 ## [0.8.0] — 2026-09-01
 

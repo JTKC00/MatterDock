@@ -66,7 +66,10 @@ export function createMatterDeletionService(
       const matterDocuments = store.query((db) => {
         // This deliberately raises MATTER_NOT_FOUND rather than treating a
         // repeated delete as an idempotent success.
-        matters.getMatter(db, id)
+        const matter = matters.getMatter(db, id)
+        if (matter.trashedAt == null) {
+          throw new AppError(USER_ERRORS.matterDeleteRequiresTrash, 'MATTER_DELETE_REQUIRES_TRASH')
+        }
         return documents.listDocumentsForMatter(db, id)
       })
       const managedDocuments = matterDocuments.filter((document) => document.storageMode === 'copy')

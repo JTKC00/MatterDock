@@ -95,6 +95,12 @@ export function registerIpc(
   ipcMain.handle(IPC_CHANNELS.mattersRestore, (_event, id: string) =>
     wrap(() => store.mutate((db) => matters.restoreMatter(db, id)))
   )
+  ipcMain.handle(IPC_CHANNELS.mattersMoveToTrash, (_event, id: string) =>
+    wrap(() => store.mutate((db) => matters.moveMatterToTrash(db, id)))
+  )
+  ipcMain.handle(IPC_CHANNELS.mattersRestoreFromTrash, (_event, id: string) =>
+    wrap(() => store.mutate((db) => matters.restoreMatterFromTrash(db, id)))
+  )
   ipcMain.handle(IPC_CHANNELS.mattersDeletePermanently, (_event, id: string) =>
     wrap(() => matterDeletion.deletePermanently(id))
   )

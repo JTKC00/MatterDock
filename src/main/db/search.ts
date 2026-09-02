@@ -98,7 +98,8 @@ export function globalSearch(db: Database, rawQuery: string, documentsRoot?: str
      FROM matters m
      LEFT JOIN organisations o ON o.id = m.organisation_id
      LEFT JOIN organisation_aliases a ON a.organisation_id = o.id
-     WHERE ${matterWhere.sql}`,
+     WHERE ${matterWhere.sql}
+       AND m.trashed_at IS NULL`,
     matterWhere.params
   )
     .map((row) => {
@@ -190,7 +191,7 @@ export function globalSearch(db: Database, rawQuery: string, documentsRoot?: str
   }>(
     db,
     `SELECT c.id, c.name, c.job_title, c.email, c.phone, o.name AS organisation_name,
-            (SELECT COUNT(*) FROM matter_contacts mc WHERE mc.contact_id = c.id) AS matter_count
+            (SELECT COUNT(*) FROM matter_contacts mc INNER JOIN matters m ON m.id = mc.matter_id WHERE mc.contact_id = c.id AND m.trashed_at IS NULL) AS matter_count
      FROM contacts c
      LEFT JOIN organisations o ON o.id = c.organisation_id
      WHERE ${contactWhere.sql}`,
@@ -252,7 +253,8 @@ export function globalSearch(db: Database, rawQuery: string, documentsRoot?: str
      FROM events e
      JOIN matters m ON m.id = e.matter_id
      LEFT JOIN event_email_details d ON d.event_id = e.id
-     WHERE ${eventWhere.sql}`,
+     WHERE ${eventWhere.sql}
+       AND m.trashed_at IS NULL`,
     eventWhere.params
   )
     .map((row) => {
@@ -305,7 +307,8 @@ export function globalSearch(db: Database, rawQuery: string, documentsRoot?: str
             t.waiting_for_text
      FROM tasks t
      JOIN matters m ON m.id = t.matter_id
-     WHERE ${taskWhere.sql}`,
+     WHERE ${taskWhere.sql}
+       AND m.trashed_at IS NULL`,
     taskWhere.params
   )
     .map((row) => {
@@ -355,7 +358,8 @@ export function globalSearch(db: Database, rawQuery: string, documentsRoot?: str
             d.file_extension, d.original_path, d.storage_mode, d.managed_path
      FROM documents d
      JOIN matters m ON m.id = d.matter_id
-     WHERE ${documentWhere.sql}`,
+     WHERE ${documentWhere.sql}
+       AND m.trashed_at IS NULL`,
     documentWhere.params
   )
     .map((row) => {

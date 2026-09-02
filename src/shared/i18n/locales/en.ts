@@ -12,6 +12,7 @@ export const en = {
     search: 'Search',
     organisations: 'Organisations',
     contacts: 'Contacts',
+    trash: 'Trash',
     settings: 'Settings'
   },
   common: {
@@ -174,7 +175,31 @@ export const en = {
     deleteKeepsShared: 'Organisation, Contact and Tag records',
     deleting: 'Deleting permanently…',
     deleteSuccess: 'Matter permanently deleted.',
-    deleteFailed: 'Matter could not be permanently deleted. Your Matter and files have been kept safe. Please try again.'
+    deleteFailed: 'Matter could not be permanently deleted. Your Matter and files have been kept safe. Please try again.',
+    moveToTrash: 'Move to Trash',
+    moveToTrashTitle: 'Move “{title}” to Trash?',
+    moveToTrashDescription: 'You can restore this Matter later from Trash. Documents and files are not deleted.',
+    moveToTrashSuccess: 'Matter moved to Trash.',
+    moveToTrashFailed: 'Matter could not be moved to Trash. Please try again.',
+    movingToTrash: 'Moving to Trash…'
+  },
+  trash: {
+    title: 'Trash',
+    subtitle: 'Matters in Trash stay on this computer until you restore them or delete them permanently.',
+    searchPlaceholder: 'Search trash...',
+    searchAria: 'Search trash',
+    countOne: '1 matter in Trash',
+    countMany: '{count} matters in Trash',
+    emptyTitle: 'Trash is empty',
+    emptyBody: 'Matters you move to Trash will appear here. You can restore them or delete them permanently.',
+    loadErrorTitle: 'Trash could not be loaded',
+    loadErrorBody: 'MatterDock could not read the local database. Please try again.',
+    restore: 'Restore',
+    restoring: 'Restoring…',
+    restoreSuccess: 'Matter restored.',
+    restoreFailed: 'Matter could not be restored. Please try again.',
+    movedOn: 'Moved to Trash {date}',
+    noOrganisation: 'No organisation'
   },
   work: {
     nextAction: 'Next Action',
@@ -644,6 +669,7 @@ export const en = {
       'Matter could not be permanently deleted. Your Matter and managed files have been kept safe. Please try again.',
     matterDeleteRecoveryFailed:
       'Matter could not be safely deleted. Your Matter remains available, but some managed files need recovery before trying again.',
+    matterDeleteRequiresTrash: 'This Matter must be in Trash before it can be permanently deleted.',
     unsafeDocumentPath: 'That file is outside the MatterDock workspace and cannot be changed.',
     cannotRelinkCopy: 'MatterDock copies cannot be relinked to another source file.',
     contextSaveFailed: 'The context file could not be saved. No MatterDock data was changed.',

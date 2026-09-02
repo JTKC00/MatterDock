@@ -51,6 +51,8 @@ export type MatterDockApi = {
     update: (id: string, input: UpdateMatterInput) => Promise<IpcResult<MatterDetail>>
     archive: (id: string) => Promise<IpcResult<MatterDetail>>
     restore: (id: string) => Promise<IpcResult<MatterDetail>>
+    moveToTrash: (id: string) => Promise<IpcResult<MatterDetail>>
+    restoreFromTrash: (id: string) => Promise<IpcResult<MatterDetail>>
     deletePermanently: (id: string) => Promise<IpcResult<{ id: string }>>
     setTags: (id: string, tagNames: string[]) => Promise<IpcResult<MatterDetail>>
     linkContact: (input: LinkMatterContactInput) => Promise<IpcResult<MatterDetail>>
@@ -140,6 +142,8 @@ export const IPC_CHANNELS = {
   mattersUpdate: 'matters:update',
   mattersArchive: 'matters:archive',
   mattersRestore: 'matters:restore',
+  mattersMoveToTrash: 'matters:moveToTrash',
+  mattersRestoreFromTrash: 'matters:restoreFromTrash',
   mattersDeletePermanently: 'matters:deletePermanently',
   mattersSetTags: 'matters:setTags',
   mattersLinkContact: 'matters:linkContact',

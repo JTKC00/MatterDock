@@ -780,6 +780,24 @@ a {
   border-bottom: 1px solid var(--border);
 }
 
+.details-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.trash-row {
+  cursor: default;
+}
+
+.trash-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .details-block:first-child {
   padding-top: 0;
 }
