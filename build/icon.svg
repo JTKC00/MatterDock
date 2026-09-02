@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">MatterDock app icon</title>
+  <desc id="desc">A white geometric M anchored in a blue dock on a deep navy rounded square.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.78" y2="1">
+      <stop offset="0" stop-color="#0D285B"/>
+      <stop offset="0.55" stop-color="#071E4A"/>
+      <stop offset="1" stop-color="#041735"/>
+    </linearGradient>
+    <linearGradient id="dock" x1="0.08" y1="0.1" x2="0.88" y2="0.95">
+      <stop offset="0" stop-color="#5B9BFF"/>
+      <stop offset="0.42" stop-color="#3478E7"/>
+      <stop offset="1" stop-color="#1D4FA9"/>
+    </linearGradient>
+    <linearGradient id="dockEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8EC0FF" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#4B8DF2" stop-opacity=".25"/>
+    </linearGradient>
+    <linearGradient id="mFace" x1="0.12" y1="0.05" x2="0.78" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.65" stop-color="#F8FAFF"/>
+      <stop offset="1" stop-color="#DCE6F8"/>
+    </linearGradient>
+    <linearGradient id="mInnerL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#DBE6FA"/>
+      <stop offset="1" stop-color="#87A4D4"/>
+    </linearGradient>
+    <linearGradient id="mInnerR" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#DBE6FA"/>
+      <stop offset="1" stop-color="#87A4D4"/>
+    </linearGradient>
+    <filter id="softShadow" x="-25%" y="-25%" width="150%" height="170%">
+      <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#020A19" flood-opacity=".42"/>
+    </filter>
+    <filter id="dockShadow" x="-20%" y="-30%" width="140%" height="180%">
+      <feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#020A19" flood-opacity=".38"/>
+    </filter>
+  </defs>
+  <rect x="24" y="24" width="976" height="976" rx="212" fill="url(#bg)"/>
+  <g filter="url(#dockShadow)" transform="translate(0 54)">
+    <path fill="url(#dock)" fill-rule="evenodd" d="M170 584 C170 552 196 526 228 526 H796 C828 526 854 552 854 584 V674 C854 722 822 764 776 775 C598 817 426 817 248 775 C202 764 170 722 170 674 Z M246 584 C246 572 256 562 268 562 H756 C768 562 778 572 778 584 V654 C778 676 762 696 741 701 C585 738 439 738 283 701 C262 696 246 676 246 654 Z"/>
+    <path fill="none" stroke="url(#dockEdge)" stroke-width="9" stroke-linecap="round" d="M201 579 C201 560 217 545 236 545 H788 C807 545 823 560 823 579"/>
+    <path d="M438 728 H586 C598 728 608 738 608 750 V764 C544 771 480 771 416 764 V750 C416 738 426 728 438 728 Z" fill="#103D88" opacity=".55"/>
+  </g>
+  <g filter="url(#softShadow)">
+    <path fill="url(#mInnerL)" d="M319 342 C319 318 338 299 362 299 H389 L389 666 C389 688 378 708 359 720 L332 737 C326 741 319 737 319 730 Z"/>
+    <path fill="url(#mInnerR)" d="M705 342 C705 318 686 299 662 299 H635 L635 666 C635 688 646 708 665 720 L692 737 C698 741 705 737 705 730 Z"/>
+    <path fill="url(#mFace)" fill-rule="evenodd" d="M333 287 C312 287 295 304 295 325 V690 C295 713 314 732 337 732 C360 732 379 713 379 690 V447 C379 431 398 422 410 433 L480 500 C498 517 526 517 544 500 L614 433 C626 422 645 431 645 447 V690 C645 713 664 732 687 732 C710 732 729 713 729 690 V325 C729 304 712 287 691 287 C678 287 666 292 657 301 L527 424 C519 432 505 432 497 424 L367 301 C358 292 346 287 333 287 Z"/>
+  </g>
+</svg>
