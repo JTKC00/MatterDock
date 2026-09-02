@@ -36,6 +36,7 @@ Rust / Visual Studio C++ Build Tools are **not** required for this release. The 
 
 ```bash
 npm install
+npm run install:electron
 npm run dev
 ```
 
@@ -132,7 +133,7 @@ src/
         └── components/    Dialogs, fields, badges
 ```
 
-- **Desktop:** Electron 37 + electron-vite
+- **Desktop:** Electron 44 + electron-vite
 - **UI:** React 19, TypeScript, HashRouter
 - **State:** TanStack Query over IPC
 - **Validation:** Zod

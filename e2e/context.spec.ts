@@ -42,6 +42,36 @@ test('prepare context preview, privacy-safe redaction and source integrity', asy
 
   try {
     const page = await firstWindow(app)
+    const rendererSecurity = await page.evaluate(() => {
+      const globalScope = globalThis as typeof globalThis & {
+        process?: unknown
+        require?: unknown
+      }
+      return {
+        hasNodeProcess: typeof globalScope.process !== 'undefined',
+        hasNodeRequire: typeof globalScope.require !== 'undefined',
+        apiKeys: Object.keys(
+          (globalThis as typeof globalThis & { matterdock: Record<string, unknown> }).matterdock
+        ).sort()
+      }
+    })
+    expect(rendererSecurity).toEqual({
+      hasNodeProcess: false,
+      hasNodeRequire: false,
+      apiKeys: [
+        'backup',
+        'contacts',
+        'context',
+        'documents',
+        'events',
+        'matters',
+        'organisations',
+        'search',
+        'settings',
+        'tags',
+        'tasks'
+      ]
+    })
     await page.getByRole('link', { name: 'Matters', exact: true }).click()
     await page.locator('header').getByRole('button', { name: 'New Matter' }).click()
     await page.getByRole('dialog', { name: 'New matter' }).getByLabel('Title').fill('EMPF Subsidy Application')
@@ -150,6 +180,8 @@ test('prepare context preview, privacy-safe redaction and source integrity', asy
 
     await dialog.getByRole('button', { name: 'Copy' }).click()
     await expect(page.getByText('Copied', { exact: true })).toBeVisible()
+    const copiedText = await app.evaluate(({ clipboard }) => clipboard.readText())
+    expect(copiedText).toContain('EMPF Subsidy Application')
 
     await dialog.getByRole('button', { name: 'Cancel' }).click()
     await expect(dialog).toBeHidden()

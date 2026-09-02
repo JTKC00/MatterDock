@@ -20,15 +20,16 @@ The packaged checks cover startup without demo seed data, persistence across rel
 
 ## Dependency security
 
-- [ ] Review `npm audit` findings before public Beta
-- Current exact-head GitHub CI reports **9 high severity vulnerabilities** from the dependency tree.
-- These findings have not yet been classified as runtime/shipped, dev/build-only, or transitive dependencies.
-- Do not infer that MatterDock itself has nine exploitable runtime vulnerabilities without completing triage.
-- Do not claim security clearance until triage is complete.
-- `builder-util-runtime 9.5.1` is one known affected dependency in the current build toolchain.
-- Dependency modernization will be handled in a separate follow-up slice; do not use `npm audit fix --force` in this PR.
+- [x] `npm audit` findings reviewed and classified in [DEPENDENCY_SECURITY.md](DEPENDENCY_SECURITY.md)
+- [x] Full dependency audit: **0 vulnerabilities** after modernization
+- [x] Runtime/shipped audit (`npm audit --omit=dev`): **0 vulnerabilities** after modernization
+- [x] Runtime/shipped high vulnerabilities: **0**
+- [x] Electron runtime is on supported stable major **44.1.1**
+- [x] Build/dev tree has no residual high findings
+- [x] `builder-util-runtime` upgraded from **9.5.1** to **9.7.0** through electron-builder **26.16.0**
+- [x] No `npm audit fix --force`, prerelease Electron/build-tool package, or transitive override was used
 
-Release classification: **Internal RC: can continue. Public Beta: dependency security triage required.**
+Release classification: **Dependency security gate cleared for this slice; signing and the remaining release checks are separate gates.**
 
 ## Manual Windows acceptance
 
