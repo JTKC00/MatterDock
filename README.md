@@ -28,7 +28,7 @@ This repository currently ships through **Phase 9**: Matter Core, Timeline, Acti
 
 - Windows 10/11
 - Node.js 22+ (developed on Node 24)
-- npm 11+
+- npm 10+ (validated in GitHub CI with npm 10.9.8)
 
 Rust / Visual Studio C++ Build Tools are **not** required for this release. The desktop shell is Electron because this machine did not have a Tauri toolchain (Rust + MSVC).
 
@@ -53,6 +53,7 @@ If `npm run dev` shows `403 Restricted` / `outside of Vite serving allow list`, 
 | `npm run test:e2e:packaged` | Build the unpacked Windows application and run its packaged-app smoke test |
 | `npm run package:win` | Build the x64 NSIS installer only to `release/` |
 | `npm run verify:release` | Validate the unpacked app, packaged WASM resource, and release artifacts |
+| `npm run release:hash` | Print the SHA-256 for the versioned NSIS installer |
 | `npm run release:win` | Run the release checks, packaged smoke test, and Windows release build |
 | `npx electron .` | Launch the production build |
 | `npm run typecheck` | TypeScript (main + renderer) |
@@ -62,13 +63,15 @@ If `npm run dev` shows `403 Restricted` / `outside of Vite serving allow list`, 
 
 CI on `main` and pull requests runs typecheck, lint, unit tests, build, the Electron e2e, the packaged-app smoke test, and the Windows release build on `windows-latest`.
 
+The v0.9.0 acceptance steps are tracked in [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md).
+
 MatterDock distributes Windows releases as x64 NSIS installers only. Portable builds are not produced or published.
 Windows CI accepts `WINDOWS_CSC_LINK` and `WINDOWS_CSC_KEY_PASSWORD` repository secrets for Authenticode signing; a build without those secrets is unsigned and is not ready for broad public distribution.
 
 ## What works now
 
 - Desktop shell with sidebar navigation
-- **Matters** — list, create, detail, inline edit, archive / restore, and permanent deletion of archived Matters
+- **Matters** — list, create, detail, inline edit, archive / restore, Move to Trash, Restore from Trash, and permanent deletion from Trash
 - **Timeline** — notes, phone calls, emails, WhatsApp, meetings and letters on the Matter
 - **Actions, Waiting and Next Action** — one clear next step per Matter
 - **Today** — overdue, due today, and who you are waiting on
@@ -143,11 +146,13 @@ Renderer never runs SQL. The main process owns the database.
 - A matter can be created with only a **title**
 - One matter can have many contacts; a contact can belong to many matters
 - Archive hides a matter from the default list; it is not a prominent delete
-- Permanent deletion is available only from an archived Matter and is irreversible. It removes the Matter-owned rows, work, timeline activity, and document metadata from the current workspace.
-- MatterDock-managed document copies are quarantined and removed safely after the database deletion commits; referenced original files remain unchanged in their original locations.
-- Organisation, Contact, and Tag records are preserved. Existing unrelated Matters and their records are preserved as well.
+- Active / Completed / Archived Matters first move to Trash.
+- Trash is reversible: a trashed Matter can be restored with its previous workflow and archive state.
+- Permanent deletion is available only from Trash and is irreversible. It removes the Matter-owned rows, work, timeline activity, and document metadata from the current workspace.
+- Move to Trash does not delete or move documents. Restore does not touch files.
+- Permanent Delete removes MatterDock-managed document copies only after the database deletion commits. Referenced original files are never deleted.
+- Organisation, Contact, and Tag records are not cascade deleted. Existing unrelated Matters and their records are preserved as well.
 - Backups are historical snapshots: restoring a backup made before a permanent deletion can intentionally bring that historical Matter back. Backups are not rewritten by permanent deletion.
-- Trash and soft-delete remain future work.
 - An organisation cannot be deleted while matters still point at it
 - A contact cannot be deleted while it is still linked to a matter
 - Unlinking a contact removes the relationship only

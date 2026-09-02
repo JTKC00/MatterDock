@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import type { BackupSummary } from '@shared/backup'
@@ -23,6 +23,20 @@ export function SettingsPage() {
   const [lastBackup, setLastBackup] = useState(false)
   const [lastExport, setLastExport] = useState(false)
   const [restore, setRestore] = useState<{ token: string; summary: BackupSummary } | null>(null)
+  const [appVersion, setAppVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    void api.settings
+      .getVersion()
+      .then(({ version }) => {
+        if (mounted) setAppVersion(version)
+      })
+      .catch(() => undefined)
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   async function changeLocale(next: SupportedLocale) {
     try {
@@ -99,6 +113,7 @@ export function SettingsPage() {
         <div>
           <h1 className="page-title">{t('settings.title')}</h1>
           <p className="page-subtitle">{t('settings.subtitle')}</p>
+          {appVersion ? <p className="settings-version">{t('settings.version', { version: appVersion })}</p> : null}
         </div>
       </header>
       <div className="scroll settings-page">

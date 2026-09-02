@@ -224,9 +224,7 @@ export function MatterDetailPage() {
               </Button>
             </>
           }
-        >
-          <p>{t('matters.moveToTrashDescription')}</p>
-        </Dialog>
+        />
       ) : null}
     </div>
   )

@@ -30,7 +30,7 @@ import { DATABASE_ENTRY, MANIFEST_ENTRY } from './paths'
 import { reconcileInterruptedRestore, writeRestoreState } from './recovery'
 import { migrations } from '../db/migrations'
 import initSqlJs from 'sql.js'
-import { migrate } from '../db/migrate'
+import { appliedVersions, migrate } from '../db/migrate'
 
 const dirs: string[] = []
 
@@ -530,60 +530,183 @@ describe('backup restore validation', () => {
     )
   })
 
-  it('migrates an older backup database during restore', async () => {
+  it('restores a v0.8.0-compatible pre-Trash backup, applies v6, and keeps managed copies', async () => {
     const userData = tempDir('matterdock-old-')
     const documentsRoot = join(userData, 'documents')
-    mkdirSync(documentsRoot, { recursive: true })
+    const sourceDirectory = tempDir('matterdock-old-source-')
+    const referencePath = join(sourceDirectory, 'legacy-reference.txt')
+    writeFileSync(referencePath, 'LEGACY-REFERENCE')
     const SQL = await initSqlJs()
     const db = new SQL.Database()
     db.run('PRAGMA foreign_keys = ON')
-    db.run(migrations[0].sql)
+    for (const migration of migrations.slice(0, 5)) db.run(migration.sql)
     db.run(`CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL)`)
-    db.run('INSERT INTO schema_migrations (version, name, applied_at) VALUES (1, ?, ?)', [
-      'foundation',
-      '2026-01-01T00:00:00.000Z'
-    ])
-    db.run(
-      `INSERT INTO matters (id, title, organisation_id, reference, status, priority, description, created_at, updated_at, completed_at, archived_at)
-       VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Legacy Matter', NULL, NULL, 'new', 'normal', NULL, '2026-01-01', '2026-01-01', NULL, NULL)`
-    )
+    for (const [version, name] of [
+      [1, 'foundation'],
+      [2, 'archive_previous_status'],
+      [3, 'matter_timeline'],
+      [4, 'tasks_waiting_next_action'],
+      [5, 'documents']
+    ] as const) {
+      db.run('INSERT INTO schema_migrations (version, name, applied_at) VALUES (?, ?, ?)', [
+        version,
+        name,
+        '2026-08-31T00:00:00.000Z'
+      ])
+    }
+
+    const organisation = organisations.createOrganisation(db, { name: 'Legacy Backup Organisation' })
+    const contact = contacts.createContact(db, {
+      name: 'Legacy Backup Contact',
+      organisationId: organisation.id,
+      email: 'legacy-backup@example.com'
+    })
+    const live = matters.createMatter(db, {
+      title: 'Legacy live Matter',
+      organisationId: organisation.id,
+      status: 'waiting',
+      tagNames: ['Legacy shared tag']
+    })
+    matters.linkMatterContact(db, { matterId: live.id, contactId: contact.id, role: 'Case officer' })
+    tasks.createWaiting(db, {
+      matterId: live.id,
+      title: 'Legacy waiting item',
+      waitingForText: 'Legacy Backup Contact'
+    })
+    documentsDb.insertDocument(db, {
+      matterId: live.id,
+      displayName: 'legacy-reference.txt',
+      storageMode: 'reference',
+      originalPath: referencePath,
+      managedPath: null,
+      fileExtension: 'txt',
+      mimeType: 'text/plain',
+      fileSize: 16,
+      notes: 'Legacy reference metadata'
+    })
+
+    const archived = matters.createMatter(db, {
+      title: 'Legacy archived Matter',
+      organisationId: organisation.id,
+      status: 'completed',
+      tagNames: ['Legacy shared tag', 'Legacy archive tag']
+    })
+    matters.linkMatterContact(db, { matterId: archived.id, contactId: contact.id, role: 'Owner' })
+    const archivedEvent = events.createEvent(db, {
+      matterId: archived.id,
+      type: 'email',
+      direction: 'outgoing',
+      body: 'Legacy backup email body',
+      email: {
+        subject: 'Legacy backup email subject',
+        fromAddress: 'team@example.com',
+        toAddresses: 'legacy-backup@example.com',
+        ccAddresses: null
+      }
+    })
+    const archivedTask = tasks.createAction(db, {
+      matterId: archived.id,
+      title: 'Legacy archived action',
+      setAsNextAction: true
+    })
+    const archivedReference = documentsDb.insertDocument(db, {
+      matterId: archived.id,
+      displayName: 'archived-reference.txt',
+      storageMode: 'reference',
+      originalPath: referencePath,
+      managedPath: null,
+      fileExtension: 'txt',
+      mimeType: 'text/plain',
+      fileSize: 16,
+      notes: 'Archived reference metadata'
+    })
+    const managedDocumentId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+    const managedRelativePath = `${managedDocumentId}/legacy-managed.txt`
+    const archivedCopy = documentsDb.insertDocument(db, {
+      id: managedDocumentId,
+      matterId: archived.id,
+      displayName: 'legacy-managed.txt',
+      storageMode: 'copy',
+      originalPath: referencePath,
+      managedPath: managedRelativePath,
+      fileExtension: 'txt',
+      mimeType: 'text/plain',
+      fileSize: 14,
+      notes: 'Managed legacy metadata'
+    })
+    const archivedState = matters.archiveMatter(db, archived.id)
+
     const extracted = tempDir('matterdock-old-stage-src-')
+    mkdirSync(join(extracted, 'documents', managedDocumentId), { recursive: true })
+    writeFileSync(join(extracted, 'documents', managedRelativePath), 'LEGACY-MANAGED')
     writeFileSync(join(extracted, DATABASE_ENTRY), Buffer.from(db.export()))
     db.close()
     const manifest: BackupManifestV1 = {
       backupSchemaVersion: 1,
       app: 'MatterDock',
-      appVersion: '0.4.0',
-      createdAt: '2026-01-01T00:00:00.000Z',
-      databaseSchemaVersion: 1,
+      appVersion: '0.8.0',
+      createdAt: '2026-08-31T00:00:00.000Z',
+      databaseSchemaVersion: 5,
       database: {
         path: DATABASE_ENTRY,
         sha256: await sha256File(join(extracted, DATABASE_ENTRY)),
         size: statSync(join(extracted, DATABASE_ENTRY)).size
       },
-      counts: { matters: 1, documents: 0, managedDocuments: 0 },
-      managedDocuments: []
+      counts: { matters: 2, documents: 3, managedDocuments: 1 },
+      managedDocuments: [
+        {
+          documentId: managedDocumentId,
+          path: `documents/${managedRelativePath}`,
+          sha256: await sha256File(join(extracted, 'documents', managedRelativePath)),
+          size: 14
+        }
+      ]
     }
     writeFileSync(join(extracted, MANIFEST_ENTRY), serializeManifest(manifest))
     const archive = join(userData, 'old.matterdock-backup')
     await writeZip(archive, [
       { realPath: join(extracted, MANIFEST_ENTRY), archivePath: MANIFEST_ENTRY },
-      { realPath: join(extracted, DATABASE_ENTRY), archivePath: DATABASE_ENTRY }
+      { realPath: join(extracted, DATABASE_ENTRY), archivePath: DATABASE_ENTRY },
+      { realPath: join(extracted, 'documents', managedRelativePath), archivePath: `documents/${managedRelativePath}` }
     ])
+
     const store = new DatabaseStore(join(userData, 'matterdock.sqlite'), persistDatabase)
-    await store.initialize()
-    store.mutate((db) => matters.createMatter(db, { title: 'Current Matter' }))
+    await store.initialize({ seed: false })
+    store.mutate((current) => matters.createMatter(current, { title: 'Current Matter' }))
     const staging = tempDir('matterdock-old-stage-')
     await inspectBackupArchive({ archivePath: archive, stagingDir: staging })
     await restoreFromStaging({ store, userData, documentsRoot, stagingDir: staging })
-    expect(store.query((db) => matters.getMatter(db, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).title).toBe(
-      'Legacy Matter'
+
+    expect(store.query((current) => appliedVersions(current))).toEqual([1, 2, 3, 4, 5, 6])
+    const restoredLive = store.query((current) => matters.getMatter(current, live.id))
+    const restoredArchived = store.query((current) => matters.getMatter(current, archived.id))
+    expect(restoredLive.title).toBe('Legacy live Matter')
+    expect(restoredLive.trashedAt).toBeNull()
+    expect(restoredArchived.status).toBe('archived')
+    expect(restoredArchived.trashedAt).toBeNull()
+    expect(restoredArchived.completedAt).toBe(archivedState.completedAt)
+    expect(restoredArchived.archivedAt).toBe(archivedState.archivedAt)
+    expect(restoredArchived.contacts).toEqual([expect.objectContaining({ contactId: contact.id, role: 'Owner' })])
+    expect(store.query((current) => events.listEventsForMatter(current, archived.id))).toEqual([
+      expect.objectContaining({ id: archivedEvent.id, body: 'Legacy backup email body' })
+    ])
+    expect(store.query((current) => tasks.getTask(current, archivedTask.id).title)).toBe('Legacy archived action')
+    expect(store.query((current) => documentsDb.getDocument(current, archivedReference.id).notes)).toBe(
+      'Archived reference metadata'
     )
-    expect(store.query((db) => matters.getMatter(db, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).trashedAt).toBeNull()
+    expect(store.query((current) => documentsDb.getDocument(current, archivedCopy.id).managedPath)).toBe(managedRelativePath)
+    expect(existsSync(join(documentsRoot, managedRelativePath))).toBe(true)
+    expect(readFileSync(join(documentsRoot, managedRelativePath), 'utf8')).toBe('LEGACY-MANAGED')
+    expect(readFileSync(referencePath, 'utf8')).toBe('LEGACY-REFERENCE')
+    const restoredMatters = store.query((current) => matters.listMatters(current, { status: 'all' }))
+    expect(restoredMatters.map((item) => item.id)).toEqual(expect.arrayContaining([live.id, archived.id]))
+    expect(restoredMatters.map((item) => item.title)).not.toContain('Current Matter')
+    await store.close()
   })
 
   it('preserves Trash lifecycle state in a backup snapshot', async () => {
     const ctx = await setup()
+    const live = ctx.store.mutate((db) => matters.createMatter(db, { title: 'Live backup Matter' }))
     const trashed = ctx.store.mutate((db) => matters.moveMatterToTrash(db, ctx.matter.id))
     expect(trashed.trashedAt).toBeTruthy()
     const destination = join(ctx.userData, 'trash-state.matterdock-backup')
@@ -591,7 +714,7 @@ describe('backup restore validation', () => {
       store: ctx.store,
       documentsRoot: ctx.documentsRoot,
       destinationPath: destination,
-      appVersion: '0.8.0'
+      appVersion: '0.9.0'
     })
     ctx.store.mutate((db) => matters.restoreMatterFromTrash(db, ctx.matter.id))
     expect(ctx.store.query((db) => matters.getMatter(db, ctx.matter.id)).trashedAt).toBeNull()
@@ -613,6 +736,14 @@ describe('backup restore validation', () => {
     expect(
       ctx.store.query((db) => matters.listMatters(db, { scope: 'trash', status: 'all' })).map((item) => item.id)
     ).toContain(ctx.matter.id)
+    const liveIds = ctx.store.query((db) => matters.listMatters(db, { status: 'all' })).map((item) => item.id)
+    const trashIds = ctx.store.query((db) => matters.listMatters(db, { scope: 'trash', status: 'all' })).map((item) => item.id)
+    expect(liveIds).toContain(live.id)
+    expect(liveIds).not.toContain(ctx.matter.id)
+    expect(trashIds).not.toContain(live.id)
+    expect(ctx.copy.managedPath).toBeTruthy()
+    expect(existsSync(join(ctx.documentsRoot, ctx.copy.managedPath ?? ''))).toBe(true)
+    expect(readFileSync(join(ctx.documentsRoot, ctx.copy.managedPath ?? ''), 'utf8')).toBe('MANAGED-COPY-BYTES')
   })
 
   it('rolls back to previous data if restore fails after the recovery snapshot', async () => {

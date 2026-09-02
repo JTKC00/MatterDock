@@ -39,6 +39,24 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
       - name: Validate Windows release artifacts
         run: npm run verify:release
+      - name: Record installer Authenticode status
+        shell: pwsh
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+        run: |
+          $installer = Get-ChildItem -LiteralPath release -Filter '*-Setup.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'No NSIS installer was produced.' }
+          $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
+          Write-Output "Authenticode status: $($signature.Status)"
+          if ($env:CSC_LINK -and $env:CSC_KEY_PASSWORD -and $signature.Status -ne 'Valid') {
+            throw "Signing secrets were supplied, but Authenticode validation returned $($signature.Status)."
+          }
+          if (-not ($env:CSC_LINK -and $env:CSC_KEY_PASSWORD)) {
+            Write-Output 'Unsigned — internal/beta testing only'
+          }
+      - name: Record installer SHA-256
+        run: npm run release:hash
       - name: Upload Windows release artifacts
         uses: actions/upload-artifact@v4
         with:
