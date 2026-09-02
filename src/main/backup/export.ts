@@ -159,7 +159,8 @@ function writeCsvFiles(csvDir: string, payload: ExportPayload): void {
         'updated_at',
         'completed_at',
         'archived_at',
-        'status_before_archive'
+        'status_before_archive',
+        'trashed_at'
       ],
       payload.matters.map((row) => [
         row.id,
@@ -173,7 +174,8 @@ function writeCsvFiles(csvDir: string, payload: ExportPayload): void {
         row.updatedAt,
         row.completedAt,
         row.archivedAt,
-        row.statusBeforeArchive
+        row.statusBeforeArchive,
+        row.trashedAt
       ])
     ),
     'utf8'
@@ -393,7 +395,8 @@ function mapMatter(row: Record<string, unknown>) {
     updatedAt: str(row.updated_at),
     completedAt: strOrNull(row.completed_at),
     archivedAt: strOrNull(row.archived_at),
-    statusBeforeArchive: strOrNull(row.status_before_archive)
+    statusBeforeArchive: strOrNull(row.status_before_archive),
+    trashedAt: strOrNull(row.trashed_at)
   }
 }
 

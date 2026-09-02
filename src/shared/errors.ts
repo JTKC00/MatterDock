@@ -64,6 +64,8 @@ export const USER_ERRORS = {
     'Matter could not be permanently deleted. Your Matter and managed files have been kept safe. Please try again.',
   matterDeleteRecoveryFailed:
     'Matter could not be safely deleted. Your Matter remains available, but some managed files need recovery before trying again.',
+  matterDeleteRequiresTrash:
+    'This Matter must be in Trash before it can be permanently deleted.',
   workspaceBusy: 'MatterDock is busy with a backup or restore. Please try again in a moment.',
   backupFailed: 'The backup could not be created. Your MatterDock data was not changed.',
   backupManagedMissing:

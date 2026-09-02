@@ -1,17 +1,17 @@
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { applicationResourcePaths, assertApplicationResources, missingApplicationResources } from './resources'
 
 describe('packaged application resources', () => {
-  const paths = applicationResourcePaths(
-    'C:\\Program Files\\MatterDock\\resources\\app.asar\\out\\main',
-    'C:\\Program Files\\MatterDock\\resources'
-  )
+  const mainDirectory = join('C:', 'Program Files', 'MatterDock', 'resources', 'app.asar', 'out', 'main')
+  const resourcesDirectory = join('C:', 'Program Files', 'MatterDock', 'resources')
+  const paths = applicationResourcePaths(mainDirectory, resourcesDirectory)
 
   it('resolves preload, renderer and WASM paths from the packaged layout', () => {
     expect(paths).toEqual({
-      preload: 'C:\\Program Files\\MatterDock\\resources\\app.asar\\out\\preload\\index.cjs',
-      renderer: 'C:\\Program Files\\MatterDock\\resources\\app.asar\\out\\renderer\\index.html',
-      sqlWasm: 'C:\\Program Files\\MatterDock\\resources\\sql-wasm.wasm'
+      preload: join(mainDirectory, '../preload/index.cjs'),
+      renderer: join(mainDirectory, '../renderer/index.html'),
+      sqlWasm: join(resourcesDirectory, 'sql-wasm.wasm')
     })
   })
 

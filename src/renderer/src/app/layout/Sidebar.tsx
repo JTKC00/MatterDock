@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Building2, Clock3, Contact, Inbox, Search, Settings, SunMedium } from 'lucide-react'
+import { Building2, Clock3, Contact, Inbox, Search, Settings, SunMedium, Trash2 } from 'lucide-react'
 import { useT } from '@/i18n/LocaleProvider'
 
 export function Sidebar() {
@@ -11,6 +11,7 @@ export function Sidebar() {
     { to: '/search', label: t('nav.search'), icon: Search },
     { to: '/organisations', label: t('nav.organisations'), icon: Building2 },
     { to: '/contacts', label: t('nav.contacts'), icon: Contact },
+    { to: '/trash', label: t('nav.trash'), icon: Trash2 },
     { to: '/settings', label: t('nav.settings'), icon: Settings }
   ]
 

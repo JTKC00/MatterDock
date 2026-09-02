@@ -85,16 +85,21 @@ async function addDocuments(page: Page, matterId: string, referencePath: string,
   )
 }
 
-async function assertDeletedFromLiveQueries(page: Page, matterId: string, title: string): Promise<void> {
+async function assertLivePresence(
+  page: Page,
+  matterId: string,
+  title: string,
+  expected: boolean
+): Promise<void> {
   const result = await page.evaluate(
     async ({ id, title }) => {
       const api = (
         window as unknown as {
           matterdock: {
             matters: {
-              list: (query: { status: 'all' }) => Promise<{
+              list: (query: { status: 'all'; scope?: 'live' | 'trash' }) => Promise<{
                 ok: boolean
-                data?: Array<{ id: string }>
+                data?: Array<{ id: string; status: string; trashedAt: string | null }>
                 error?: string
               }>
             }
@@ -108,30 +113,35 @@ async function assertDeletedFromLiveQueries(page: Page, matterId: string, title:
           }
         }
       ).matterdock
-      const matters = await api.matters.list({ status: 'all' })
-      if (!matters.ok || !matters.data) throw new Error(matters.error ?? 'matter listing failed')
+      const live = await api.matters.list({ status: 'all' })
+      if (!live.ok || !live.data) throw new Error(live.error ?? 'live listing failed')
+      const trash = await api.matters.list({ status: 'all', scope: 'trash' })
+      if (!trash.ok || !trash.data) throw new Error(trash.error ?? 'trash listing failed')
       const search = await api.search.global(title)
       if (!search.ok || !search.data) throw new Error(search.error ?? 'search failed')
       return {
-        matterFound: matters.data.some((matter) => matter.id === id),
-        searchFound: search.data.hits.some((hit) => hit.matterId === id)
+        liveFound: live.data.some((matter) => matter.id === id),
+        trashFound: trash.data.some((matter) => matter.id === id),
+        searchFound: search.data.hits.some((hit) => hit.matterId === id),
+        liveStatus: live.data.find((matter) => matter.id === id)?.status ?? null
       }
     },
     { id: matterId, title }
   )
-  expect(result.matterFound).toBe(false)
-  expect(result.searchFound).toBe(false)
-  await expect(page.getByText(title, { exact: true })).toHaveCount(0)
+  expect(result.liveFound).toBe(expected)
+  expect(result.trashFound).toBe(!expected)
+  expect(result.searchFound).toBe(expected)
+  if (expected) expect(result.liveStatus).toBe('new')
 }
 
-test('archived Matter permanent deletion has an explicit safe English flow', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'matterdock-delete-en-e2e-'))
-  const files = mkdtempSync(join(tmpdir(), 'matterdock-delete-en-src-'))
+test('English Matter Trash lifecycle restores exactly and permanently deletes only from Trash', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'matterdock-trash-en-e2e-'))
+  const files = mkdtempSync(join(tmpdir(), 'matterdock-trash-en-src-'))
   const referencePath = join(files, 'reference-original.txt')
   const copySourcePath = join(files, 'managed-source.txt')
   writeFileSync(referencePath, 'REFERENCE-ORIGINAL-CONTENTS')
   writeFileSync(copySourcePath, 'MANAGED-SOURCE-CONTENTS')
-  const title = 'Permanent deletion E2E'
+  const title = 'Trash lifecycle E2E'
   const app = await launch(userData, 'en')
 
   try {
@@ -145,18 +155,60 @@ test('archived Matter permanent deletion has an explicit safe English flow', asy
     const matterId = await matterIdFromPage(page)
 
     await expect(page.getByRole('button', { name: 'Delete permanently', exact: true })).toHaveCount(0)
+    const moveTrigger = page.getByRole('button', { name: 'Move to Trash', exact: true })
+    await expect(moveTrigger).toBeVisible()
     const managedPath = await addDocuments(page, matterId, referencePath, copySourcePath)
     expect(existsSync(managedPath)).toBe(true)
 
-    await page.getByRole('button', { name: 'Archive', exact: true }).click()
-    await expect(page).toHaveURL(/#\/matters$/)
-    await page.locator('#status-filter').selectOption('archived')
-    await expect(page.getByText(title, { exact: true })).toBeVisible()
-    await page.getByText(title, { exact: true }).click()
+    await moveTrigger.click()
+    let moveDialog = page.getByRole('dialog', { name: `Move “${title}” to Trash?` })
+    await expect(moveDialog).toBeVisible()
+    await expect(moveDialog).toContainText('You can restore this Matter later from Trash.')
+    await expect(moveDialog).toContainText('Documents and files are not deleted.')
+    await moveDialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await expect(moveDialog).toHaveCount(0)
     await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
-    const deleteTrigger = page.getByRole('button', { name: 'Delete permanently', exact: true })
-    await expect(deleteTrigger).toBeVisible()
+    expect(existsSync(managedPath)).toBe(true)
+    expect(readFileSync(referencePath, 'utf8')).toBe('REFERENCE-ORIGINAL-CONTENTS')
 
+    await moveTrigger.click()
+    moveDialog = page.getByRole('dialog', { name: `Move “${title}” to Trash?` })
+    await moveDialog.getByRole('button', { name: 'Move to Trash', exact: true }).click()
+    await expect(page.getByText('Matter moved to Trash.', { exact: true })).toBeVisible()
+    await expect(page).toHaveURL(/#\/matters$/)
+    await assertLivePresence(page, matterId, title, false)
+    expect(existsSync(managedPath)).toBe(true)
+    expect(readFileSync(referencePath, 'utf8')).toBe('REFERENCE-ORIGINAL-CONTENTS')
+    expect(readFileSync(copySourcePath, 'utf8')).toBe('MANAGED-SOURCE-CONTENTS')
+
+    await page.evaluate((id) => {
+      window.location.hash = `/matters/${id}`
+    }, matterId)
+    await expect(page).toHaveURL(/#\/trash$/)
+
+    await page.getByRole('link', { name: 'Trash', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Trash', exact: true })).toBeVisible()
+    await expect(page.getByText(title, { exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Restore', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Delete permanently', exact: true })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Restore', exact: true }).click()
+    await expect(page.getByText('Matter restored.', { exact: true })).toBeVisible()
+    await expect(page.getByText(title, { exact: true })).toHaveCount(0)
+    await page.getByRole('link', { name: 'Matters', exact: true }).click()
+    await expect(page.getByText(title, { exact: true })).toBeVisible()
+    await assertLivePresence(page, matterId, title, true)
+    expect(existsSync(managedPath)).toBe(true)
+    expect(readFileSync(referencePath, 'utf8')).toBe('REFERENCE-ORIGINAL-CONTENTS')
+
+    await page.locator('.matter-row').filter({ hasText: title }).click()
+    await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Move to Trash', exact: true }).click()
+    await page.getByRole('dialog', { name: `Move “${title}” to Trash?` }).getByRole('button', { name: 'Move to Trash', exact: true }).click()
+    await expect(page).toHaveURL(/#\/matters$/)
+    await page.getByRole('link', { name: 'Trash', exact: true }).click()
+
+    const deleteTrigger = page.getByRole('button', { name: 'Delete permanently', exact: true })
     await deleteTrigger.click()
     let confirmation = page.getByRole('dialog', { name: `Permanently delete “${title}”?` })
     await expect(confirmation).toBeVisible()
@@ -167,17 +219,48 @@ test('archived Matter permanent deletion has an explicit safe English flow', asy
     await expect(confirmation.getByRole('button', { name: 'Delete permanently', exact: true })).not.toBeFocused()
     await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click()
     await expect(confirmation).toHaveCount(0)
-    await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
+    await expect(page.getByText(title, { exact: true })).toBeVisible()
 
     await deleteTrigger.click()
     confirmation = page.getByRole('dialog', { name: `Permanently delete “${title}”?` })
     await confirmation.getByRole('button', { name: 'Delete permanently', exact: true }).click()
     await expect(page.getByText('Matter permanently deleted.', { exact: true })).toBeVisible()
-    await expect(page).toHaveURL(/#\/matters$/)
-    await assertDeletedFromLiveQueries(page, matterId, title)
-    await page.getByRole('link', { name: 'Search', exact: true }).click()
-    await page.getByLabel('Search MatterDock').fill(title)
-    await expect(page.getByText('No matching matters, people, activity or documents.', { exact: true })).toBeVisible()
+    await expect(page.getByText(title, { exact: true })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Trash is empty', exact: true })).toBeVisible()
+    const leftover = await page.evaluate(
+      async ({ id, title }) => {
+        const api = (
+          window as unknown as {
+            matterdock: {
+              matters: {
+                list: (query: { status: 'all'; scope?: 'live' | 'trash' }) => Promise<{
+                  ok: boolean
+                  data?: Array<{ id: string }>
+                }>
+              }
+              search: {
+                global: (query: string) => Promise<{
+                  ok: boolean
+                  data?: { hits: Array<{ matterId: string | null }> }
+                }>
+              }
+            }
+          }
+        ).matterdock
+        const live = await api.matters.list({ status: 'all' })
+        const trash = await api.matters.list({ status: 'all', scope: 'trash' })
+        const search = await api.search.global(title)
+        return {
+          liveFound: live.data?.some((matter) => matter.id === id) ?? false,
+          trashFound: trash.data?.some((matter) => matter.id === id) ?? false,
+          searchFound: search.data?.hits.some((hit) => hit.matterId === id) ?? false
+        }
+      },
+      { id: matterId, title }
+    )
+    expect(leftover.liveFound).toBe(false)
+    expect(leftover.trashFound).toBe(false)
+    expect(leftover.searchFound).toBe(false)
 
     expect(readFileSync(referencePath, 'utf8')).toBe('REFERENCE-ORIGINAL-CONTENTS')
     expect(readFileSync(copySourcePath, 'utf8')).toBe('MANAGED-SOURCE-CONTENTS')
@@ -190,9 +273,9 @@ test('archived Matter permanent deletion has an explicit safe English flow', asy
   }
 })
 
-test('archived Matter permanent deletion is fully localized in zh-HK', async () => {
-  const userData = mkdtempSync(join(tmpdir(), 'matterdock-delete-zh-e2e-'))
-  const title = '永久刪除流程測試'
+test('zh-HK Matter Trash lifecycle uses 移至垃圾桶, 復原 and 永久刪除', async () => {
+  const userData = mkdtempSync(join(tmpdir(), 'matterdock-trash-zh-e2e-'))
+  const title = '垃圾桶流程測試'
   const app = await launch(userData, 'zh-HK')
 
   try {
@@ -205,13 +288,39 @@ test('archived Matter permanent deletion is fully localized in zh-HK', async () 
     await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
 
     await expect(page.getByRole('button', { name: '永久刪除', exact: true })).toHaveCount(0)
-    await page.getByRole('button', { name: '封存', exact: true }).click()
+    const moveTrigger = page.getByRole('button', { name: '移至垃圾桶', exact: true })
+    await expect(moveTrigger).toBeVisible()
+
+    await moveTrigger.click()
+    let moveDialog = page.getByRole('dialog', { name: `將「${title}」移至垃圾桶？` })
+    await expect(moveDialog).toContainText('你可以稍後從垃圾桶復原此事項。')
+    await expect(moveDialog).toContainText('文件及檔案不會被刪除。')
+    await moveDialog.getByRole('button', { name: '取消', exact: true }).click()
+    await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
+
+    await moveTrigger.click()
+    moveDialog = page.getByRole('dialog', { name: `將「${title}」移至垃圾桶？` })
+    await moveDialog.getByRole('button', { name: '移至垃圾桶', exact: true }).click()
+    await expect(page.getByText('事項已移至垃圾桶。', { exact: true })).toBeVisible()
     await expect(page).toHaveURL(/#\/matters$/)
-    await page.locator('#status-filter').selectOption('archived')
-    await page.getByText(title, { exact: true }).click()
+    await expect(page.getByText(title, { exact: true })).toHaveCount(0)
+
+    await page.getByRole('link', { name: '垃圾桶', exact: true }).click()
+    await expect(page.getByRole('heading', { name: '垃圾桶', exact: true })).toBeVisible()
+    await expect(page.getByText(title, { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: '復原', exact: true }).click()
+    await expect(page.getByText('事項已復原。', { exact: true })).toBeVisible()
+
+    await page.getByRole('link', { name: '事項', exact: true }).click()
+    await expect(page.getByText(title, { exact: true })).toBeVisible()
+    await page.locator('.matter-row').filter({ hasText: title }).click()
+    await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
+    await page.getByRole('button', { name: '移至垃圾桶', exact: true }).click()
+    await page.getByRole('dialog', { name: `將「${title}」移至垃圾桶？` }).getByRole('button', { name: '移至垃圾桶', exact: true }).click()
+    await page.getByRole('link', { name: '垃圾桶', exact: true }).click()
+
     const deleteTrigger = page.getByRole('button', { name: '永久刪除', exact: true })
     await expect(deleteTrigger).toBeVisible()
-
     await deleteTrigger.click()
     let confirmation = page.getByRole('dialog', { name: `永久刪除「${title}」？` })
     await expect(confirmation).toContainText('這項操作無法復原。')
@@ -219,14 +328,12 @@ test('archived Matter permanent deletion is fully localized in zh-HK', async () 
     await expect(confirmation).toContainText('參照的原始檔案')
     await expect(confirmation).toContainText('機構、聯絡人及標籤記錄')
     await confirmation.getByRole('button', { name: '取消', exact: true }).click()
-    await expect(confirmation).toHaveCount(0)
-    await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
+    await expect(page.getByText(title, { exact: true })).toBeVisible()
 
     await deleteTrigger.click()
     confirmation = page.getByRole('dialog', { name: `永久刪除「${title}」？` })
     await confirmation.getByRole('button', { name: '永久刪除', exact: true }).click()
     await expect(page.getByText('事項已永久刪除。', { exact: true })).toBeVisible()
-    await expect(page).toHaveURL(/#\/matters$/)
     await expect(page.getByText(title, { exact: true })).toHaveCount(0)
   } finally {
     await closeApp(app).catch(() => undefined)

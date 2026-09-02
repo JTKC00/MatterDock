@@ -40,6 +40,13 @@ export function listMatters(db: Database, query: MatterListQuery = {}): MatterLi
   const search = optionalText(query.search)
   const clauses: string[] = []
   const params: Array<string> = []
+  const scope = query.scope ?? 'live'
+
+  if (scope === 'trash') {
+    clauses.push('m.trashed_at IS NOT NULL')
+  } else {
+    clauses.push('m.trashed_at IS NULL')
+  }
 
   if (!query.status || query.status === 'active') {
     clauses.push(`m.status != 'archived'`)
@@ -78,7 +85,8 @@ export function listMatters(db: Database, query: MatterListQuery = {}): MatterLi
   }
 
   const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''
-  const order = orderSql(query.sort ?? 'updated')
+  const sort = query.sort ?? 'updated'
+  const order = scope === 'trash' && sort === 'updated' ? 'ORDER BY m.trashed_at DESC' : orderSql(sort)
 
   const rows = all<MatterListRow>(
     db,
@@ -235,6 +243,24 @@ export function restoreMatter(db: Database, id: string): MatterDetail {
   if (!existing) throw new AppError(USER_ERRORS.matterNotFound, 'MATTER_NOT_FOUND')
   if (existing.status !== 'archived') return getMatter(db, id)
   return updateMatter(db, id, { status: statusBeforeArchive(existing) })
+}
+
+export function moveMatterToTrash(db: Database, id: string): MatterDetail {
+  const existing = get<MatterRow>(db, 'SELECT * FROM matters WHERE id = ?', [id])
+  if (!existing) throw new AppError(USER_ERRORS.matterNotFound, 'MATTER_NOT_FOUND')
+  if (existing.trashed_at) return getMatter(db, id)
+  const now = nowIso()
+  db.run('UPDATE matters SET trashed_at = ?, updated_at = ? WHERE id = ?', [now, now, id])
+  return getMatter(db, id)
+}
+
+export function restoreMatterFromTrash(db: Database, id: string): MatterDetail {
+  const existing = get<MatterRow>(db, 'SELECT * FROM matters WHERE id = ?', [id])
+  if (!existing) throw new AppError(USER_ERRORS.matterNotFound, 'MATTER_NOT_FOUND')
+  if (!existing.trashed_at) return getMatter(db, id)
+  const now = nowIso()
+  db.run('UPDATE matters SET trashed_at = NULL, updated_at = ? WHERE id = ?', [now, id])
+  return getMatter(db, id)
 }
 
 /**

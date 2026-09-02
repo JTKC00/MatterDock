@@ -51,6 +51,7 @@ export type MatterRow = {
   completed_at: string | null
   archived_at: string | null
   status_before_archive: Exclude<MatterStatus, 'archived'> | null
+  trashed_at: string | null
 }
 
 export type TagRow = {
@@ -104,7 +105,8 @@ export function mapMatter(row: MatterRow): Matter {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     completedAt: row.completed_at,
-    archivedAt: row.archived_at
+    archivedAt: row.archived_at,
+    trashedAt: row.trashed_at ?? null
   }
 }
 

@@ -45,7 +45,7 @@ describe('migration v4', () => {
     events.createEvent(db, { matterId: matter.id, type: 'note', body: 'Prepared documents.' })
 
     expect(appliedVersions(db)).toEqual([1, 2, 3])
-    expect(migrate(db)).toEqual([4, 5])
+    expect(migrate(db)).toEqual([4, 5, 6])
     expect(tableNames(db)).toContain('tasks')
     expect(events.listEventsForMatter(db, matter.id)).toHaveLength(1)
     expect(matters.getMatter(db, matter.id).title).toBe('EMPF Subsidy Application')

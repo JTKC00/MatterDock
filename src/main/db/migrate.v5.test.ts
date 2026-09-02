@@ -47,7 +47,7 @@ describe('migration v5', () => {
     tasks.createAction(db, { matterId: matter.id, title: 'Send pack', setAsNextAction: true })
 
     expect(appliedVersions(db)).toEqual([1, 2, 3, 4])
-    expect(migrate(db)).toEqual([5])
+    expect(migrate(db)).toEqual([5, 6])
     expect(tableNames(db)).toContain('documents')
     expect(events.listEventsForMatter(db, matter.id)).toHaveLength(1)
     expect(tasks.getNextActionForMatter(db, matter.id)?.title).toBe('Send pack')

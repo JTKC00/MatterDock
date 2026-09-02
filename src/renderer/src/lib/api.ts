@@ -30,6 +30,8 @@ export const api = {
       unwrap(window.matterdock.matters.update(...args)),
     archive: (id: string) => unwrap(window.matterdock.matters.archive(id)),
     restore: (id: string) => unwrap(window.matterdock.matters.restore(id)),
+    moveToTrash: (id: string) => unwrap(window.matterdock.matters.moveToTrash(id)),
+    restoreFromTrash: (id: string) => unwrap(window.matterdock.matters.restoreFromTrash(id)),
     deletePermanently: (id: string) => unwrap(window.matterdock.matters.deletePermanently(id)),
     setTags: (...args: Parameters<Window['matterdock']['matters']['setTags']>) =>
       unwrap(window.matterdock.matters.setTags(...args)),

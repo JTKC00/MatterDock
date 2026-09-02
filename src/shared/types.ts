@@ -38,6 +38,8 @@ export const ACTIVE_MATTER_STATUSES: MatterStatus[] = [
 
 export type MatterSort = 'updated' | 'created' | 'title' | 'priority'
 
+export type MatterLifecycleScope = 'live' | 'trash'
+
 export type Organisation = {
   id: string
   name: string
@@ -114,6 +116,7 @@ export type Matter = {
   updatedAt: string
   completedAt: string | null
   archivedAt: string | null
+  trashedAt: string | null
 }
 
 export type MatterListItem = Matter & {
@@ -130,6 +133,7 @@ export type MatterListQuery = {
   status?: MatterStatus | 'all' | 'active'
   tagId?: string
   sort?: MatterSort
+  scope?: MatterLifecycleScope
 }
 
 export type CreateMatterInput = {

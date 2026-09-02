@@ -67,6 +67,7 @@ test('language switch, persistence, navigation and backup stay data-safe', async
     await expect(page.getByRole('link', { name: '搜尋', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: '機構', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: '聯絡人', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: '垃圾桶', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: '設定', exact: true })).toBeVisible()
 
     await page.getByRole('link', { name: '事項', exact: true }).click()

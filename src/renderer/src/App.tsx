@@ -10,6 +10,7 @@ import { WaitingPage } from './features/tasks/WaitingPage'
 import { ContactDetailPage, ContactListPage } from './features/contacts/ContactPages'
 import { MatterDetailPage } from './features/matters/MatterDetailPage'
 import { MatterListPage } from './features/matters/MatterListPage'
+import { TrashPage } from './features/matters/TrashPage'
 import { OrganisationDetailPage, OrganisationListPage } from './features/organisations/OrganisationPages'
 import { LocaleProvider } from './i18n/LocaleProvider'
 import { setActiveLocale } from './i18n/runtime'
@@ -50,6 +51,7 @@ export function App() {
               <Route path="/organisations/:organisationId" element={<OrganisationDetailPage />} />
               <Route path="/contacts" element={<ContactListPage />} />
               <Route path="/contacts/:contactId" element={<ContactDetailPage />} />
+              <Route path="/trash" element={<TrashPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/matters" replace />} />
             </Route>

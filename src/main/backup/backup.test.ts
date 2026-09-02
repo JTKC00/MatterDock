@@ -579,6 +579,40 @@ describe('backup restore validation', () => {
     expect(store.query((db) => matters.getMatter(db, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).title).toBe(
       'Legacy Matter'
     )
+    expect(store.query((db) => matters.getMatter(db, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')).trashedAt).toBeNull()
+  })
+
+  it('preserves Trash lifecycle state in a backup snapshot', async () => {
+    const ctx = await setup()
+    const trashed = ctx.store.mutate((db) => matters.moveMatterToTrash(db, ctx.matter.id))
+    expect(trashed.trashedAt).toBeTruthy()
+    const destination = join(ctx.userData, 'trash-state.matterdock-backup')
+    await createBackupBundle({
+      store: ctx.store,
+      documentsRoot: ctx.documentsRoot,
+      destinationPath: destination,
+      appVersion: '0.8.0'
+    })
+    ctx.store.mutate((db) => matters.restoreMatterFromTrash(db, ctx.matter.id))
+    expect(ctx.store.query((db) => matters.getMatter(db, ctx.matter.id)).trashedAt).toBeNull()
+
+    const staging = tempDir('matterdock-trash-stage-')
+    await inspectBackupArchive({ archivePath: destination, stagingDir: staging })
+    await restoreFromStaging({
+      store: ctx.store,
+      userData: ctx.userData,
+      documentsRoot: ctx.documentsRoot,
+      stagingDir: staging
+    })
+    const restored = ctx.store.query((db) => matters.getMatter(db, ctx.matter.id))
+    expect(restored.trashedAt).toBe(trashed.trashedAt)
+    expect(restored.status).toBe(trashed.status)
+    expect(ctx.store.query((db) => matters.listMatters(db, { status: 'all' })).map((item) => item.id)).not.toContain(
+      ctx.matter.id
+    )
+    expect(
+      ctx.store.query((db) => matters.listMatters(db, { scope: 'trash', status: 'all' })).map((item) => item.id)
+    ).toContain(ctx.matter.id)
   })
 
   it('rolls back to previous data if restore fails after the recovery snapshot', async () => {

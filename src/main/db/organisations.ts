@@ -65,6 +65,7 @@ export function listOrganisations(db: Database, search?: string): OrganisationSu
                   SELECT COUNT(*) FROM matters m
                   WHERE m.organisation_id = o.id
                     AND m.status NOT IN ('completed', 'archived')
+                    AND m.trashed_at IS NULL
                 ) AS active_matter_count
          FROM organisations o
          LEFT JOIN organisation_aliases a ON a.organisation_id = o.id
@@ -81,6 +82,7 @@ export function listOrganisations(db: Database, search?: string): OrganisationSu
                   SELECT COUNT(*) FROM matters m
                   WHERE m.organisation_id = o.id
                     AND m.status NOT IN ('completed', 'archived')
+                    AND m.trashed_at IS NULL
                 ) AS active_matter_count
          FROM organisations o
          ORDER BY o.name COLLATE NOCASE`
@@ -108,6 +110,7 @@ export function getOrganisation(db: Database, id: string): OrganisationDetail {
               SELECT COUNT(*) FROM matters m
               WHERE m.organisation_id = o.id
                 AND m.status NOT IN ('completed', 'archived')
+                AND m.trashed_at IS NULL
             ) AS active_matter_count
      FROM organisations o
      WHERE o.id = ?`,

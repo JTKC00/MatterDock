@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
   MATTER_PRIORITIES,
   MATTER_STATUSES,
@@ -21,6 +21,7 @@ import { PrepareContextDialog } from '@/features/context-export/PrepareContextDi
 import { MatterDocuments } from '@/features/documents/MatterDocuments'
 import { MatterTimeline } from '@/features/timeline/MatterTimeline'
 import { MatterWork } from '@/features/tasks/MatterWork'
+import { invalidateMatterLifecycleCaches } from './lifecycleCache'
 
 export function MatterDetailPage() {
   const t = useT()
@@ -29,7 +30,7 @@ export function MatterDetailPage() {
   const toast = useToast()
   const queryClient = useQueryClient()
   const [prepareOpen, setPrepareOpen] = useState(false)
-  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [trashOpen, setTrashOpen] = useState(false)
   const matter = useQuery({
     queryKey: ['matter', matterId],
     queryFn: () => api.matters.get(matterId),
@@ -40,23 +41,8 @@ export function MatterDetailPage() {
     await queryClient.invalidateQueries()
   }
 
-  const invalidateAfterPermanentDelete = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['matters'] }),
-      queryClient.invalidateQueries({ queryKey: ['today'] }),
-      queryClient.invalidateQueries({ queryKey: ['waiting-board'] }),
-      queryClient.invalidateQueries({ queryKey: ['search'] }),
-      queryClient.invalidateQueries({ queryKey: ['tags'] }),
-      queryClient.invalidateQueries({ queryKey: ['organisations'] }),
-      queryClient.invalidateQueries({ queryKey: ['organisation'] }),
-      queryClient.invalidateQueries({ queryKey: ['contacts'] }),
-      queryClient.invalidateQueries({ queryKey: ['contact'] })
-    ])
-    queryClient.removeQueries({ queryKey: ['matter', matterId] })
-    queryClient.removeQueries({ queryKey: ['tasks', matterId] })
-    queryClient.removeQueries({ queryKey: ['events', matterId] })
-    queryClient.removeQueries({ queryKey: ['documents', matterId] })
-    queryClient.removeQueries({ queryKey: ['context-preview', matterId] })
+  const invalidateLifecycle = async () => {
+    await invalidateMatterLifecycleCaches(queryClient, matterId)
   }
 
   const update = useMutation({
@@ -87,15 +73,15 @@ export function MatterDetailPage() {
     onError: (error) => toast.push(messageFrom(error, t('matters.restoreFailed')), 'error')
   })
 
-  const deletePermanently = useMutation({
-    mutationFn: () => api.matters.deletePermanently(matterId),
+  const moveToTrash = useMutation({
+    mutationFn: () => api.matters.moveToTrash(matterId),
     onSuccess: async () => {
-      await invalidateAfterPermanentDelete()
-      setDeleteOpen(false)
-      toast.push(t('matters.deleteSuccess'))
+      await invalidateLifecycle()
+      setTrashOpen(false)
+      toast.push(t('matters.moveToTrashSuccess'))
       navigate('/matters', { replace: true })
     },
-    onError: (error) => toast.push(messageFrom(error, t('matters.deleteFailed')), 'error')
+    onError: (error) => toast.push(messageFrom(error, t('matters.moveToTrashFailed')), 'error')
   })
 
   if (matter.isError) {
@@ -115,6 +101,10 @@ export function MatterDetailPage() {
   }
 
   const item = matter.data
+
+  if (item.trashedAt) {
+    return <Navigate to="/trash" replace />
+  }
 
   return (
     <div className="page">
@@ -199,61 +189,43 @@ export function MatterDetailPage() {
             <div className="details-label">{t('common.updated')}</div>
             <div className="details-value">{formatDateTime(item.updatedAt)}</div>
           </div>
-          <div className="details-block">
+          <div className="details-block details-actions">
             {item.status === 'archived' ? (
-              <>
-                <Button onClick={() => restore.mutate()} disabled={restore.isPending}>
-                  {t('matters.restoreMatter')}
-                </Button>
-                <Button variant="danger" onClick={() => setDeleteOpen(true)} disabled={deletePermanently.isPending}>
-                  {t('matters.deletePermanently')}
-                </Button>
-              </>
+              <Button onClick={() => restore.mutate()} disabled={restore.isPending}>
+                {t('matters.restoreMatter')}
+              </Button>
             ) : (
-              <Button variant="ghost" onClick={() => archive.mutate()}>
+              <Button variant="ghost" onClick={() => archive.mutate()} disabled={archive.isPending}>
                 {t('matters.archiveMatter')}
               </Button>
             )}
+            <Button variant="ghost" onClick={() => setTrashOpen(true)} disabled={moveToTrash.isPending}>
+              {t('matters.moveToTrash')}
+            </Button>
           </div>
         </aside>
       </div>
       {prepareOpen ? (
         <PrepareContextDialog open matterId={item.id} onClose={() => setPrepareOpen(false)} />
       ) : null}
-      {deleteOpen ? (
+      {trashOpen ? (
         <Dialog
           open
           onOpenChange={(open) => {
-            if (!deletePermanently.isPending) setDeleteOpen(open)
+            if (!moveToTrash.isPending) setTrashOpen(open)
           }}
-          title={t('matters.deleteTitle', { title: item.title })}
-          description={t('matters.deleteDescription')}
+          title={t('matters.moveToTrashTitle', { title: item.title })}
+          description={t('matters.moveToTrashDescription')}
           actions={
             <>
-              <DialogCloseButton disabled={deletePermanently.isPending} />
-              <Button
-                variant="danger"
-                onClick={() => deletePermanently.mutate()}
-                disabled={deletePermanently.isPending}
-              >
-                {deletePermanently.isPending ? t('matters.deleting') : t('matters.deletePermanently')}
+              <DialogCloseButton disabled={moveToTrash.isPending} />
+              <Button onClick={() => moveToTrash.mutate()} disabled={moveToTrash.isPending}>
+                {moveToTrash.isPending ? t('matters.movingToTrash') : t('matters.moveToTrash')}
               </Button>
             </>
           }
         >
-          <p>{t('matters.deleteRemovesLabel')}</p>
-          <ul>
-            <li>{t('matters.deleteRemovesMatter')}</li>
-            <li>{t('matters.deleteRemovesWork')}</li>
-            <li>{t('matters.deleteRemovesTimeline')}</li>
-            <li>{t('matters.deleteRemovesDocuments')}</li>
-            <li>{t('matters.deleteRemovesCopies')}</li>
-          </ul>
-          <p>{t('matters.deleteKeepsLabel')}</p>
-          <ul>
-            <li>{t('matters.deleteKeepsOriginals')}</li>
-            <li>{t('matters.deleteKeepsShared')}</li>
-          </ul>
+          <p>{t('matters.moveToTrashDescription')}</p>
         </Dialog>
       ) : null}
     </div>

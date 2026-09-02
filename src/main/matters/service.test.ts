@@ -37,9 +37,10 @@ async function setup(options?: { persistFn?: (db: Database, filePath: string) =>
     options?.persistFn ?? persistDatabase
   )
   await store.initialize({ seed: false })
-  const matter = store.mutate((db) =>
-    matters.createMatter(db, { title: 'Matter to remove', status: 'archived' })
-  )
+  const matter = store.mutate((db) => {
+    const created = matters.createMatter(db, { title: 'Matter to remove', status: 'archived' })
+    return matters.moveMatterToTrash(db, created.id)
+  })
   const documentsRoot = join(userData, 'documents')
   const documentService = createDocumentService(store, documentsRoot)
   return { store, matter, sourceDirectory, documentsRoot, documentService }
@@ -223,6 +224,25 @@ describe('Matter permanent deletion service', () => {
     expect(() => deletion.deletePermanently(matter.id)).toThrow(USER_ERRORS.unsafeDocumentPath)
     expect(existsSync(documentsRoot)).toBe(true)
     expect(matters.getMatter(store.query((db) => db), matter.id).id).toBe(matter.id)
+  })
+
+  it('rejects permanent deletion of a non-trashed Matter before touching files', async () => {
+    const userData = tempDir('matterdock-delete-live-')
+    const store = new DatabaseStore(join(userData, 'matterdock.sqlite'), persistDatabase)
+    await store.initialize({ seed: false })
+    const live = store.mutate((db) => matters.createMatter(db, { title: 'Not in trash' }))
+    const archived = store.mutate((db) => matters.archiveMatter(db, live.id))
+    const documentsRoot = join(userData, 'documents')
+    const deletion = createMatterDeletionService(store, documentsRoot)
+
+    expect(() => deletion.deletePermanently(archived.id)).toThrow(USER_ERRORS.matterDeleteRequiresTrash)
+    try {
+      deletion.deletePermanently(archived.id)
+    } catch (error) {
+      expect(error).toBeInstanceOf(AppError)
+      expect((error as AppError).code).toBe('MATTER_DELETE_REQUIRES_TRASH')
+    }
+    expect(matters.getMatter(store.query((db) => db), archived.id).trashedAt).toBeNull()
   })
 
   it('respects the workspace exclusive/busy guard before touching files', async () => {

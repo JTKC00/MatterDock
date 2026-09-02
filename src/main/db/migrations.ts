@@ -190,5 +190,13 @@ export const migrations: Migration[] = [
       CREATE INDEX idx_documents_matter ON documents(matter_id);
       CREATE INDEX idx_documents_mode ON documents(storage_mode);
     `
+  },
+  {
+    version: 6,
+    name: 'matter_trash_lifecycle',
+    sql: `
+      ALTER TABLE matters ADD COLUMN trashed_at TEXT;
+      CREATE INDEX idx_matters_trashed_at ON matters(trashed_at);
+    `
   }
 ]

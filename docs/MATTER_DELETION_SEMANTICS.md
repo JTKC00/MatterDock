@@ -6,11 +6,11 @@ This document is the implementation contract for permanent Matter deletion in Ma
 
 This slice adds an explicit irreversible deletion primitive for Matters. It does not add Trash or soft-delete state.
 
-Until a Trash lifecycle exists, the UI exposes permanent deletion only for Archived Matters:
+Trash (see `docs/MATTER_TRASH_LIFECYCLE.md`) now owns the user-facing lifecycle. Permanent deletion is allowed only for a Matter whose `trashed_at IS NOT NULL`:
 
-`Active Matter → Archive → Delete permanently → confirm → permanently deleted`
+`Live / Completed / Archived Matter → Move to Trash → Restore OR Delete permanently`
 
-A future Trash feature may reuse the same permanent-delete primitive.
+This document remains the filesystem and cascade contract for the final delete step. The main-process service rejects non-trashed Matters.
 
 ## Database cascade contract
 
