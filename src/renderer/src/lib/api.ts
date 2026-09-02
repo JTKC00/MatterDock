@@ -130,6 +130,7 @@ export const api = {
   settings: {
     getLocale: () => unwrap(window.matterdock.settings.getLocale()),
     setLocale: (locale: Parameters<Window['matterdock']['settings']['setLocale']>[0]) =>
-      unwrap(window.matterdock.settings.setLocale(locale))
+      unwrap(window.matterdock.settings.setLocale(locale)),
+    getVersion: () => unwrap(window.matterdock.settings.getVersion())
   }
 }

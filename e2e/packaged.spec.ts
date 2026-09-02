@@ -1,5 +1,6 @@
 import { test, expect, _electron as electron, type ElectronApplication, type Page } from '@playwright/test'
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +9,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const packagedExecutable = resolve(
   process.env.MATTERDOCK_PACKAGED_EXECUTABLE ?? join(root, 'release', 'win-unpacked', 'MatterDock.exe')
 )
+const packageVersion = (JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { version: string }).version
 
 test.skip(
   process.platform !== 'win32' || !existsSync(packagedExecutable),
@@ -56,8 +58,13 @@ async function closeApp(app: ElectronApplication): Promise<void> {
   }
 }
 
-test('packaged app loads resources, keeps data outside its install directory, and survives relaunch', async () => {
+async function removeTestUserData(userData: string): Promise<void> {
+  await rm(userData, { recursive: true, force: true, maxRetries: 10, retryDelay: 250 })
+}
+
+test('packaged app persists data and completes the Matter Trash lifecycle across relaunches', async () => {
   const userData = mkdtempSync(join(tmpdir(), 'matterdock-packaged-e2e-'))
+  const title = 'Packaged release persistence'
   let app = await launch(userData)
 
   try {
@@ -68,7 +75,7 @@ test('packaged app loads resources, keeps data outside its install directory, an
       userData: electronApp.getPath('userData')
     }))
     expect(runtime.packaged).toBe(true)
-    expect(runtime.version).toBe('0.8.0')
+    expect(runtime.version).toBe(packageVersion)
     const installRelative = relative(dirname(packagedExecutable), runtime.userData)
     expect(installRelative === '' || (!installRelative.startsWith('..') && !isAbsolute(installRelative))).toBe(false)
 
@@ -78,11 +85,12 @@ test('packaged app loads resources, keeps data outside its install directory, an
 
     await page.locator('header').getByRole('button', { name: 'New Matter' }).click()
     const dialog = page.getByRole('dialog', { name: 'New matter' })
-    await dialog.getByLabel('Title').fill('Packaged release persistence')
+    await dialog.getByLabel('Title').fill(title)
     await dialog.getByRole('button', { name: 'Create matter' }).click()
-    await expect(page.getByRole('heading', { name: 'Packaged release persistence' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: title })).toBeVisible()
 
     await page.getByRole('link', { name: 'Settings', exact: true }).click()
+    await expect(page.getByText(`MatterDock v${packageVersion}`, { exact: true })).toBeVisible()
     await page.getByLabel('Language').selectOption('zh-HK')
     await expect(page.getByRole('link', { name: '事項', exact: true })).toBeVisible()
     await page.getByLabel('語言').selectOption('en')
@@ -93,11 +101,52 @@ test('packaged app loads resources, keeps data outside its install directory, an
     app = await launch(userData)
     const relaunched = await firstWindow(app)
     await relaunched.getByRole('link', { name: 'Matters', exact: true }).click()
-    await expect(relaunched.getByText('Packaged release persistence', { exact: true })).toBeVisible()
+    await expect(relaunched.getByText(title, { exact: true })).toBeVisible()
     await expect(relaunched.getByText('EMPF Subsidy Application', { exact: true })).toHaveCount(0)
     await expect(relaunched.getByText('H28/51-52 Land Resumption', { exact: true })).toHaveCount(0)
+
+    await relaunched.locator('.matter-row').filter({ hasText: title }).click()
+    await expect(relaunched.getByRole('heading', { name: title, exact: true })).toBeVisible()
+    await relaunched.getByRole('button', { name: 'Move to Trash', exact: true }).click()
+    await relaunched
+      .getByRole('dialog', { name: `Move “${title}” to Trash?` })
+      .getByRole('button', { name: 'Move to Trash', exact: true })
+      .click()
+    await expect(relaunched.getByText('Matter moved to Trash.', { exact: true })).toBeVisible()
+    await relaunched.getByRole('link', { name: 'Trash', exact: true }).click()
+    await expect(relaunched.getByRole('heading', { name: 'Trash', exact: true })).toBeVisible()
+    await expect(relaunched.getByText(title, { exact: true })).toBeVisible()
+
+    await relaunched.getByRole('button', { name: 'Restore', exact: true }).click()
+    await expect(relaunched.getByText('Matter restored.', { exact: true })).toBeVisible()
+    await relaunched.getByRole('link', { name: 'Matters', exact: true }).click()
+    await expect(relaunched.getByText(title, { exact: true })).toBeVisible()
+
+    await relaunched.locator('.matter-row').filter({ hasText: title }).click()
+    await relaunched.getByRole('button', { name: 'Move to Trash', exact: true }).click()
+    await relaunched
+      .getByRole('dialog', { name: `Move “${title}” to Trash?` })
+      .getByRole('button', { name: 'Move to Trash', exact: true })
+      .click()
+    await expect(relaunched.getByText('Matter moved to Trash.', { exact: true })).toBeVisible()
+    await relaunched.getByRole('link', { name: 'Trash', exact: true }).click()
+    await relaunched.getByRole('button', { name: 'Delete permanently', exact: true }).click()
+    await relaunched
+      .getByRole('dialog', { name: `Permanently delete “${title}”?` })
+      .getByRole('button', { name: 'Delete permanently', exact: true })
+      .click()
+    await expect(relaunched.getByText('Matter permanently deleted.', { exact: true })).toBeVisible()
+    await expect(relaunched.getByText(title, { exact: true })).toHaveCount(0)
+
+    await closeApp(app)
+    app = await launch(userData)
+    const afterDelete = await firstWindow(app)
+    await afterDelete.getByRole('link', { name: 'Matters', exact: true }).click()
+    await expect(afterDelete.getByText(title, { exact: true })).toHaveCount(0)
+    await afterDelete.getByRole('link', { name: 'Trash', exact: true }).click()
+    await expect(afterDelete.getByRole('heading', { name: 'Trash is empty', exact: true })).toBeVisible()
   } finally {
     await closeApp(app).catch(() => undefined)
-    rmSync(userData, { recursive: true, force: true })
+    await removeTestUserData(userData)
   }
 })

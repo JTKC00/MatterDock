@@ -508,6 +508,7 @@ export const zhHK: { [K in keyof typeof en]: (typeof en)[K] extends string ? str
   settings: {
     title: '設定',
     subtitle: '你的 MatterDock 資料只會留在這部電腦。',
+    version: 'MatterDock v{version}',
     language: '語言',
     languageHelp: '介面語言',
     english: 'English',

@@ -372,6 +372,7 @@ export function registerIpc(
       return { locale }
     })
   )
+  ipcMain.handle(IPC_CHANNELS.settingsGetVersion, () => wrap(() => ({ version: options.appVersion })))
 }
 
 function todayStamp(): string {

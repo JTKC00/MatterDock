@@ -1,6 +1,6 @@
 {
   "name": "matterdock",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": true,
   "description": "Local-first workspace for matters, follow-ups and documents.",
   "author": "Snugzap",
@@ -59,6 +59,7 @@
     "package:win:dir": "node scripts/clean-release.mjs && npm run build && electron-builder --win dir --x64 --publish never",
     "package:win": "node scripts/clean-release.mjs && npm run build && electron-builder --win nsis --x64 --publish never",
     "verify:release": "node scripts/verify-release.mjs",
+    "release:hash": "node scripts/release-hash.mjs",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "lint": "eslint .",
@@ -66,7 +67,7 @@
     "test:watch": "vitest",
     "test:e2e": "npm run build && playwright test",
     "test:e2e:packaged": "npm run package:win:dir && npx playwright test e2e/packaged.spec.ts",
-    "release:win": "npm run typecheck && npm run lint && npm test && npm run test:e2e && npm run test:e2e:packaged && npm run package:win && npm run verify:release",
+    "release:win": "npm run typecheck && npm run lint && npm test && npm run test:e2e && npm run test:e2e:packaged && npm run package:win && npm run verify:release && npm run release:hash",
     "start": "electron-vite preview"
   },
   "dependencies": {

@@ -507,6 +507,7 @@ export const en = {
   settings: {
     title: 'Settings',
     subtitle: 'Your MatterDock data stays on this computer.',
+    version: 'MatterDock v{version}',
     language: 'Language',
     languageHelp: 'Interface language',
     english: 'English',

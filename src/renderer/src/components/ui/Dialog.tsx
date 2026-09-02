@@ -16,7 +16,7 @@ export function Dialog({
   onOpenChange: (open: boolean) => void
   title: string
   description?: string
-  children: ReactNode
+  children?: ReactNode
   actions: ReactNode
   wide?: boolean
 }) {
@@ -34,7 +34,7 @@ export function Dialog({
             ) : (
               <DialogPrimitive.Description className="sr-only">{title}</DialogPrimitive.Description>
             )}
-            <div className="dialog-body">{children}</div>
+            {children ? <div className="dialog-body">{children}</div> : null}
             <div className="dialog-actions">{actions}</div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>

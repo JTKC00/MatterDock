@@ -4,9 +4,7 @@ This document is the implementation contract for permanent Matter deletion in Ma
 
 ## Scope
 
-This slice adds an explicit irreversible deletion primitive for Matters. It does not add Trash or soft-delete state.
-
-Trash (see `docs/MATTER_TRASH_LIFECYCLE.md`) now owns the user-facing lifecycle. Permanent deletion is allowed only for a Matter whose `trashed_at IS NOT NULL`:
+This slice defines the explicit irreversible final-delete step for Matters. Trash (see `docs/MATTER_TRASH_LIFECYCLE.md`) owns the user-facing lifecycle, and permanent deletion is allowed only for a Matter whose `trashed_at IS NOT NULL`:
 
 `Live / Completed / Archived Matter → Move to Trash → Restore OR Delete permanently`
 
@@ -69,7 +67,7 @@ The main process must orchestrate filesystem quarantine/recovery and the transac
 
 ## UI contract
 
-Only Archived Matter detail exposes the destructive action in this slice.
+Only a Matter in Trash exposes the destructive action in this slice.
 
 English: `Delete permanently`
 
@@ -97,7 +95,6 @@ Existing backup archives are immutable historical snapshots. They must not be re
 
 ## Explicitly out of scope
 
-- Trash / soft-delete state
 - retention windows / automatic purge
 - bulk deletion
 - secure erase / forensic wiping
@@ -114,4 +111,4 @@ Database tests must prove that deleting one Matter removes all Matter-owned rows
 
 Filesystem/service tests must prove that referenced originals survive unchanged, managed copies are removed on success, quarantines are restored on database/persistence failure, cleanup failure cannot resurrect an active orphan, multiple managed copies recover safely on partial pre-database failure, and path-safety guards remain intact.
 
-IPC/UI/E2E tests must prove that active Matters do not expose direct permanent delete in this slice, archived Matters do, Cancel is safe, confirm deletes and navigates away, EN/zh-HK copy is present, and deleted Matters disappear from live list/search views.
+IPC/UI/E2E tests must prove that live Matter detail does not expose direct permanent delete, Trash items do, Cancel is safe, confirm deletes and navigates away, EN/zh-HK copy is present, and deleted Matters disappear from live list/search views.

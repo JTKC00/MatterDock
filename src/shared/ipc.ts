@@ -132,6 +132,7 @@ export type MatterDockApi = {
   settings: {
     getLocale: () => Promise<IpcResult<{ locale: SupportedLocale }>>
     setLocale: (locale: string) => Promise<IpcResult<{ locale: SupportedLocale }>>
+    getVersion: () => Promise<IpcResult<{ version: string }>>
   }
 }
 
@@ -202,5 +203,6 @@ export const IPC_CHANNELS = {
   dataExportCreate: 'dataExport:create',
   dataExportReveal: 'dataExport:reveal',
   settingsGetLocale: 'settings:getLocale',
-  settingsSetLocale: 'settings:setLocale'
+  settingsSetLocale: 'settings:setLocale',
+  settingsGetVersion: 'settings:getVersion'
 } as const

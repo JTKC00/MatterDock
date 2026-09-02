@@ -91,7 +91,8 @@ const api: MatterDockApi = {
   },
   settings: {
     getLocale: () => ipcRenderer.invoke(IPC_CHANNELS.settingsGetLocale),
-    setLocale: (locale) => ipcRenderer.invoke(IPC_CHANNELS.settingsSetLocale, locale)
+    setLocale: (locale) => ipcRenderer.invoke(IPC_CHANNELS.settingsSetLocale, locale),
+    getVersion: () => ipcRenderer.invoke(IPC_CHANNELS.settingsGetVersion)
   }
 }
 

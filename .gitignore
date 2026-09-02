@@ -14,6 +14,8 @@ Thumbs.db
 .env.*
 *.sqlite
 *.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
 .idea
 .vscode/*
 !.vscode/extensions.json
