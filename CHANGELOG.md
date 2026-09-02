@@ -7,6 +7,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Modernized Electron runtime to the supported Electron 44 stable line.
+- Updated the Windows packaging toolchain as required.
+
+### Security
+
+- Reviewed and remediated dependency audit findings, including the shipped Electron runtime and build-time packaging tree.
+
 ## [0.9.0] — 2026-09-02
 
 Matter Trash Lifecycle.

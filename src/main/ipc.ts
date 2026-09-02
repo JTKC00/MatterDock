@@ -250,8 +250,8 @@ export function registerIpc(
     wrap(() => store.query((db) => buildMatterContext(db, matterId, input, options.documentsRoot)))
   )
   ipcMain.handle(IPC_CHANNELS.contextCopy, (_event, text: string) =>
-    wrap(() => {
-      clipboard.writeText(String(text ?? ''))
+    wrapAsync(async () => {
+      await clipboard.writeText(String(text ?? ''))
       return { copied: true as const }
     })
   )
